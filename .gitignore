@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE and OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs and runtime
+*.log
+*.tmp
+
+# Build artifacts
+build/
+dist/
+
+# 依赖目录
+node_modules/
+
+# 编译输出
+dist/
+build/
+
+# 环境变量
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志
+*.log
