@@ -16,15 +16,21 @@ MarketMirror 正在重建为**可复现、可核验的金融市场冲击研究�
 
 详细数值、限制和阶段状态见 [研究进度](research/IMPLEMENTATION_STATUS.md)；研究设计见 [重建方案](RESEARCH_REBUILD_PLAN.md)。
 
-## 本地只读工作台
+## 本地研究工作台
 
 工作台从通过本机核验的产物生成，页面仅包含汇总指标、图表和公开证据链接，不嵌入问答原文、个人路径或完整数据库。
 
 ```powershell
-python -m research.workbench.build --output-dir research_outputs/workbench_2020
+python -m research.workbench.build --output-dir research_outputs/workbench_controlled_2020
 ```
 
-随后直接打开 `research_outputs/workbench_2020/index.html`。它是静态离线页面，无需安装前端依赖或启动后端。已有产物也可通过 `python -m http.server 8765 --bind 127.0.0.1 --directory research_outputs/workbench_2020` 在本机预览。工作台当前只读，不能据此执行新实验。
+直接打开生成的 `index.html` 可离线查看摘要。要从页面选择固定实验重新执行，在仓库根目录启动仅监听本机的服务，再打开 `http://127.0.0.1:8766/`：
+
+```powershell
+python -m research.workbench.serve --site-dir research_outputs/workbench_controlled_2020
+```
+
+页面一次只能重跑固定清单中的一项；每次保存所选配置、运行状态、产物比较和哈希。也可运行 `python -m research.workbench.run observed_event`。页面上的事件、股票筛选只改变摘要展示，不会修改实验参数；目前还不能自定义数据或模型版本。生成目录须为新空目录，已有页面可直接使用。
 
 生成工作台前需具备本机原始来源和 `research_outputs/` 下的运行产物。该目录被 Git 忽略；克隆仓库本身不附带原始 Excel、问答文本或市场下载。完整构建命令见 [研究操作说明](research/README.md)。
 

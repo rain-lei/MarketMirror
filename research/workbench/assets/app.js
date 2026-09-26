@@ -58,4 +58,56 @@
   $("semantic-status").innerHTML=`<strong>${s.dual_reviewed} / ${s.items}</strong><p>双人语义标注完成。${s.pending} 条待审；${s.gold_ready?'已有裁定标签':'尚无人工金标准'}。</p>`;
   $("evidence-links").innerHTML=data.evidence.map(e=>`<a href="${safe(e.url)}" target="_blank" rel="noopener noreferrer"><span>${safe(e.label)}</span><span>↗</span></a>`).join("");
   $("limitations").innerHTML=data.limitations.map(x=>`<li>${safe(x)}</li>`).join("");
+
+  const runLabels={
+    unified_dataset:"统一问答数据集",observed_market:"公开行情导入",observed_event:"历史事件研究",
+    event_date_diagnostic:"事件日期对照",observed_activity:"成交活动导入",activity_event:"事件成交活动",
+    text_prediction:"文本预测对照",synthetic_stress:"合成 Agent 压力",historical_replay_q1:"历史回放 · 一季度",
+    historical_replay_later:"历史回放 · 后三季度",semantic_annotation:"语义抽样包",keyword_baseline:"关键词基线"
+  };
+  const runStates={queued:"排队中",running:"记录未结束",passed:"通过",different:"产物不同",
+                   failed:"失败",failed_preflight:"输入核验失败",record_changed:"运行记录已变化"};
+  const rerunSelect=$("rerun-select"),rerunButton=$("rerun-button"),rerunStatus=$("rerun-status");
+  async function refreshHistory(){
+    const response=await fetch("/api/jobs",{cache:"no-store"});
+    if(!response.ok)throw new Error("history unavailable");
+    const jobs=await response.json();
+    $("rerun-history").innerHTML=jobs.length?jobs.map(job=>`<div class="history-item"><div><strong>${safe(runLabels[job.run_id]||job.run_id)}</strong><small>${safe(job.job_id.slice(0,8))} · ${safe(job.started_at||"刚刚")}</small></div><span>${safe(runStates[job.status]||job.status)}${job.compared_artifacts!==undefined?` · ${Number(job.compared_artifacts)} 份`:""}</span></div>`).join(""):'<p class="note">尚无本机重跑记录。</p>';
+  }
+  async function watchJob(jobId){
+    try{
+      const response=await fetch(`/api/jobs/${encodeURIComponent(jobId)}`,{cache:"no-store"});
+      if(!response.ok)throw new Error("job unavailable");
+      const job=await response.json();
+      if(job.status==="queued"||job.status==="running"){
+        rerunStatus.textContent=`${runLabels[job.run_id]||job.run_id}：正在重跑和比较，请保持服务运行。`;
+        setTimeout(()=>watchJob(jobId),1200);return;
+      }
+      rerunStatus.textContent=`${runLabels[job.run_id]||job.run_id}：${runStates[job.status]||job.status}；比较 ${job.compared_artifacts||0} 份产物。完整记录保存在本机运行目录。`;
+      rerunButton.disabled=false;
+      await refreshHistory();
+    }catch(_){rerunStatus.textContent="执行服务连接中断；请检查本机运行记录后刷新页面。";rerunButton.disabled=false;}
+  }
+  rerunButton.addEventListener("click",async()=>{
+    rerunButton.disabled=true;
+    rerunStatus.textContent="正在提交固定运行…";
+    try{
+      const response=await fetch("/api/jobs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({run_id:rerunSelect.value})});
+      if(!response.ok){rerunStatus.textContent=response.status===409?"已有一项重跑正在执行，请稍后刷新。":"提交失败；请核对本地执行服务。";rerunButton.disabled=false;return;}
+      const job=await response.json();
+      await watchJob(job.job_id);
+    }catch(_){rerunStatus.textContent="无法连接本地执行服务。";rerunButton.disabled=false;}
+  });
+  (async()=>{
+    try{
+      const response=await fetch("/api/capabilities",{cache:"no-store"});
+      if(!response.ok)throw new Error("execution unavailable");
+      const capabilities=await response.json();
+      rerunSelect.innerHTML=capabilities.runs.map(id=>`<option value="${safe(id)}">${safe(runLabels[id]||id)}</option>`).join("");
+      rerunSelect.value=capabilities.runs.includes("observed_event")?"observed_event":capabilities.runs[0];
+      rerunSelect.disabled=false;rerunButton.disabled=false;
+      rerunStatus.textContent=`本地执行服务已连接；固定配置 ${capabilities.master_config_sha256.slice(0,12)}…`;
+      await refreshHistory();
+    }catch(_){rerunStatus.textContent="离线只读模式。启动本地执行服务后可选择固定实验重跑。";}
+  })();
 })();

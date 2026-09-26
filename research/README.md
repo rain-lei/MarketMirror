@@ -414,15 +414,21 @@ firecrawl scrape "https://www.baostock.com/mainContent?file=pythonAPI.md" -o .fi
 
 清单中的原始来源路径指向本机文件；迁移环境时需重新取得原始资料并核对哈希。校验通过只表示当前文件字节与**版本控制中固定的清单**一致，不表示已重新运行实验，也不验证数据含义、信息可见时刻或统计结论。目录审计是 M6 工作台的数据基础。
 
-### 离线只读研究工作台
+### 本地研究工作台与受控重跑
 
 工作台对 12 项固定运行再次校验输入、代码和输出，再从事件、预测、成交活动与 Agent 回放结果中按白名单抽取汇总。原始问答、个人路径和完整数据库不会写进页面；页面提供事件口径、回放时期与股票筛选、核验状态和公开证据链接。
 
 ```powershell
-& $py -m research.workbench.build --output-dir research_outputs/workbench_2020
+& $py -m research.workbench.build --output-dir research_outputs/workbench_controlled_2020
 ```
 
-在浏览器打开生成的 `index.html`；输出目录必须是新空目录。无需额外前端依赖或后端服务。页面只读，不能修改研究数据或执行新实验；图表是研究结果摘要，仍须参照原报告中的假设和限制。旧 Vue/FastAPI 静态演示已从当前分支移除，代码可在 Git 历史中找回。
+在浏览器打开生成的 `index.html` 可离线查看摘要；输出目录必须是新空目录。要在页面上重跑固定实验，启动只监听 `127.0.0.1` 的本地服务：
+
+```powershell
+& $py -m research.workbench.serve --site-dir research_outputs/workbench_controlled_2020
+```
+
+打开 `http://127.0.0.1:8766/`，选择清单中的运行并执行。也可用 `& $py -m research.workbench.run observed_event` 单独重跑。执行入口只接受固定清单内的运行 ID、一次运行一项，不接受网页传入配置路径；每次在被 Git 忽略的 `research_outputs/workbench_runs/<job_id>/` 保存所选配置、主配置与清单哈希、状态、对照报告和产物哈希。页面读取状态时会重新核对关键记录文件。上方事件/股票筛选不改动固定配置；自定义事件、数据或模型版本尚未实现。旧 Vue/FastAPI 静态演示已从当前分支移除，代码可在 Git 历史中找回。
 
 ### 从输入重新执行并比较结果
 

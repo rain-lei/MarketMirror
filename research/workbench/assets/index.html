@@ -10,7 +10,7 @@
 <body>
   <header class="topbar">
     <div class="brand"><span class="mark">M</span><span>MarketMirror <small>研究工作台</small></span></div>
-    <span class="top-label">离线只读 · 探索性研究</span>
+    <span class="top-label">本机研究 · 探索性</span>
   </header>
   <main class="shell">
     <section class="hero">
@@ -54,9 +54,17 @@
       </div>
     </section>
 
+    <section class="section" id="rerun">
+      <div class="section-head"><div><p class="eyebrow">05 / REEXECUTION</p><h2>受控重跑</h2><p>选择固定清单中的一项，重新执行并与已存档产物比较。</p></div><span class="section-tag">仅本机 · 一次一项</span></div>
+      <div class="grid two">
+        <article class="card"><h3>选择运行</h3><p class="note">上方的事件和股票筛选只改变摘要显示；这里使用已固定的完整实验配置、数据版本和代码。不会用页面选择改写实验参数。</p><div class="run-controls"><label class="field-label">固定运行<select id="rerun-select" disabled></select></label><button id="rerun-button" class="button primary" type="button" disabled>开始重跑</button></div><p id="rerun-status" class="run-status" role="status">正在检查本地执行服务…</p></article>
+        <article class="card"><h3>本机运行记录</h3><div id="rerun-history" class="run-history"><p class="note">尚未连接执行服务。</p></div><p class="note">每次运行保存所选配置、固定清单哈希、逐产物比较结果和独立目录。这里仅显示状态摘要。</p></article>
+      </div>
+    </section>
+
     <section class="limits"><p class="eyebrow">RESEARCH LIMITS</p><h2>阅读这些结果前</h2><ul id="limitations"></ul></section>
   </main>
-  <footer><span>MarketMirror · Research rebuild</span><span>本地生成的只读研究摘要</span></footer>
+  <footer><span>MarketMirror · Research rebuild</span><span>本地摘要与固定实验重跑</span></footer>
   <script src="data.js"></script><script src="app.js"></script>
 </body>
 </html>
