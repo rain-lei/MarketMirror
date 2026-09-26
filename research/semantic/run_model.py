@@ -169,17 +169,20 @@ def main() -> None:
     parser.add_argument("--temperature", type=float, default=0.0)
     args = parser.parse_args()
     key = os.getenv("MARKETMIRROR_LLM_API_KEY", "")
-    if args.check:
-        models = list_models(args.base_url, key, args.timeout)
-        result = {"base_url": normalize_base_url(args.base_url), "requested_model": args.model,
-                  "available": args.model in models, "model_count": len(models), "models": models}
-        print(json.dumps(result, ensure_ascii=False))
-        return
-    if args.pack_dir is None or args.output_dir is None:
-        parser.error("pack_dir and --output-dir are required unless --check is used")
-    result = run_model(args.pack_dir, args.output_dir, key, args.base_url, args.model,
-                       args.limit, args.timeout, args.retries, args.temperature)
-    print(json.dumps({key: result[key] for key in ("model_id", "requested_rows", "request_failures")}, ensure_ascii=False))
+    try:
+        if args.check:
+            models = list_models(args.base_url, key, args.timeout)
+            result = {"base_url": normalize_base_url(args.base_url), "requested_model": args.model,
+                      "available": args.model in models, "model_count": len(models), "models": models}
+            print(json.dumps(result, ensure_ascii=False))
+            return
+        if args.pack_dir is None or args.output_dir is None:
+            parser.error("pack_dir and --output-dir are required unless --check is used")
+        result = run_model(args.pack_dir, args.output_dir, key, args.base_url, args.model,
+                           args.limit, args.timeout, args.retries, args.temperature)
+        print(json.dumps({key: result[key] for key in ("model_id", "requested_rows", "request_failures")}, ensure_ascii=False))
+    except (ValueError, RuntimeError) as error:
+        parser.exit(2, f"error: {error}\n")
 
 
 if __name__ == "__main__":
