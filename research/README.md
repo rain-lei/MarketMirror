@@ -276,6 +276,17 @@ firecrawl scrape "https://www.baostock.com/mainContent?file=pythonAPI.md" -o .fi
 
 图会验证输入结果清单、检查累计曲线与 CAR 一致，并记录绘图代码、Matplotlib 版本及输出哈希。当前实际运行得到 3 只股票、388 个交易日、1,161 条标准收益观测；同一事件的两种对齐口径共 6 次计算成功。事件研究没有验证预测能力、统计显著性或 Agent 行为。
 
+### 事件日期对照诊断
+
+对同一三只股票、相同市场模型和 `120/5/[-3,+5]` 窗口，枚举 2019-12-01 至 2020-12-31 的其他交易日。候选日期的**估计期和事件窗口均不能与两个实际对齐口径合并后的真实事件窗口相交**。输出逐日、逐股票 CAR 及输入和代码哈希。
+
+```powershell
+& $py -m research.baselines.placebo_dates research/configs/placebo_pilot_2020.json `
+  --output-dir research_outputs/observed_2020/placebo
+```
+
+本地结果保留此前 23 个候选日期（2019-12-10 至 2020-01-10）、此后 88 个候选日期（2020-08-17 至 2020-12-24）；另有 143 个日期因与事件隔离区间交叉排除，11 个因窗口或拟合不完整排除。平安银行在日期保守口径的实际绝对 CAR 大于等于事前候选日的 87.0%、事后候选日的 53.4%；等权三股均值分别仅为 8.7% 和 9.1%。其余股票和另一对齐口径见 `research_outputs/observed_2020/placebo/placebo_report.md`。这些比例只是不同日期的描述性位置；候选窗口彼此重叠、跨越不同市场阶段，两个实际口径又是同一事件，**不能解释为 p 值、因果效应或预测能力**。
+
 ### 成交量与成交额的独立核验
 
 下载时留存的股票原始响应还含 `volume` 和 `amount`。已归档的 [BaoStock API 文档](https://www.baostock.com/mainContent?file=pythonAPI.md)分别将它们定义为成交股数和人民币成交额。`data_pipeline/market_activity.py` 核对文档存档哈希、下载清单、原始响应、独立交易日历和既有行情清单，再把这两个字段导出为独立活动数据。后复权价格断点不用于用成交额反推价格。
