@@ -117,7 +117,11 @@ def collect_data() -> dict[str, Any]:
         "runs": [{"id": run["run_id"], "integrity": audit["status"],
                   "reexecution": run_status[run["run_id"]]["status"],
                   "hash_checks": sum(audit["checks"].values()),
-                  "compared_artifacts": len(run_status[run["run_id"]]["artifacts"])}
+                  "compared_artifacts": len(run_status[run["run_id"]]["artifacts"]),
+                  "artifacts": [{"name": item["artifact"], "status": item["status"],
+                                 "expected_sha256": item["expected_sha256"],
+                                 "regenerated_sha256": item["regenerated_sha256"]}
+                                for item in run_status[run["run_id"]]["artifacts"]]}
                  for run, audit in zip(pinned, audits)],
         "events": [{"event_id": row["event_id"], "stock_code": row["stock_code"],
                     "event_date": row["event_date_used"], "car": row["cumulative_abnormal_return"],
@@ -192,7 +196,12 @@ def render_report(data: dict[str, Any]) -> str:
     for row in data["runs"]:
         lines.append(f"| {row['id']} | {row['integrity']} | {row['reexecution']} | {row['hash_checks']} | {row['compared_artifacts']} |")
     semantic = data["semantic"]
-    lines += ["", "## 语义审核状态", "", f"样本 {semantic['items']} 条；双人完成 {semantic['dual_reviewed']} 条；待审 {semantic['pending']} 条；分歧 {semantic['conflicts']} 条；状态 `{semantic['status']}`。", "",
+    lines += ["", "## 产物证据", "", "每项产物名称与比较状态来自独立重跑报告；哈希在本机运行目录中保存。", ""]
+    for row in data["runs"]:
+        lines.append(f"### {row['id']}")
+        lines.extend(f"- `{item['name']}`：{item['status']}" for item in row.get("artifacts", []))
+        lines.append("")
+    lines += ["## 语义审核状态", "", f"样本 {semantic['items']} 条；双人完成 {semantic['dual_reviewed']} 条；待审 {semantic['pending']} 条；分歧 {semantic['conflicts']} 条；状态 `{semantic['status']}`。", "",
               "## 公开证据", ""]
     lines.extend(f"- [{item['label']}]({item['url']})" for item in data["evidence"])
     lines += ["", "## 研究限制", ""]

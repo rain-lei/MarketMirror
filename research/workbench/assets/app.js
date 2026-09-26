@@ -53,18 +53,19 @@
     $("replay-table").innerHTML=`<table class="data-table"><thead><tr><th>角色</th><th style="text-align:right">市场信号</th><th style="text-align:right">零信号</th><th style="text-align:right">买入持有</th><th style="text-align:right">最大回撤</th><th style="text-align:right">交易</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${safe(roles[r.role]||r.role)}</td><td class="num">${mult(r.signal_multiple)}</td><td class="num">${mult(r.control_multiple)}</td><td class="num">${mult(r.buyhold_multiple)}</td><td class="num">${pct(r.max_drawdown,1)}</td><td class="num">${r.trades}</td></tr>`).join("")}</tbody></table>`;
   }
   $("period-select").addEventListener("change",drawReplay);$("stock-select").addEventListener("change",drawReplay);drawReplay();
-  $("run-list").innerHTML=data.runs.map(r=>`<div class="run-item"><strong>${safe(r.id.replaceAll('_',' '))}</strong><span>${r.integrity==='passed'&&r.reexecution==='equivalent'?'✓ 已重跑':'待核验'}</span></div>`).join("");
-  const s=data.semantic;
-  $("semantic-status").innerHTML=`<strong>${s.dual_reviewed} / ${s.items}</strong><p>双人语义标注完成。${s.pending} 条待审；${s.gold_ready?'已有裁定标签':'尚无人工金标准'}。</p>`;
-  $("evidence-links").innerHTML=data.evidence.map(e=>`<a href="${safe(e.url)}" target="_blank" rel="noopener noreferrer"><span>${safe(e.label)}</span><span>↗</span></a>`).join("");
-  $("limitations").innerHTML=data.limitations.map(x=>`<li>${safe(x)}</li>`).join("");
-
   const runLabels={
     unified_dataset:"统一问答数据集",observed_market:"公开行情导入",observed_event:"历史事件研究",
     event_date_diagnostic:"事件日期对照",observed_activity:"成交活动导入",activity_event:"事件成交活动",
     text_prediction:"文本预测对照",synthetic_stress:"合成 Agent 压力",historical_replay_q1:"历史回放 · 一季度",
     historical_replay_later:"历史回放 · 后三季度",semantic_annotation:"语义抽样包",keyword_baseline:"关键词基线"
   };
+  $("run-list").innerHTML=data.runs.map(r=>`<div class="run-item"><strong>${safe(r.id.replaceAll('_',' '))}</strong><span>${r.integrity==='passed'&&r.reexecution==='equivalent'?'✓ 已重跑':'待核验'}</span></div>`).join("");
+  $("run-details").innerHTML=data.runs.map(r=>{const artifacts=r.artifacts||[];return `<details class="evidence-run"><summary><span>${safe(runLabels[r.id]||r.id)}</span><small>${artifacts.length} 份产物 · ${r.hash_checks} 项哈希检查</small></summary><div class="evidence-artifacts">${artifacts.map(item=>`<div><code>${safe(item.name)}</code><span class="artifact-${item.status==='identical'?'ok':'normalized'}">${safe(item.status)}</span></div>`).join("")}</div></details>`;}).join("");
+  const s=data.semantic;
+  $("semantic-status").innerHTML=`<strong>${s.dual_reviewed} / ${s.items}</strong><p>双人语义标注完成。${s.pending} 条待审；${s.gold_ready?'已有裁定标签':'尚无人工金标准'}。</p>`;
+  $("evidence-links").innerHTML=data.evidence.map(e=>`<a href="${safe(e.url)}" target="_blank" rel="noopener noreferrer"><span>${safe(e.label)}</span><span>↗</span></a>`).join("");
+  $("limitations").innerHTML=data.limitations.map(x=>`<li>${safe(x)}</li>`).join("");
+
   const runStates={queued:"排队中",running:"记录未结束",passed:"通过",different:"产物不同",
                    failed:"失败",failed_preflight:"输入核验失败",record_changed:"运行记录已变化"};
   const rerunSelect=$("rerun-select"),rerunButton=$("rerun-button"),rerunStatus=$("rerun-status");

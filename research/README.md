@@ -416,7 +416,7 @@ firecrawl scrape "https://www.baostock.com/mainContent?file=pythonAPI.md" -o .fi
 
 ### 本地研究工作台与受控重跑
 
-工作台对 12 项固定运行再次校验输入、代码和输出，再从事件、预测、成交活动与 Agent 回放结果中按白名单抽取汇总。原始问答、个人路径和完整数据库不会写进页面；页面提供事件口径、回放时期与股票筛选、核验状态和公开证据链接。
+工作台对 12 项固定运行再次校验输入、代码和输出，再从事件、预测、成交活动与 Agent 回放结果中按白名单抽取汇总。原始问答、个人路径和完整数据库不会写进页面；页面提供事件口径、回放时期与股票筛选、12 项运行的 27 份产物名称及比较状态、核验状态和公开证据链接。
 
 ```powershell
 & $py -m research.workbench.build --output-dir research_outputs/workbench_controlled_2020
