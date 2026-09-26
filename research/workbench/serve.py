@@ -15,7 +15,7 @@ from .run import CONFIG, DEFAULT_OUTPUT_ROOT, ROOT, available_runs, read_public_
 
 DEFAULT_SITE = ROOT / "research_outputs/workbench_controlled_2020"
 ASSET_TYPES = {"index.html": "text/html", "app.js": "text/javascript",
-               "data.js": "text/javascript", "style.css": "text/css"}
+               "data.js": "text/javascript", "style.css": "text/css", "report.md": "text/markdown"}
 
 
 def validate_site(site_dir: Path) -> None:

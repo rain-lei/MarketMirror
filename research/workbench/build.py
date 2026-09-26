@@ -164,6 +164,42 @@ def collect_data() -> dict[str, Any]:
     return summary
 
 
+def render_report(data: dict[str, Any]) -> str:
+    """Render the same whitelisted summary used by the browser into Markdown."""
+    overview = data["overview"]
+    role_labels = {"aggressive": "激进型", "conservative": "保守型", "institutional": "机构型"}
+    lines = ["# MarketMirror 研究摘要报告", "", data["context"], "",
+             "> 本文件由已通过本机完整性核验的摘要生成；它不包含问答原文、个人路径或完整数据库。", "",
+             "## 研究概况", "",
+             f"- 问答来源行：{overview['question_rows']:,}",
+             f"- 来源股票代码：{overview['stocks']:,}",
+             f"- 行情交易日：{overview['market_sessions']}",
+             f"- 固定运行核验：{overview['integrity_passed']}/{overview['run_total']}",
+             f"- 独立重跑：{overview['reexecution_passed']}/{overview['run_total']}", "",
+             "## 历史事件窗口", "",
+             "| 事件口径 | 股票 | 对齐日 | CAR |", "|---|---:|---|---:|"]
+    for row in data["events"]:
+        lines.append(f"| {row['event_id']} | {row['stock_code']} | {row['event_date']} | {row['car']:.4%} |")
+    prediction = data["prediction"]
+    lines += ["", "## 文本增量预测", "",
+              f"测试预测 {prediction['rows']} 条；纯行情 MAE {prediction['market_mae']:.4%}，行情加文本 MAE {prediction['text_mae']:.4%}。",
+              f"配对 MAE 差值（文本 − 行情）{prediction['paired_difference']:.4%}，近似 95% 区间 [{prediction['interval_95'][0]:.4%}, {prediction['interval_95'][1]:.4%}]。", "",
+              "## Agent 规则回放", "",
+              "| 时期 | 股票 | 角色 | 市场信号 | 零信号 | 买入持有 | 最大回撤 | 交易 |", "|---|---:|---|---:|---:|---:|---:|---:|"]
+    for row in data["replays"]:
+        lines.append(f"| {row['period']} | {row['stock_code']} | {role_labels.get(row['role'], row['role'])} | {row['signal_multiple']:.3f} | {row['control_multiple']:.3f} | {row['buyhold_multiple']:.3f} | {row['max_drawdown']:.2%} | {row['trades']} |")
+    lines += ["", "## 运行核验", "", "| 运行 | 完整性 | 重跑 | 哈希检查 | 比较产物 |", "|---|---|---|---:|---:|"]
+    for row in data["runs"]:
+        lines.append(f"| {row['id']} | {row['integrity']} | {row['reexecution']} | {row['hash_checks']} | {row['compared_artifacts']} |")
+    semantic = data["semantic"]
+    lines += ["", "## 语义审核状态", "", f"样本 {semantic['items']} 条；双人完成 {semantic['dual_reviewed']} 条；待审 {semantic['pending']} 条；分歧 {semantic['conflicts']} 条；状态 `{semantic['status']}`。", "",
+              "## 公开证据", ""]
+    lines.extend(f"- [{item['label']}]({item['url']})" for item in data["evidence"])
+    lines += ["", "## 研究限制", ""]
+    lines.extend(f"- {item}" for item in data["limitations"])
+    return "\n".join(lines) + "\n"
+
+
 def build_workbench(output_dir: Path) -> dict[str, Any]:
     output_dir = output_dir.resolve()
     if output_dir.exists() and any(output_dir.iterdir()):
@@ -176,6 +212,7 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
             shutil.copyfile(ASSETS / name, staging / name)
         payload = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
         (staging / "data.js").write_text("window.MARKETMIRROR_DATA = " + payload + ";\n", encoding="utf-8")
+        (staging / "report.md").write_text(render_report(data), encoding="utf-8")
         manifest = {"pipeline_version": VERSION, "generated_at": datetime.now(timezone.utc).isoformat(),
                     "integrity_catalog_sha256": file_sha256(CONFIG),
                     "source_reports": {name: file_sha256(path) for name, path in {

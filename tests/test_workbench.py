@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 from research.data_pipeline.provenance import file_sha256
 from research.workbench import build as workbench_build
-from research.workbench.build import validate_public_payload
+from research.workbench.build import render_report, validate_public_payload
 from research.workbench.run import CONFIG, read_public_job, run_selected, selected_config
 from research.workbench.serve import create_server, validate_site
 
@@ -25,6 +25,26 @@ class WorkbenchPayloadTest(unittest.TestCase):
                         {"value": "wxid_private_identifier"}):
             with self.subTest(payload=payload), self.assertRaisesRegex(ValueError, "private"):
                 validate_public_payload(payload)
+
+    def test_report_renders_only_summary_fields(self):
+        report = render_report({
+            "context": "summary",
+            "overview": {"question_rows": 1, "stocks": 2, "market_sessions": 3,
+                         "integrity_passed": 1, "reexecution_passed": 1, "run_total": 1},
+            "events": [{"event_id": "event", "stock_code": "000001", "event_date": "2020-01-01", "car": 0.01}],
+            "prediction": {"rows": 1, "market_mae": 0.02, "text_mae": 0.01, "paired_difference": -0.01,
+                           "interval_95": [-0.02, 0.01]},
+            "replays": [{"period": "Q1", "stock_code": "000001", "role": "role", "signal_multiple": 1.0,
+                         "control_multiple": 1.0, "buyhold_multiple": 1.0, "max_drawdown": 0.1, "trades": 1}],
+            "runs": [{"id": "run", "integrity": "passed", "reexecution": "equivalent", "hash_checks": 2,
+                      "compared_artifacts": 1}],
+            "semantic": {"items": 1, "dual_reviewed": 0, "pending": 1, "conflicts": 0, "status": "no_dual_review"},
+            "evidence": [{"label": "source", "url": "https://example.org/source"}],
+            "limitations": ["limit"],
+        })
+        self.assertIn("# MarketMirror 研究摘要报告", report)
+        self.assertNotIn("question_text", report)
+        self.assertNotIn("wxid_", report)
 
     def test_selected_run_uses_only_catalog_input(self):
         selected = selected_config(CONFIG, "observed_event")
@@ -67,7 +87,7 @@ class WorkbenchPayloadTest(unittest.TestCase):
             site = root / "site"
             site.mkdir()
             artifacts = {}
-            for name in ("index.html", "app.js", "data.js", "style.css"):
+            for name in ("index.html", "app.js", "data.js", "style.css", "report.md"):
                 (site / name).write_text(name, encoding="utf-8")
                 artifacts[name] = {"sha256": file_sha256(site / name)}
             (site / "workbench_manifest.json").write_text(json.dumps({
