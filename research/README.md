@@ -387,3 +387,14 @@ firecrawl scrape "https://www.baostock.com/mainContent?file=pythonAPI.md" -o .fi
 ```powershell
 & $py -m unittest discover -s tests -v
 ```
+
+### 跨实验产物完整性核验
+
+`configs/integrity_catalog_2020.json` 在版本控制中固定 12 份本地运行清单的 SHA-256。校验器先比对清单本身，再检查清单声明的输入、代码和输出文件，包括原始 Excel、统一 SQLite、市场数据、事件、文本对照、合成压力和两段历史规则回放。当前共核验 136 个文件引用，输出逐项报告和审计清单：
+
+```powershell
+& $py -m research.registry.verify_catalog research/configs/integrity_catalog_2020.json `
+  --output-dir research_outputs/integrity_catalog_2020
+```
+
+清单中的原始来源路径指向本机文件；迁移环境时需重新取得原始资料并核对哈希。校验通过只表示当前文件字节与**版本控制中固定的清单**一致，不表示已重新运行实验，也不验证数据含义、信息可见时刻或统计结论。目录审计是 M6 工作台的第一步，尚无交互界面。
