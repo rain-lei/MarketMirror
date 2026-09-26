@@ -398,3 +398,14 @@ firecrawl scrape "https://www.baostock.com/mainContent?file=pythonAPI.md" -o .fi
 ```
 
 清单中的原始来源路径指向本机文件；迁移环境时需重新取得原始资料并核对哈希。校验通过只表示当前文件字节与**版本控制中固定的清单**一致，不表示已重新运行实验，也不验证数据含义、信息可见时刻或统计结论。目录审计是 M6 工作台的第一步，尚无交互界面。
+
+### 从输入重新执行并比较结果
+
+在完整性核验之外，`registry/reexecute.py` 会使用固定的原始输入和配置，在临时目录实际重跑目录中的 12 项研究运行。统一数据库、市场导入、事件研究、成交活动、文本预测、合成压力、语义抽样和历史规则回放均已纳入：
+
+```powershell
+& $py -m research.registry.reexecute research/configs/reexecution_catalog_2020.json `
+  --output-dir research_outputs/reexecution_catalog_2020
+```
+
+本机实测 12/12 项通过，共 27 份声明产物：25 份逐字节一致；事件结果 JSON 只忽略顶层 `generated_at`，其余字段精确一致；统一 SQLite 原始字节因内部构建时间不同而变化，比较器核对完整数据库、表结构和按主键排序的全部表行，仅忽略 `dataset_metadata.generated_at` 一行。重跑约需数分钟，临时数据库在核对后清理。该门槛验证**当前机器上的再生能力**，仍不确认来源文件的经济含义、历史公开时刻、可交易成交假设或 Agent 行为校准；其他未列入目录的产物也不在此结论内。
