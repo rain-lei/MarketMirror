@@ -21,7 +21,7 @@ from .signal_validation import load_pack
 from ..data_pipeline.provenance import file_sha256
 
 
-VERSION = "semantic-model-runner-v1"
+VERSION = "semantic-model-runner-v2"
 DEFAULT_BASE_URL = "http://aigw.dlut.edu.cn/v1"
 DEFAULT_MODEL = "DeepSeek-V4-Flash-0731-W8A8"
 PROMPT_PATH = Path(__file__).with_name("PROMPT_V1.md")
@@ -39,6 +39,25 @@ def normalize_base_url(value: str) -> str:
 
 def endpoint_url(base_url: str) -> str:
     return normalize_base_url(base_url) + "/chat/completions"
+
+
+def list_models(base_url: str, api_key: str, timeout: float = 20.0) -> list[str]:
+    """Read model IDs from the gateway without sending any source text."""
+    if not api_key.strip():
+        raise ValueError("MARKETMIRROR_LLM_API_KEY is empty")
+    request = urllib.request.Request(
+        normalize_base_url(base_url) + "/models",
+        headers={"Authorization": f"Bearer {api_key}"}, method="GET")
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, json.JSONDecodeError) as error:
+        status = f" HTTP {error.code}" if isinstance(error, urllib.error.HTTPError) else ""
+        raise RuntimeError(f"model listing failed{status}: {type(error).__name__}") from error
+    data = payload.get("data") if isinstance(payload, dict) else None
+    if not isinstance(data, list):
+        raise RuntimeError("model listing response has no data array")
+    return sorted({str(row["id"]) for row in data if isinstance(row, dict) and row.get("id")})
 
 
 def _json_text(value: Any) -> str:
@@ -139,8 +158,9 @@ def run_model(pack_dir: Path, output_dir: Path, api_key: str, base_url: str = DE
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("pack_dir", type=Path)
-    parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("pack_dir", type=Path, nargs="?")
+    parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--check", action="store_true", help="only list gateway models; do not upload annotation text")
     parser.add_argument("--base-url", default=os.getenv("MARKETMIRROR_LLM_BASE_URL", DEFAULT_BASE_URL))
     parser.add_argument("--model", default=os.getenv("MARKETMIRROR_LLM_MODEL", DEFAULT_MODEL))
     parser.add_argument("--limit", type=int)
@@ -149,6 +169,14 @@ def main() -> None:
     parser.add_argument("--temperature", type=float, default=0.0)
     args = parser.parse_args()
     key = os.getenv("MARKETMIRROR_LLM_API_KEY", "")
+    if args.check:
+        models = list_models(args.base_url, key, args.timeout)
+        result = {"base_url": normalize_base_url(args.base_url), "requested_model": args.model,
+                  "available": args.model in models, "model_count": len(models), "models": models}
+        print(json.dumps(result, ensure_ascii=False))
+        return
+    if args.pack_dir is None or args.output_dir is None:
+        parser.error("pack_dir and --output-dir are required unless --check is used")
     result = run_model(args.pack_dir, args.output_dir, key, args.base_url, args.model,
                        args.limit, args.timeout, args.retries, args.temperature)
     print(json.dumps({key: result[key] for key in ("model_id", "requested_rows", "request_failures")}, ensure_ascii=False))

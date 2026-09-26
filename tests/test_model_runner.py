@@ -4,10 +4,28 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from research.semantic.run_model import run_model
+from research.semantic.run_model import list_models, run_model
 
 
 class ModelRunnerTest(unittest.TestCase):
+    def test_model_listing_is_read_only_and_returns_ids(self):
+        class Response:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def read(self):
+                return b'{"data":[{"id":"DeepSeek-V4-Flash-0731-W8A8"},{"id":"other"}]}'
+
+        with patch("research.semantic.run_model.urllib.request.urlopen", return_value=Response()) as opener:
+            models = list_models("http://aigw.dlut.edu.cn", "secret")
+        self.assertEqual(models, ["DeepSeek-V4-Flash-0731-W8A8", "other"])
+        request = opener.call_args.args[0]
+        self.assertEqual(request.full_url, "http://aigw.dlut.edu.cn/v1/models")
+        self.assertEqual(request.get_header("Authorization"), "Bearer secret")
+
     def test_runner_archives_source_bound_raw_response_without_api_key(self):
         item = {"item_id": "item-1", "source_text_sha256": "a" * 64,
                 "segments": [{"source": "question", "text": "测试问题"}]}

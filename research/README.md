@@ -403,6 +403,12 @@ firecrawl scrape "https://www.baostock.com/mainContent?file=pythonAPI.md" -o .fi
 $env:MARKETMIRROR_LLM_API_KEY = "<你的网关密钥>"
 $env:MARKETMIRROR_LLM_BASE_URL = "http://aigw.dlut.edu.cn/v1"
 $env:MARKETMIRROR_LLM_MODEL = "DeepSeek-V4-Flash-0731-W8A8"
+& $py -m research.semantic.run_model --check
+```
+
+`--check` 只读取网关的 `/v1/models`，不会上传任何问答文本。确认 `available=true` 后再运行样本：
+
+```powershell
 & $py -m research.semantic.run_model research_outputs/semantic_annotation_pilot_2020 `
   --output-dir research_outputs/semantic_model_deepseek_v1 --limit 2
 ```
