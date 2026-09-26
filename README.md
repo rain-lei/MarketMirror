@@ -30,7 +30,7 @@ python -m research.workbench.build --output-dir research_outputs/workbench_contr
 python -m research.workbench.serve --site-dir research_outputs/workbench_controlled_2020
 ```
 
-页面一次只能重跑固定清单中的一项；页面会显示并校验该运行的固定数据版本和执行版本，每次保存所选配置、版本、运行状态、产物比较和哈希。页面还会展示带来源哈希的财务字段口径字典，把可观察结构和未核实经济含义分开。页面顶部的“下载摘要报告”链接与图表使用同一份白名单汇总生成 `report.md`，可随运行目录归档。也可运行 `python -m research.workbench.run observed_event`。页面上的事件、股票筛选只改变摘要展示，不会修改实验参数；自定义数据或模型版本仍未接入。生成目录须为新空目录，已有页面可直接使用。
+页面一次只能重跑固定清单中的一项；页面会显示并校验该运行的固定数据版本和执行版本，每次保存所选配置、版本、运行状态、产物比较和哈希。页面还会展示带来源哈希的财务字段口径字典，把可观察结构和未核实经济含义分开；如果存在 DeepSeek 运行目录，还会显示模型运行完整性、解析状态和评分门槛。页面顶部的“下载摘要报告”链接与图表使用同一份白名单汇总生成 `report.md`，可随运行目录归档。也可运行 `python -m research.workbench.run observed_event`。页面上的事件、股票筛选只改变摘要展示，不会修改实验参数；自定义数据或模型版本仍未接入。生成目录须为新空目录，已有页面可直接使用。
 
 生成工作台前需具备本机原始来源和 `research_outputs/` 下的运行产物。该目录被 Git 忽略；克隆仓库本身不附带原始 Excel、问答文本或市场下载。完整构建命令见 [研究操作说明](research/README.md)。
 

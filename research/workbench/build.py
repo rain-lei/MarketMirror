@@ -13,8 +13,9 @@ from typing import Any
 
 from ..data_pipeline.provenance import file_sha256
 from ..registry.verify_catalog import audit_run, load_catalog
+from ..semantic.audit_model_run import audit_model_run
 
-VERSION = "research-workbench-v2"
+VERSION = "research-workbench-v3"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 OUTPUTS = ROOT / "research_outputs"
@@ -91,6 +92,25 @@ def checked_financial_dictionary() -> dict[str, Any]:
     return dictionary
 
 
+def checked_model_run() -> dict[str, Any]:
+    """Expose only metadata from an optional DeepSeek semantic run."""
+    pack_dir = OUTPUTS / "semantic_annotation_pilot_2020"
+    raw_dir = OUTPUTS / "semantic_model_deepseek_v1"
+    pack_manifest = json.loads((pack_dir / "annotation_manifest.json").read_text(encoding="utf-8"))
+    pack_items = int(pack_manifest.get("counts", {}).get("items", 0))
+    if not raw_dir.exists():
+        return {"status": "not_run", "model_id": None,
+                "scope": {"pack_items": pack_items, "requested_rows": 0, "full_pack_requested": False},
+                "raw": {"rows": 0, "remaining_rows": pack_items, "request_failures": 0, "status": "not_run"},
+                "normalized": {"status": "not_provided"},
+                "scoring": {"status": "unavailable_without_adjudicated_gold", "accuracy_claim_allowed": False}}
+    normalized_dir = OUTPUTS / "semantic_model_deepseek_v1_normalized"
+    result = audit_model_run(pack_dir, raw_dir, normalized_dir if normalized_dir.exists() else None)
+    result["status"] = "audited"
+    validate_public_payload(result)
+    return result
+
+
 def collect_data() -> dict[str, Any]:
     pinned = load_catalog(CONFIG)
     cache: dict[Path, str] = {}
@@ -114,6 +134,7 @@ def collect_data() -> dict[str, Any]:
         raise ValueError("stored audit or reexecution run statuses do not match the pinned catalog")
     reviewed = checked_semantic_review()
     financial_dictionary = checked_financial_dictionary()
+    model_run = checked_model_run()
     manifests = {run["run_id"]: (CONFIG.parent / run["manifest"]).resolve() for run in pinned}
 
     def artifact(run_id: str, name: str) -> dict[str, Any]:
@@ -171,6 +192,7 @@ def collect_data() -> dict[str, Any]:
                      "pending": reviewed["pending_items"], "conflicts": reviewed["conflict_items"],
                      "gold_ready": reviewed["gold_ready"], "status": reviewed["status"]},
         "financial_dictionary": financial_dictionary,
+        "model_run": model_run,
         "evidence": [{"label": "新华社：武汉通告", "url": "https://www.xinhuanet.com/politics/2020-01/23/c_1125495557.htm"},
                      {"label": "上交所：春节休市调整", "url": "http://www.sse.com.cn/disclosure/announcement/general/c/c_20200127_4991582.shtml"},
                      {"label": "BaoStock API 文档", "url": "https://www.baostock.com/mainContent?file=pythonAPI.md"}],
@@ -242,6 +264,15 @@ def render_report(data: dict[str, Any]) -> str:
             lines.append(f"| {item['field_name'].replace('|', '/')} | {item['role']} | {rate} | {item['numeric_count']:,} | {item['non_numeric_count']:,} | {value_range} | `{item['verification_status']}` |")
         lines += ["", "### 尚未确认", ""]
         lines.extend(f"- `{item['key']}`：{item['question']}（{item['status']}）" for item in financial["unresolved_semantics"])
+    model_run = data.get("model_run")
+    if model_run:
+        lines += ["", "## LLM 运行状态", ""]
+        if model_run.get("status") == "not_run":
+            lines.append("尚未执行 DeepSeek 语义抽取；没有模型输出或准确率结论。")
+        else:
+            raw = model_run["raw"]
+            normalized = model_run["normalized"]
+            lines.append(f"模型 `{model_run.get('model_id')}`；原始响应 {raw['rows']}/{model_run['scope']['requested_rows']} 条，失败 {raw['request_failures']} 条；标准化状态 `{normalized['status']}`；`accuracy_claim_allowed=false`。")
     lines += ["", "## 研究限制", ""]
     lines.extend(f"- {item}" for item in data["limitations"])
     return "\n".join(lines) + "\n"
@@ -260,14 +291,18 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
         payload = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
         (staging / "data.js").write_text("window.MARKETMIRROR_DATA = " + payload + ";\n", encoding="utf-8")
         (staging / "report.md").write_text(render_report(data), encoding="utf-8")
+        source_reports = {name: file_sha256(path) for name, path in {
+            "integrity_results": OUTPUTS / "integrity_catalog_2020/integrity_results.json",
+            "reexecution_results": OUTPUTS / "reexecution_catalog_2020/reexecution_results.json",
+            "semantic_comparison": OUTPUTS / "semantic_review_comparison_pilot_2020/comparison_results.json",
+            "financial_quality_report": OUTPUTS / "financial_2020/financial_quality_report.json",
+            "financial_dictionary": OUTPUTS / "financial_2020/field_dictionary.json"}.items()}
+        model_manifest = OUTPUTS / "semantic_model_deepseek_v1/model_run_manifest.json"
+        if model_manifest.exists():
+            source_reports["semantic_model_manifest"] = file_sha256(model_manifest)
         manifest = {"pipeline_version": VERSION, "generated_at": datetime.now(timezone.utc).isoformat(),
                     "integrity_catalog_sha256": file_sha256(CONFIG),
-                    "source_reports": {name: file_sha256(path) for name, path in {
-                        "integrity_results": OUTPUTS / "integrity_catalog_2020/integrity_results.json",
-                        "reexecution_results": OUTPUTS / "reexecution_catalog_2020/reexecution_results.json",
-                        "semantic_comparison": OUTPUTS / "semantic_review_comparison_pilot_2020/comparison_results.json",
-                        "financial_quality_report": OUTPUTS / "financial_2020/financial_quality_report.json",
-                        "financial_dictionary": OUTPUTS / "financial_2020/field_dictionary.json"}.items()},
+                    "source_reports": source_reports,
                     "code_sha256": file_sha256(Path(__file__)),
                     "artifacts": {p.name: {"sha256": file_sha256(p)} for p in staging.iterdir()}}
         (staging / "workbench_manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
