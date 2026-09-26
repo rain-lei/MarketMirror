@@ -61,6 +61,16 @@ $sourceDir = "<请填写三份 Excel 所在的本地目录>"
 来源文件 SHA-256、字段清单 SHA-256、Excel 行号和记录计数用于追溯。重复执行不会追加重复记录。
 
 财务单位、变换和实际报告期尚未确认，所以所有快照保持 `unverified`，不用于财务比率或预测特征。
+
+可以把提取报告渲染为便于人工核对的字段字典：
+
+```powershell
+& $py -m research.data_pipeline.render_financial_dictionary `
+  research_outputs/financial_2020/financial_quality_report.json `
+  --output-dir research_outputs/financial_2020
+```
+
+这会生成 `field_dictionary.json` 和 `field_dictionary.md`。字典列出 68 个字段的层级、缺失率和数值形态，同时单独列出报告期、公告时间、单位、变换、报表类型以及 `p/p/e` 的未确认项。它是结构审计材料，不会把字段提升为 `verified`，也不包含本地源文件路径或问答正文。
 公司季度问答特征在整个季度结束后才可用；不能用于预测同一季度内的早期事件。公司标签和来源财务季度提示也不是实时可用输入。
 
 正式财务 schema 要求提供单位、变换说明、公告时间和 `verification_status=verified`；提取结果保存在单独的待核对 SQLite 表里，不会直接填入该 schema。

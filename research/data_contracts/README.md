@@ -17,6 +17,8 @@
 `financial_snapshot` 存储去重后的原始财务值；`source_row_reference` 保留来源工作表、Excel 行号、原始时间、标签及 `p`、`p/e`，通过 `snapshot_id` 回溯。
 `field_dictionary` 存储每列的缺失率、数值范围和待确认口径，`run_metadata` 存储文件哈希及处理版本。
 
+`data_pipeline.render_financial_dictionary` 可从 `financial_quality_report.json` 生成脱敏的 `field_dictionary.json` 和 `field_dictionary.md`，将观察到的结构统计与尚未核实的经济含义分开呈现。
+
 只有拿到报告年度、来源季度含义、指标单位、计算公式及公告时间后，才能写入正式 `financial_quarter` 表。当前命令不会通过提问日期或文件名自动生成财报日期。
 
 `label_company_violation` 是公司级属性。它不能在没有重新定义标签的情况下作为问答级标签使用。
