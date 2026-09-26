@@ -1,0 +1,31 @@
+{
+  "run_id": "wuhan_2020_observed_return_path_agent_diagnostic",
+  "data_kind": "observed",
+  "market_manifest": "../../research_outputs/observed_2020/prepared/market_manifest.json",
+  "stock_codes": ["000001", "000002", "600519"],
+  "start_date": "2020-01-02",
+  "end_date": "2020-03-31",
+  "momentum_sessions": 5,
+  "volatility_sessions": 20,
+  "transaction_cost_rate": 0.001,
+  "agents": [
+    {
+      "name": "aggressive", "role": "aggressive", "initial_cash": 100000.0,
+      "base_weight": 0.3, "max_weight": 1.0, "max_turnover": 0.4, "risk_budget": 0.04,
+      "market_sensitivity": 0.7, "text_sensitivity": 0.9, "uncertainty_aversion": 0.1,
+      "confirmation_steps": 1, "rebalance_interval": 1, "min_trade_weight": 0.01
+    },
+    {
+      "name": "conservative", "role": "conservative", "initial_cash": 100000.0,
+      "base_weight": 0.2, "max_weight": 0.55, "max_turnover": 0.12, "risk_budget": 0.008,
+      "market_sensitivity": 0.3, "text_sensitivity": 0.25, "uncertainty_aversion": 0.35,
+      "confirmation_steps": 2, "rebalance_interval": 1, "min_trade_weight": 0.02
+    },
+    {
+      "name": "institutional", "role": "institutional", "initial_cash": 100000.0,
+      "base_weight": 0.35, "max_weight": 0.8, "max_turnover": 0.15, "risk_budget": 0.016,
+      "market_sensitivity": 0.5, "text_sensitivity": 0.5, "uncertainty_aversion": 0.2,
+      "confirmation_steps": 1, "rebalance_interval": 3, "min_trade_weight": 0.015
+    }
+  ]
+}
