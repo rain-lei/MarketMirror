@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "marketmirror://schema/semantic_signal",
+  "title": "A structured semantic signal for one visible text item",
+  "type": "object",
+  "required": ["item_id", "source_text_sha256", "events"],
+  "additionalProperties": false,
+  "properties": {
+    "item_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["event_type", "direction", "affected_industries", "horizon", "intensity", "uncertainty", "evidence_spans"],
+        "additionalProperties": false,
+        "properties": {
+          "event_type": {"enum": ["regulation", "liquidity", "earnings", "governance", "other"]},
+          "direction": {"enum": ["positive", "negative", "neutral", "unknown"]},
+          "affected_industries": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+          "horizon": {"enum": ["short", "medium", "long", "unknown"]},
+          "intensity": {"type": "number", "minimum": 0, "maximum": 1},
+          "uncertainty": {"type": "number", "minimum": 0, "maximum": 1},
+          "evidence_spans": {
+            "type": "array", "minItems": 1,
+            "items": {
+              "type": "object", "required": ["source", "start", "end", "quote"], "additionalProperties": false,
+              "properties": {
+                "source": {"enum": ["question", "reply"]},
+                "start": {"type": "integer", "minimum": 0},
+                "end": {"type": "integer", "minimum": 1},
+                "quote": {"type": "string", "minLength": 1}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

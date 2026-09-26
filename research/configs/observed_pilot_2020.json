@@ -1,0 +1,31 @@
+{
+  "run_id": "wuhan_2020_three_stock_alignment_pilot",
+  "market_manifest": "../../research_outputs/observed_2020/prepared/market_manifest.json",
+  "data_kind": "observed",
+  "evidence_manifest": "../../research_outputs/observed_2020/evidence/evidence_manifest.json",
+  "stock_codes": ["000001", "000002", "600519"],
+  "windows": {
+    "estimation_window": 120,
+    "pre_event_gap": 5,
+    "window_before": 3,
+    "window_after": 5
+  },
+  "events": [
+    {
+      "event_id": "wuhan_date_only_conservative",
+      "event_date": "2020-01-23",
+      "visible_date": "2020-01-23",
+      "event_type": "epidemic_policy_date_only_alignment",
+      "evidence_source": "https://www.xinhuanet.com/politics/2020-01/23/c_1125495557.htm",
+      "description": "通告日期为1月23日，报道说明凌晨发布，但缺少精确首次公开时刻。此变体只使用发布日期，按次日可见的保守规则对齐。与另一个变体是同一事件的敏感性比较，不能当作两个独立事件。"
+    },
+    {
+      "event_id": "wuhan_effective_time_upper_bound",
+      "event_date": "2020-01-23",
+      "visible_at": "2020-01-23T10:00:00+08:00",
+      "event_type": "epidemic_policy_effective_time_proxy",
+      "evidence_source": "https://www.xinhuanet.com/politics/2020-01/23/c_1125495557.htm",
+      "description": "10时是生效时间，首次发布时间只知在凌晨。这里将生效时间作为信息已公开的上界代理，明确不是观测到的首次公开时刻。此变体用于日频对齐敏感性检查，与日期保守变体属于同一事件。"
+    }
+  ]
+}

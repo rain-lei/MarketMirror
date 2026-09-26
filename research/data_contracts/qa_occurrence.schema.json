@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "marketmirror://schema/qa_occurrence",
+  "title": "Traced Q&A source occurrence",
+  "type": "object",
+  "required": ["qa_id", "content_id", "source_file_hash", "source_sheet", "source_row", "question_eligible", "reply_eligible", "quality_flags_json"],
+  "properties": {
+    "qa_id": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "content_id": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "source_file_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "source_sheet": {"type": "string", "minLength": 1},
+    "source_row": {"type": "integer", "minimum": 2},
+    "company_id": {"type": ["string", "null"], "pattern": "^cn-stock-code:[0-9]{6}$"},
+    "stock_code": {"type": ["string", "null"], "pattern": "^[0-9]{6}$"},
+    "company_name": {"type": ["string", "null"]},
+    "source": {"type": ["string", "null"]},
+    "user_type": {"type": ["string", "null"]},
+    "user_name": {"type": ["string", "null"]},
+    "question_available_at": {"type": ["string", "null"], "format": "date-time"},
+    "question_text": {"type": ["string", "null"]},
+    "question_eligible": {"type": "integer", "enum": [0, 1]},
+    "reply_available_at": {"type": ["string", "null"], "format": "date-time", "description": "Source timestamp proxy, or next-midnight conservative bound for date-only replies; inspect quality flags and raw context."},
+    "reply_text": {"type": ["string", "null"]},
+    "reply_eligible": {"type": "integer", "enum": [0, 1]},
+    "snapshot_id": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "quality_flags_json": {"type": "string", "description": "JSON array of audited quality flags; raw context is stored separately."}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,48 @@
+{
+  "run_id": "illustrative_agent_mechanisms_v1",
+  "data_kind": "synthetic",
+  "price_start": 100.0,
+  "liquidity_notional": 100000.0,
+  "impact_coefficient": 0.015,
+  "max_impact": 0.02,
+  "transaction_cost_rate": 0.001,
+  "use_text": true,
+  "agents": [
+    {
+      "name": "aggressive", "role": "aggressive", "initial_cash": 100000.0,
+      "base_weight": 0.3, "max_weight": 1.0, "max_turnover": 0.4, "risk_budget": 0.04,
+      "market_sensitivity": 0.7, "text_sensitivity": 0.9, "uncertainty_aversion": 0.1,
+      "confirmation_steps": 1, "rebalance_interval": 1, "min_trade_weight": 0.01
+    },
+    {
+      "name": "conservative", "role": "conservative", "initial_cash": 100000.0,
+      "base_weight": 0.2, "max_weight": 0.55, "max_turnover": 0.12, "risk_budget": 0.008,
+      "market_sensitivity": 0.3, "text_sensitivity": 0.25, "uncertainty_aversion": 0.35,
+      "confirmation_steps": 2, "rebalance_interval": 1, "min_trade_weight": 0.02
+    },
+    {
+      "name": "institutional", "role": "institutional", "initial_cash": 100000.0,
+      "base_weight": 0.35, "max_weight": 0.8, "max_turnover": 0.15, "risk_budget": 0.016,
+      "market_sensitivity": 0.5, "text_sensitivity": 0.5, "uncertainty_aversion": 0.2,
+      "confirmation_steps": 1, "rebalance_interval": 3, "min_trade_weight": 0.015
+    }
+  ],
+  "steps": [
+    {"market_signal": 0.0, "text_signal": 0.0, "uncertainty": 0.0, "estimated_volatility": 0.02, "exogenous_return": 0.001, "evidence_id": "neutral-00"},
+    {"market_signal": 0.0, "text_signal": 0.0, "uncertainty": 0.0, "estimated_volatility": 0.02, "exogenous_return": -0.001, "evidence_id": "neutral-01"},
+    {"market_signal": 0.0, "text_signal": 0.0, "uncertainty": 0.0, "estimated_volatility": 0.02, "exogenous_return": 0.002, "evidence_id": "neutral-02"},
+    {"market_signal": 0.25, "text_signal": 0.8, "uncertainty": 0.1, "estimated_volatility": 0.02, "exogenous_return": 0.003, "evidence_id": "positive-shock-03"},
+    {"market_signal": 0.25, "text_signal": 0.8, "uncertainty": 0.1, "estimated_volatility": 0.02, "exogenous_return": 0.004, "evidence_id": "positive-shock-04"},
+    {"market_signal": 0.25, "text_signal": 0.8, "uncertainty": 0.1, "estimated_volatility": 0.02, "exogenous_return": 0.002, "evidence_id": "positive-shock-05"},
+    {"market_signal": 0.05, "text_signal": 0.0, "uncertainty": 0.1, "estimated_volatility": 0.02, "exogenous_return": -0.001, "evidence_id": "cooldown-06"},
+    {"market_signal": 0.0, "text_signal": 0.0, "uncertainty": 0.1, "estimated_volatility": 0.02, "exogenous_return": 0.001, "evidence_id": "cooldown-07"},
+    {"market_signal": -0.2, "text_signal": -0.9, "uncertainty": 0.7, "estimated_volatility": 0.05, "exogenous_return": -0.015, "evidence_id": "negative-shock-08"},
+    {"market_signal": -0.2, "text_signal": -0.9, "uncertainty": 0.7, "estimated_volatility": 0.05, "exogenous_return": -0.02, "evidence_id": "negative-shock-09"},
+    {"market_signal": -0.2, "text_signal": -0.9, "uncertainty": 0.7, "estimated_volatility": 0.05, "exogenous_return": -0.01, "evidence_id": "negative-shock-10"},
+    {"market_signal": -0.05, "text_signal": 0.0, "uncertainty": 0.5, "estimated_volatility": 0.04, "exogenous_return": 0.008, "evidence_id": "stabilize-11"},
+    {"market_signal": 0.0, "text_signal": 0.0, "uncertainty": 0.2, "estimated_volatility": 0.03, "exogenous_return": 0.004, "evidence_id": "stabilize-12"},
+    {"market_signal": 0.05, "text_signal": 0.2, "uncertainty": 0.1, "estimated_volatility": 0.025, "exogenous_return": 0.003, "evidence_id": "recovery-13"},
+    {"market_signal": 0.05, "text_signal": 0.2, "uncertainty": 0.1, "estimated_volatility": 0.025, "exogenous_return": 0.002, "evidence_id": "recovery-14"},
+    {"market_signal": 0.0, "text_signal": 0.0, "uncertainty": 0.1, "estimated_volatility": 0.02, "exogenous_return": 0.001, "evidence_id": "neutral-15"}
+  ]
+}

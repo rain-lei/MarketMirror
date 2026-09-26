@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "marketmirror://schema/market_activity",
+  "title": "Observed stock trading activity",
+  "type": "object",
+  "required": ["trade_date", "stock_code", "provider_symbol", "volume_shares", "amount_cny", "trading_status"],
+  "additionalProperties": false,
+  "properties": {
+    "trade_date": {"type": "string", "format": "date"},
+    "stock_code": {"type": "string", "pattern": "^[0-9]{6}$"},
+    "provider_symbol": {"type": "string", "pattern": "^(sh|sz)\\.[0-9]{6}$"},
+    "volume_shares": {"type": "integer", "minimum": 0},
+    "amount_cny": {"type": "number", "minimum": 0},
+    "trading_status": {"enum": ["trading", "suspended"]}
+  }
+}

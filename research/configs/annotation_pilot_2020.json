@@ -1,0 +1,10 @@
+{
+  "run_id": "semantic_annotation_pilot_2020",
+  "qa_database": "../../research_outputs/unified/dataset.sqlite",
+  "qa_source_sha256": "a3a1b0afa2cd13b25a56c89393178d93960cd8867a46a7c469fd567bf82ac812",
+  "visibility_window": {"start_date": "2020-01-01", "end_date": "2020-06-30"},
+  "seed": "marketmirror-semantic-pilot-v1",
+  "company_split_percent": {"train": 60, "validation": 20, "test": 20},
+  "per_stage_stratum_quota": {"train": 4, "validation": 2, "test": 2},
+  "selection_basis": "Purposeful keyword-stratified annotation sample, not a prevalence estimate; company-grouped split and explicit question/reply availability."
+}

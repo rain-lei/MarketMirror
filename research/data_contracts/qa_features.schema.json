@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "marketmirror://schema/qa_features",
+  "title": "MarketMirror company-period Q&A features",
+  "type": "object",
+  "required": ["period", "stock_code", "question_count"],
+  "properties": {
+    "period": {"type": "string", "pattern": "^[0-9]{4}-Q[1-4]$"},
+    "stock_code": {"type": "string", "pattern": "^[0-9]{6}$"},
+    "company_name": {"type": ["string", "null"]},
+    "question_count": {"type": "integer", "minimum": 1},
+    "unique_user_count": {"type": "integer", "minimum": 0},
+    "registered_user_count": {"type": "integer", "minimum": 0},
+    "browser_user_count": {"type": "integer", "minimum": 0},
+    "missing_user_type_count": {"type": "integer", "minimum": 0},
+    "question_length_mean": {"type": ["number", "null"]},
+    "question_length_min": {"type": ["integer", "null"]},
+    "question_length_max": {"type": ["integer", "null"]},
+    "fiscal_quarter_mode": {"type": ["string", "null"]},
+    "label_company_violation": {"type": ["string", "null"]},
+    "label_company_violation_consistent": {"type": "boolean"},
+    "post_event_replied_count": {"type": "integer", "minimum": 0},
+    "post_event_unreplied_count": {"type": "integer", "minimum": 0}
+  },
+  "additionalProperties": true
+}

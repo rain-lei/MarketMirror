@@ -1,0 +1,21 @@
+{
+  "run_id": "text_pilot_2020",
+  "data_kind": "observed",
+  "qa_database": "../../research_outputs/unified/dataset.sqlite",
+  "qa_source_sha256": "a3a1b0afa2cd13b25a56c89393178d93960cd8867a46a7c469fd567bf82ac812",
+  "qa_coverage": {
+    "start_date": "2020-01-01",
+    "end_date": "2020-12-31",
+    "basis": "Declared annual question coverage of the 2020 workbook; completeness and original publication logs remain unverified. Only this source is included."
+  },
+  "market_manifest": "../../research_outputs/text_pilot_2020/prepared/market_manifest.json",
+  "stock_codes": ["000001", "000063", "002594"],
+  "panel": {"start_date": "2020-02-03", "end_date": "2020-12-30", "text_window_days": 30, "market_window_sessions": 20},
+  "splits": {
+    "train": {"start_date": "2020-02-03", "end_date": "2020-06-30"},
+    "validation": {"start_date": "2020-07-01", "end_date": "2020-09-30"},
+    "test": {"start_date": "2020-10-01", "end_date": "2020-12-30"}
+  },
+  "ridge_lambdas": [0.0001, 0.001, 0.01, 0.1, 1, 10],
+  "bootstrap": {"seed": 20200926, "replicates": 2000, "block_sessions": 5}
+}

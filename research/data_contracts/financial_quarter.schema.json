@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "marketmirror://schema/financial_quarter",
+  "title": "MarketMirror quarterly financial metric",
+  "type": "object",
+  "required": ["company_id", "stock_code", "period_end", "published_at", "metric_name", "value", "unit", "transform_note", "source_file_hash", "verification_status"],
+  "properties": {
+    "company_id": {"type": "string"},
+    "stock_code": {"type": "string", "pattern": "^[0-9]{6}$"},
+    "company_name": {"type": ["string", "null"]},
+    "period_end": {"type": "string", "format": "date"},
+    "published_at": {"type": "string", "format": "date-time"},
+    "metric_name": {"type": "string"},
+    "value": {"type": ["number", "null"]},
+    "unit": {"type": "string", "minLength": 1},
+    "statement_type": {"type": ["string", "null"]},
+    "transform_note": {"type": "string", "minLength": 1},
+    "source_file_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "verification_status": {"const": "verified"}
+  },
+  "additionalProperties": false
+}
