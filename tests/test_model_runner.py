@@ -47,6 +47,30 @@ class ModelRunnerTest(unittest.TestCase):
             manifest = json.loads((root / "out" / "model_run_manifest.json").read_text(encoding="utf-8"))
             self.assertNotIn("secret", json.dumps(manifest, ensure_ascii=False))
 
+    def test_resume_only_requests_items_missing_from_existing_output(self):
+        items = {
+            f"item-{index}": {"item_id": f"item-{index}", "source_text_sha256": str(index) * 64,
+                               "segments": [{"source": "question", "text": f"问题 {index}"}]}
+            for index in (1, 2)
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pack = root / "pack"
+            pack.mkdir()
+            (pack / "annotation_manifest.json").write_text("{}", encoding="utf-8")
+            (pack / "annotation_items.jsonl").write_text("\n".join(json.dumps(item, ensure_ascii=False)
+                                                            for item in items.values()) + "\n", encoding="utf-8")
+            with patch("research.semantic.run_model.load_pack", return_value=(items, {"experiment_id": "exp-2"})), \
+                 patch("research.semantic.run_model.request_completion", return_value='{"events":[]}') as request:
+                run_model(pack, root / "out", "secret", limit=1)
+                request.reset_mock()
+                result = run_model(pack, root / "out", "secret", resume=True)
+            request.assert_called_once()
+            self.assertEqual(result["model_rows"], 2)
+            self.assertEqual(result["remaining_rows"], 0)
+            rows = [json.loads(line) for line in (root / "out" / "model_raw_outputs.jsonl").read_text(encoding="utf-8").splitlines()]
+            self.assertEqual([row["item_id"] for row in rows], ["item-1", "item-2"])
+
 
 if __name__ == "__main__":
     unittest.main()

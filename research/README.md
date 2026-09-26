@@ -415,6 +415,8 @@ $env:MARKETMIRROR_LLM_MODEL = "DeepSeek-V4-Flash-0731-W8A8"
 
 先用 `--limit 2` 检查网关连通性和返回格式，再去掉限制运行完整 128 条。原始响应目录仍保持在 Git 忽略路径；调用结果必须继续经过下面的标准化和证据跨度校验，不能直接当作标签或金标准。
 
+如果调用中断，可在同一目录加 `--resume` 继续；程序会核对数据、提示、模型和网关版本哈希，只重试未完成或此前失败的条目，并保持每个 `item_id` 在原始输出中唯一。
+
 ```powershell
 & $py -m research.semantic.parse_model_outputs research_outputs/semantic_annotation_pilot_2020 `
   --raw <本地模型原始输出.jsonl> --output-dir <新的本地标准化目录>
