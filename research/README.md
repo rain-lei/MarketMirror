@@ -397,6 +397,18 @@ firecrawl scrape "https://www.baostock.com/mainContent?file=pythonAPI.md" -o .fi
 
 未来接入模型时，将每条原始响应以 JSONL 保存：`item_id`、`source_text_sha256`、`model_id`、`prompt_version`、`raw_response`（原始 JSON 字符串）。模型仅返回 `{"events":[...]}`；提示格式见 `semantic/PROMPT_V1.md`。以下命令保留格式/证据失败并生成标准输出：
 
+现在可以用 OpenAI 兼容网关运行原始模型调用。默认配置为 `http://aigw.dlut.edu.cn/v1` 和 `DeepSeek-V4-Flash-0731-W8A8`；密钥只从当前进程的环境变量读取，不会写入代码、清单或网页：
+
+```powershell
+$env:MARKETMIRROR_LLM_API_KEY = "<你的网关密钥>"
+$env:MARKETMIRROR_LLM_BASE_URL = "http://aigw.dlut.edu.cn/v1"
+$env:MARKETMIRROR_LLM_MODEL = "DeepSeek-V4-Flash-0731-W8A8"
+& $py -m research.semantic.run_model research_outputs/semantic_annotation_pilot_2020 `
+  --output-dir research_outputs/semantic_model_deepseek_v1 --limit 2
+```
+
+先用 `--limit 2` 检查网关连通性和返回格式，再去掉限制运行完整 128 条。原始响应目录仍保持在 Git 忽略路径；调用结果必须继续经过下面的标准化和证据跨度校验，不能直接当作标签或金标准。
+
 ```powershell
 & $py -m research.semantic.parse_model_outputs research_outputs/semantic_annotation_pilot_2020 `
   --raw <本地模型原始输出.jsonl> --output-dir <新的本地标准化目录>
@@ -405,7 +417,7 @@ firecrawl scrape "https://www.baostock.com/mainContent?file=pythonAPI.md" -o .fi
   --output <新的本地评估.json>
 ```
 
-证据引用的文本、起止字符索引与来源段必须逐字匹配，源文本哈希不一致会被拒绝。评估只使用 `status=labeled` 的人工审核条目，解析失败按漏检计入，报告标注覆盖和只适用于单事件类型匹配子集的方向/证据指标。尚未调用任何 LLM，也没有真实模型效果结论。
+证据引用的文本、起止字符索引与来源段必须逐字匹配，源文本哈希不一致会被拒绝。评估只使用 `status=labeled` 的人工审核条目，解析失败按漏检计入，报告标注覆盖和只适用于单事件类型匹配子集的方向/证据指标。当前仅完成网关调用适配，尚未形成真实模型效果结论；没有独立人工金标准前不得报告准确率。
 
 ## 验证
 
