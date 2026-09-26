@@ -370,6 +370,21 @@ firecrawl scrape "https://www.baostock.com/mainContent?file=pythonAPI.md" -o .fi
 
 `semantic/ANNOTATION_GUIDE.md` 定义人工标注、分歧裁定和不能把问题猜测当成事实的规则；`data_contracts/semantic_signal.schema.json` 定义结构化事件。输出包的 `annotation_items.jsonl` 含本地原文和来源哈希，`annotation_template.jsonl` 的 128 个标签目前全部为空。无 LLM 关键词对照提供 113 个**候选话题**，方向一律为 unknown；目前无人工金标准，因此评分器明确输出 `no_reviewed_predictions`，不能报准确率。
 
+双人独立审核的空白包与比较器已准备好：
+
+```powershell
+& $py -m research.semantic.review_workflow prepare research_outputs/semantic_annotation_pilot_2020 `
+  --output-dir research_outputs/semantic_review_pilot_2020
+& $py -m research.semantic.review_workflow compare research_outputs/semantic_annotation_pilot_2020 `
+  --reviewer-a <审核者A完成的标签副本.jsonl> --reviewer-b <审核者B完成的标签副本.jsonl> `
+  --output-dir <新的本地比较目录>
+& $py -m research.semantic.review_workflow finalize research_outputs/semantic_annotation_pilot_2020 `
+  --comparison-dir <比较目录> --final-labels <单独复制并填写的裁定标签.jsonl> `
+  --output-dir <新的本地金标准目录>
+```
+
+审核任务包仅暴露当时可见文本、阶段、条目 ID 与哈希，不带结构化股票代码、训练/测试分组或抽样层；原文可能仍透露公司身份。空白标签副本不得当作已完成审核。当前将两个空白模板输入比较器，正确得到 `no_dual_review`、0/128 双人完成；程序拒绝从这个结果生成金标准。真实审核、分歧裁定和负责人的质量抽查仍未发生；具体操作与判据见 `semantic/ANNOTATION_GUIDE.md`。
+
 未来接入模型时，将每条原始响应以 JSONL 保存：`item_id`、`source_text_sha256`、`model_id`、`prompt_version`、`raw_response`（原始 JSON 字符串）。模型仅返回 `{"events":[...]}`；提示格式见 `semantic/PROMPT_V1.md`。以下命令保留格式/证据失败并生成标准输出：
 
 ```powershell
