@@ -11,6 +11,7 @@ from research.simulation.historical_replay import load_config, prepare_steps, re
 
 
 CONFIG = Path(__file__).resolve().parents[1] / "research/configs/historical_replay_pilot_2020.json"
+LATER_CONFIG = CONFIG.with_name("historical_replay_later_2020.json")
 
 
 class HistoricalReplayTest(unittest.TestCase):
@@ -88,6 +89,12 @@ class HistoricalReplayTest(unittest.TestCase):
                 path.write_text(json.dumps(changed), encoding="utf-8")
                 with self.assertRaises(ValueError):
                     load_config(path)
+
+    def test_later_period_keeps_all_rule_and_agent_parameters_fixed(self):
+        later = load_config(LATER_CONFIG)
+        for key in self.config.keys() - {"run_id", "start_date", "end_date"}:
+            self.assertEqual(self.config[key], later[key], key)
+        self.assertLess(self.config["end_date"], later["start_date"])
 
 
 if __name__ == "__main__":

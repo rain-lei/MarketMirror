@@ -348,6 +348,15 @@ firecrawl scrape "https://www.baostock.com/mainContent?file=pythonAPI.md" -o .fi
 
 本地已跑通 `000001`、`000002`、`600519` 各 58 个交易日，共三类 Agent × 两个信号设置；每步核对现金、份额和手续费账本。逐日动作、基准和路径结果见 `research_outputs/observed_2020/historical_replay/`，输入与代码哈希写入清单。参数、固定费率和前收盘价全部成交都是**示意假设**；没有实际持仓、盘口或净订单流，也没有让 Agent 订单改变历史价格。文本、财务和 LLM 信号尚未验证，因此没有接入这一回放。它是时序与约束诊断，不能称为已校准的市场冲击仿真或可交易回测。
 
+保持除运行标识和日期之外的全部参数不变，已追加 2020-04-01 至 2020-12-31 的 185 日路径：
+
+```powershell
+& $py -m research.simulation.historical_replay research/configs/historical_replay_later_2020.json `
+  --output-dir research_outputs/observed_2020/historical_replay_later
+```
+
+后续时期的平安银行与万科三类 Agent 中，市场信号路径末值均低于零信号路径；贵州茅台三类略高。两段时期显示符号不稳定，且样本与时期是在探索中确定的，不能当作正式留出检验或挑选有利角色的依据。完整逐股数值在第二份本地报告中。
+
 ## 可审核的语义事件标注与抽取入口
 
 `configs/annotation_pilot_2020.json` 固定 2020 问答来源、上半年可见时窗、公司级训练/验证/测试分组种子和各话题配额。问答只在提问阶段提供问题文本；回复阶段仅在确认已回复且保守可用时点已到时提供问题和回复。字面关键词只用于**抽样分层**，不会自动成为金标准。运行生成本地忽略目录中的 128 条待标注文本（提问、回复各 64 条）：
