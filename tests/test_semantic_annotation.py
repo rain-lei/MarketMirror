@@ -209,9 +209,16 @@ class SemanticAnnotationTest(unittest.TestCase):
                                             "source_text_sha256": first_item["source_text_sha256"],
                                             "model_id": "fixture-model", "prompt_version": "v1",
                                             "raw_response": "{\"events\":[]}"}) + "\n")
+            (root / "model_run_manifest.json").write_text(json.dumps({
+                "pack_experiment_id": manifest["experiment_id"],
+                "input_sha256": {"annotation_manifest": file_sha256(root / "pack/annotation_manifest.json"),
+                                 "annotation_items": file_sha256(root / "pack/annotation_items.jsonl")},
+                "artifacts": {"raw_model.jsonl": {"sha256": file_sha256(raw_path)}}
+            }), encoding="utf-8")
             normalized = normalize_file(root / "pack", raw_path, root / "normalized")
             self.assertEqual(normalized["model_rows"], 1)
             self.assertEqual(normalized["parse_errors"], 0)
+            self.assertIn("model_run_manifest", normalized["input_sha256"])
             with self.assertRaisesRegex(ValueError, "new empty"):
                 build_annotation_pack(path, root / "pack")
             predictions = root / "predictions.jsonl"

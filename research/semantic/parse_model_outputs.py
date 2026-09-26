@@ -50,6 +50,19 @@ def normalize_file(pack_dir: Path, raw_path: Path, output_dir: Path) -> dict[str
     input_hashes = {"annotation_manifest": file_sha256(pack_dir / "annotation_manifest.json"),
                     "annotation_items": file_sha256(pack_dir / "annotation_items.jsonl"),
                     "raw_outputs": file_sha256(raw_path)}
+    raw_manifest_path = raw_path.with_name("model_run_manifest.json")
+    if raw_manifest_path.exists():
+        raw_manifest = json.loads(raw_manifest_path.read_text(encoding="utf-8"))
+        declared = raw_manifest.get("artifacts", {}).get(raw_path.name, {}).get("sha256")
+        if declared != input_hashes["raw_outputs"]:
+            raise ValueError("model run manifest does not match raw outputs")
+        if raw_manifest.get("pack_experiment_id") != pack_manifest["experiment_id"]:
+            raise ValueError("model run manifest belongs to a different annotation pack")
+        declared_pack = raw_manifest.get("input_sha256", {})
+        if (declared_pack.get("annotation_manifest") != input_hashes["annotation_manifest"]
+                or declared_pack.get("annotation_items") != input_hashes["annotation_items"]):
+            raise ValueError("model run manifest input hashes differ from annotation pack")
+        input_hashes["model_run_manifest"] = file_sha256(raw_manifest_path)
     normalized = normalize_rows(items, read_jsonl(raw_path))
     if output_dir == pack_dir or pack_dir in output_dir.parents or output_dir == raw_path.parent:
         raise ValueError("normalization output must be separate from input locations")

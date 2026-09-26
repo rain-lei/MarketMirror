@@ -425,6 +425,8 @@ $env:MARKETMIRROR_LLM_MODEL = "DeepSeek-V4-Flash-0731-W8A8"
   --output <新的本地评估.json>
 ```
 
+如果原始 JSONL 与 `model_run_manifest.json` 放在同一目录，标准化器还会核对原始文件哈希、annotation pack 实验 ID 和输入文件哈希；没有清单的手工测试 JSONL 仍可用于格式验证。
+
 证据引用的文本、起止字符索引与来源段必须逐字匹配，源文本哈希不一致会被拒绝。评估只使用 `status=labeled` 的人工审核条目，解析失败按漏检计入，报告标注覆盖和只适用于单事件类型匹配子集的方向/证据指标。当前仅完成网关调用适配，尚未形成真实模型效果结论；没有独立人工金标准前不得报告准确率。
 
 ## 验证
