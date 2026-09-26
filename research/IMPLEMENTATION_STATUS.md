@@ -26,7 +26,7 @@
 | 从输入独立重跑 | `registry/reexecute.py` | 12 项运行重新执行；27 份产物中 25 份逐字节一致，事件 JSON 与统一 SQLite 各有一项限定的时间戳例外 |
 | 离线研究摘要页面 | `workbench/build.py`、`workbench/assets/` | 12 项通过核验的运行汇总，事件/Agent 筛选、财务字段口径、图表和公开证据链接；原始问答及个人路径排除 |
 | 固定实验受控重跑、版本选择、证据查看与报告导出 | `workbench/run.py`、`workbench/serve.py`、`workbench/build.py` | 固定清单内单项选择，显示并校验每项的输入/执行版本与独立运行记录；页面逐项展示 27 份产物的名称和比较状态；历史事件实验从 CLI 和页面各重跑一次，均通过 3 份产物比较；同一白名单摘要生成 `report.md` |
-| 语义事件标注与抽取接口 | `semantic/annotation_pack.py`、`semantic/run_model.py`、`semantic/signal_validation.py`、`semantic/parse_model_outputs.py` | 2020 上半年 128 条本地待审核文本；已接入 OpenAI 兼容网关调用适配、公司级分组、来源时间隔离、证据跨度和模型原始输出校验 |
+| 语义事件标注与抽取接口 | `semantic/annotation_pack.py`、`semantic/run_model.py`、`semantic/parse_model_outputs.py`、`semantic/audit_model_run.py`、`semantic/signal_validation.py` | 2020 上半年 128 条本地待审核文本；已接入 OpenAI 兼容网关调用、运行清单审计、公司级分组、来源时间隔离、证据跨度和模型原始输出校验 |
 | 双人审核包与裁定门槛 | `semantic/review_workflow.py` | 两份结构化字段盲化且顺序不同的空白任务包；独立身份/分歧比较和逐项裁定出口已验证；真实标签仍为 0 |
 | 实际成交活动与事件窗口 | `data_pipeline/market_activity.py`、`baselines/activity_event_study.py` | 3 只股票 × 388 日，共 1,164 条股数/人民币成交额；6 个事件窗口、54 条逐日相对基期记录 |
 
@@ -38,7 +38,7 @@
 - `p`、`p/e` 在来源行上下文中保留，观测时点和计算方式待确认。
 - 全部快照为 `unverified`。报告期和公告时间为空，没有从文件名或提问年份推断。
 - SQLite 完整性检查、外键检查、快照引用数与来源行数核对均通过。
-- 当前共 100 项测试通过，覆盖财务提取、字段字典脱敏与未核实状态、事件窗口、问答追溯、按时点导出、提供方异常数据、证据缓存、文本预测时间隔离、合成 Agent 账本、真实收益回放的信息滞后和账本、语义标注隔离、网关模型列表只读检查、原始响应归档及中断恢复和双人裁定门槛、成交活动单位/交易日核验、日期对照隔离、清单篡改、重跑比较规则、页面隐私白名单、报告白名单及本地执行入口的选择/来源边界。
+- 当前共 101 项测试通过，覆盖财务提取、字段字典脱敏与未核实状态、事件窗口、问答追溯、按时点导出、提供方异常数据、证据缓存、文本预测时间隔离、合成 Agent 账本、真实收益回放的信息滞后和账本、语义标注隔离、网关模型列表只读检查、原始响应归档及中断恢复、模型运行完整性审计和双人裁定门槛、成交活动单位/交易日核验、日期对照隔离、清单篡改、重跑比较规则、页面隐私白名单、报告白名单及本地执行入口的选择/来源边界。
 
 财务产物在 Git 忽略的 `research_outputs/financial_2020/`，统一数据集在 `research_outputs/unified/`。原始问答及用户文本不进入 Git。
 
