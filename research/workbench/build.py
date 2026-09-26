@@ -14,7 +14,7 @@ from typing import Any
 from ..data_pipeline.provenance import file_sha256
 from ..registry.verify_catalog import audit_run, load_catalog
 
-VERSION = "research-workbench-v1"
+VERSION = "research-workbench-v2"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 OUTPUTS = ROOT / "research_outputs"
@@ -69,6 +69,28 @@ def checked_semantic_review() -> dict[str, Any]:
     return json.loads((directory / "comparison_results.json").read_text(encoding="utf-8"))
 
 
+def checked_financial_dictionary() -> dict[str, Any]:
+    """Load the public financial dictionary only after checking its provenance."""
+    directory = OUTPUTS / "financial_2020"
+    report_path = directory / "financial_quality_report.json"
+    dictionary_path = directory / "field_dictionary.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    dictionary = json.loads(dictionary_path.read_text(encoding="utf-8"))
+    generated = dictionary.get("generated_from", {})
+    scope = dictionary.get("scope", {})
+    if generated.get("report_sha256") != file_sha256(report_path):
+        raise ValueError("financial dictionary does not match quality report")
+    if generated.get("source_file_sha256") != report.get("source_file_hash"):
+        raise ValueError("financial dictionary source hash does not match quality report")
+    if generated.get("catalog_sha256") != file_sha256(ROOT / "research/data_contracts/financial_fields.json"):
+        raise ValueError("financial dictionary does not match field catalog")
+    if scope.get("all_values_status") != "unverified" or any(
+            item.get("verification_status") != "unverified" for item in dictionary.get("fields", [])):
+        raise ValueError("workbench refuses to display a financial dictionary with promoted values")
+    validate_public_payload(dictionary)
+    return dictionary
+
+
 def collect_data() -> dict[str, Any]:
     pinned = load_catalog(CONFIG)
     cache: dict[Path, str] = {}
@@ -91,6 +113,7 @@ def collect_data() -> dict[str, Any]:
             or any(run["status"] != "equivalent" for run in reexecution["runs"])):
         raise ValueError("stored audit or reexecution run statuses do not match the pinned catalog")
     reviewed = checked_semantic_review()
+    financial_dictionary = checked_financial_dictionary()
     manifests = {run["run_id"]: (CONFIG.parent / run["manifest"]).resolve() for run in pinned}
 
     def artifact(run_id: str, name: str) -> dict[str, Any]:
@@ -147,6 +170,7 @@ def collect_data() -> dict[str, Any]:
         "semantic": {"items": reviewed["pack_items"], "dual_reviewed": reviewed["dual_reviewed_items"],
                      "pending": reviewed["pending_items"], "conflicts": reviewed["conflict_items"],
                      "gold_ready": reviewed["gold_ready"], "status": reviewed["status"]},
+        "financial_dictionary": financial_dictionary,
         "evidence": [{"label": "新华社：武汉通告", "url": "https://www.xinhuanet.com/politics/2020-01/23/c_1125495557.htm"},
                      {"label": "上交所：春节休市调整", "url": "http://www.sse.com.cn/disclosure/announcement/general/c/c_20200127_4991582.shtml"},
                      {"label": "BaoStock API 文档", "url": "https://www.baostock.com/mainContent?file=pythonAPI.md"}],
@@ -204,6 +228,20 @@ def render_report(data: dict[str, Any]) -> str:
     lines += ["## 语义审核状态", "", f"样本 {semantic['items']} 条；双人完成 {semantic['dual_reviewed']} 条；待审 {semantic['pending']} 条；分歧 {semantic['conflicts']} 条；状态 `{semantic['status']}`。", "",
               "## 公开证据", ""]
     lines.extend(f"- [{item['label']}]({item['url']})" for item in data["evidence"])
+    financial = data.get("financial_dictionary")
+    if financial:
+        scope = financial["scope"]
+        lines += ["", "## 财务字段口径状态", "",
+                  f"字段 {scope['field_count']} 个（快照 {scope['snapshot_field_count']}，行上下文 {scope['row_context_field_count']}）；来源行 {scope['source_rows']:,}。所有值状态为 `unverified`，该字典只描述结构统计。", "",
+                  "| 字段 | 层级 | 缺失率 | 数值 | 非数值 | 范围 | 状态 |",
+                  "|---|---|---:|---:|---:|---|---|"]
+        for item in financial["fields"]:
+            minimum, maximum = item["numeric_min"], item["numeric_max"]
+            value_range = "—" if minimum is None else f"{minimum:g} … {maximum:g}"
+            rate = "—" if item["missing_rate"] is None else f"{item['missing_rate']:.2%}"
+            lines.append(f"| {item['field_name'].replace('|', '/')} | {item['role']} | {rate} | {item['numeric_count']:,} | {item['non_numeric_count']:,} | {value_range} | `{item['verification_status']}` |")
+        lines += ["", "### 尚未确认", ""]
+        lines.extend(f"- `{item['key']}`：{item['question']}（{item['status']}）" for item in financial["unresolved_semantics"])
     lines += ["", "## 研究限制", ""]
     lines.extend(f"- {item}" for item in data["limitations"])
     return "\n".join(lines) + "\n"
@@ -227,7 +265,9 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
                     "source_reports": {name: file_sha256(path) for name, path in {
                         "integrity_results": OUTPUTS / "integrity_catalog_2020/integrity_results.json",
                         "reexecution_results": OUTPUTS / "reexecution_catalog_2020/reexecution_results.json",
-                        "semantic_comparison": OUTPUTS / "semantic_review_comparison_pilot_2020/comparison_results.json"}.items()},
+                        "semantic_comparison": OUTPUTS / "semantic_review_comparison_pilot_2020/comparison_results.json",
+                        "financial_quality_report": OUTPUTS / "financial_2020/financial_quality_report.json",
+                        "financial_dictionary": OUTPUTS / "financial_2020/field_dictionary.json"}.items()},
                     "code_sha256": file_sha256(Path(__file__)),
                     "artifacts": {p.name: {"sha256": file_sha256(p)} for p in staging.iterdir()}}
         (staging / "workbench_manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")

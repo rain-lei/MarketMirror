@@ -44,6 +44,17 @@
   const predictionBars=[["纯行情 MAE",p.market_mae,false],["行情 + 文本 MAE",p.text_mae,true]];
   $("prediction-bars").innerHTML=predictionBars.map(([label,value,alt])=>`<div class="bar-row"><div class="bar-row-head"><span>${safe(label)}</span><strong>${pct(value,3)}</strong></div><div class="bar-track"><div class="bar-fill ${alt?'alt':''}" style="width:${Math.min(100,value/.03*100).toFixed(1)}%"></div></div></div>`).join("");
   $("prediction-interval").textContent=`${p.rows} 条测试预测。配对 MAE 差值（文本 − 行情）${pct(p.paired_difference,3)}；近似 95% 区间 [${pct(p.interval_95[0],3)}, ${pct(p.interval_95[1],3)}]，包含零。`;
+  const financial=data.financial_dictionary;
+  if(financial){
+    const fs=financial.scope;
+    $("financial-summary").innerHTML=`<strong>${safe(fs.field_count)} 个字段</strong><p>快照 ${safe(fs.snapshot_field_count)} 个；行上下文 ${safe(fs.row_context_field_count)} 个；来源行 ${Number(fs.source_rows).toLocaleString("zh-CN")} 条。全部值状态为 <code>unverified</code>。</p>`;
+    $("financial-unresolved").innerHTML=`<h4>待确认含义</h4><ul>${financial.unresolved_semantics.map(item=>`<li><strong>${safe(item.key)}</strong>：${safe(item.question)}</li>`).join("")}</ul>`;
+    $("financial-boundaries").innerHTML=`<div class="boundary-block"><span>可以做</span>${financial.allowed_uses.map(item=>`<p>${safe(item)}</p>`).join("")}</div><div class="boundary-block blocked"><span>当前不能做</span>${financial.blocked_uses.map(item=>`<p>${safe(item)}</p>`).join("")}</div>`;
+    $("financial-source-note").textContent=`${Number(fs.source_rows).toLocaleString("zh-CN")} 条来源行 · ${safe(financial.generated_from.source_file)}`;
+    $("financial-fields-table").innerHTML=`<table class="data-table"><thead><tr><th>字段</th><th>层级</th><th style="text-align:right">缺失率</th><th style="text-align:right">数值</th><th style="text-align:right">非数值</th><th>数值范围</th><th>状态</th></tr></thead><tbody>${financial.fields.map(item=>{const range=item.numeric_min===null?'—':`${Number(item.numeric_min).toPrecision(6)} … ${Number(item.numeric_max).toPrecision(6)}`;return `<tr><td>${safe(item.field_name)}</td><td>${safe(item.role)}</td><td class="num">${item.missing_rate===null?'—':pct(item.missing_rate,2)}</td><td class="num">${Number(item.numeric_count).toLocaleString("zh-CN")}</td><td class="num">${Number(item.non_numeric_count).toLocaleString("zh-CN")}</td><td>${safe(range)}</td><td><span class="status-unverified">${safe(item.verification_status)}</span></td></tr>`;}).join("")}</tbody></table>`;
+  }else{
+    $("financial-summary").innerHTML="<p>财务字段字典尚未生成。</p>";
+  }
   const periods=[...new Set(data.replays.map(r=>r.period))];
   const stocks=[...new Set(data.replays.map(r=>r.stock_code))];
   $("period-select").innerHTML=periods.map(x=>`<option>${safe(x)}</option>`).join("");

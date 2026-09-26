@@ -41,13 +41,22 @@
       </div>
     </section>
 
+    <section class="section" id="financial-dictionary">
+      <div class="section-head"><div><p class="eyebrow">03 / DATA CONTRACT</p><h2>财务字段口径</h2><p>把已观察到的字段结构与尚未核实的经济含义分开查看。</p></div><span class="section-tag">68 个字段 · 全部待核对</span></div>
+      <div class="grid two">
+        <article class="card"><h3>字段状态</h3><div id="financial-summary" class="semantic-status"></div><div id="financial-unresolved" class="unresolved-list"></div></article>
+        <article class="card"><h3>使用边界</h3><p class="note">这些统计来自原始财务列的结构扫描，不代表单位、报告期、公告时间或计算公式已经确认。</p><div id="financial-boundaries" class="boundary-list"></div></article>
+      </div>
+      <article class="card financial-table-card"><div class="card-head"><div><h3>逐字段统计</h3><p>缺失率、数值形态和当前核对状态；不会展示问答正文。</p></div><span id="financial-source-note" class="section-tag"></span></div><div id="financial-fields-table"></div></article>
+    </section>
+
     <section class="section" id="agents">
-      <div class="section-head"><div><p class="eyebrow">03 / MECHANISM</p><h2>Agent 规则诊断</h2><p>相同规则与示意参数在历史收益路径上的价格接受型回放。</p></div><span class="section-tag">三类角色 · 两段时期</span></div>
+      <div class="section-head"><div><p class="eyebrow">04 / MECHANISM</p><h2>Agent 规则诊断</h2><p>相同规则与示意参数在历史收益路径上的价格接受型回放。</p></div><span class="section-tag">三类角色 · 两段时期</span></div>
       <div class="card"><div class="filters"><label class="field-label">时期<select id="period-select"></select></label><label class="field-label">股票<select id="stock-select"></select></label><span class="filter-note">期末财富 / 初始现金；1.000 为现金基准</span></div><div id="replay-table"></div><p class="note">归一化收益指数并非实际成交价。订单假定在参考收盘价全部成交，不改变历史价格；角色参数未用真实投资者交易校准。</p></div>
     </section>
 
     <section class="section" id="provenance">
-      <div class="section-head"><div><p class="eyebrow">04 / PROVENANCE</p><h2>运行与证据</h2><p>先核对固定清单，再从当前本地输入重新执行。</p></div><span class="section-tag">本机文件版本</span></div>
+      <div class="section-head"><div><p class="eyebrow">05 / PROVENANCE</p><h2>运行与证据</h2><p>先核对固定清单，再从当前本地输入重新执行。</p></div><span class="section-tag">本机文件版本</span></div>
       <div class="grid two">
         <article class="card"><h3>运行核验</h3><div id="run-list" class="run-list"></div><div id="run-details" class="run-details"></div></article>
         <article class="card"><h3>证据来源与标注状态</h3><div id="semantic-status" class="semantic-status"></div><div id="evidence-links" class="evidence-links"></div><p class="note">外部网页链接用于来源复核；本地缓存与 SHA-256 留在研究产物中。</p></article>
@@ -55,7 +64,7 @@
     </section>
 
     <section class="section" id="rerun">
-      <div class="section-head"><div><p class="eyebrow">05 / REEXECUTION</p><h2>受控重跑</h2><p>选择固定清单中的一项，重新执行并与已存档产物比较。</p></div><span class="section-tag">仅本机 · 一次一项</span></div>
+      <div class="section-head"><div><p class="eyebrow">06 / REEXECUTION</p><h2>受控重跑</h2><p>选择固定清单中的一项，重新执行并与已存档产物比较。</p></div><span class="section-tag">仅本机 · 一次一项</span></div>
       <div class="grid two">
         <article class="card"><h3>选择运行</h3><p class="note">上方的事件和股票筛选只改变摘要显示；这里使用已固定的完整实验配置、输入版本和执行版本。页面只能提交服务端已核验的版本组合。</p><div class="run-controls"><label class="field-label">固定运行<select id="rerun-select" disabled></select></label><label class="field-label">数据版本<select id="data-version-select" disabled></select></label><label class="field-label">执行版本<select id="model-version-select" disabled></select></label><button id="rerun-button" class="button primary" type="button" disabled>开始重跑</button></div><p id="rerun-status" class="run-status" role="status">正在检查本地执行服务…</p></article>
         <article class="card"><h3>本机运行记录</h3><div id="rerun-history" class="run-history"><p class="note">尚未连接执行服务。</p></div><p class="note">每次运行保存所选配置、固定清单哈希、逐产物比较结果和独立目录。这里仅显示状态摘要。</p></article>
