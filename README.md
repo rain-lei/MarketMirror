@@ -1,164 +1,41 @@
-# MarketMirror — 多类型投资者市场冲击仿真平台
+# MarketMirror
 
-MarketMirror 是一款面向金融监管研究的**智能沙盒推演系统**，通过模拟三类不同风险偏好的投资者（激进型、保守型、机构型）在面对市场冲击事件时的差异化决策行为，量化评估政策或突发事件对特定行业造成的市场冲击。
+MarketMirror 正在重建为**可复现、可核验的金融市场冲击研究系统**。当前优先回答：监管问答或事件信息能否为市场基线提供稳定增量，以及三类示意投资者规则在相同冲击下会产生怎样的持仓与风险路径。
 
-## 核心能力
+项目已经建立数据质量检查、按时点可见的问答数据集、公开行情导入、事件研究、文本预测对照、合成 Agent 机制实验、真实收益路径上的价格接受型回放，以及跨实验完整性和重跑核验。2020 年小样本结果属于**探索性研究**，不能解释为因果效应、可交易策略或已经校准的监管预测。
 
-| 能力层 | 说明 |
-|--------|------|
-| **多 Agent 行为仿真** | 三类投资者（R/I/C）基于冲击信号独立决策，输出 BUY/SELL/HOLD 及置信度 |
-| **文本信号解析** | 将政策描述/突发事件文本转化为可量化的市场冲击变量 |
-| **冲击量化评估** | 输出 `market_impact_score`（市场冲击指数）、冲击方向（上行/下行/中性）、场景标签 |
-| **可视化决策链路** | ECharts 冲击传播曲线 + Agent 行为强度映射图，全链路可追溯 |
-| **离线演示模式** | 无需后端即可稳定生成推演结果，适配现场答辩、路演等无网络场景 |
-| **企业级控制台** | 账号登录、模块化导航、审计日志、自动连播演示、讲解稿一键复制 |
+## 当前状态
 
-## 技术架构
+| 研究环节 | 已有证据 | 尚未完成 |
+|---|---|---|
+| 数据层 | 三份 Excel 共 429,597 条问答；全量来源、质量报告和时点导出 | 财务单位、季度含义、标签定义与公开时刻核实 |
+| 市场基线 | 2020 年事件窗口、成交活动、其他日期对照；177 条测试预测 | 更广样本、独立行情源和外部预注册验证 |
+| Agent | 三类规则、合成账本、两段真实收益路径回放 | 投资者行为参数、订单流与价格冲击校准 |
+| 语义抽取 | 128 条待审核样本、双人审核与裁定流程、关键词对照 | 真实双人标注、金标准、LLM 留出评估 |
+| 可复现性 | 12 项本地运行完整性检查与独立重跑通过 | 原始文件跨机器获取和公开口径复核 |
 
-```
-┌─────────────────────────────────────────────────┐
-│                    Frontend                      │
-│         Vue 3 + Vite + Ant Design Vue            │
-│              Apache ECharts 可视化                │
-├─────────────────────────────────────────────────┤
-│                  API Layer                       │
-│        POST /api/simulate   GET /api/health      │
-├─────────────────────────────────────────────────┤
-│                    Backend                       │
-│           FastAPI + Pydantic + Uvicorn           │
-│         规则引擎: 信号解析 · 冲击计算 · Agent决策  │
-└─────────────────────────────────────────────────┘
-```
+详细数值、限制和阶段状态见 [研究进度](research/IMPLEMENTATION_STATUS.md)；研究设计见 [重建方案](RESEARCH_REBUILD_PLAN.md)。
 
-## 仓库结构
+## 本地只读工作台
 
-```
-demo/
-├── backend/                  # FastAPI 服务
-│   ├── main.py               # API 入口、仿真核心逻辑
-│   ├── requirements.txt      # Python 依赖
-│   └── .env.example          # 环境变量模板
-├── frontend/                 # Vue 3 企业级前端
-│   ├── index.html            # Vite 入口
-│   ├── src/
-│   │   ├── App.vue           # 主组件：登录、布局、模块路由
-│   │   ├── config.js         # 应用常量、演示账号、API 地址
-│   │   ├── main.js           # Vue 挂载 & Ant Design 按需注册
-│   │   ├── components/
-│   │   │   ├── MarketImpactChart.vue      # 冲击传播曲线（ECharts）
-│   │   │   └── AgentDecisionMatrix.vue    # Agent 行为强度映射图（ECharts）
-│   │   ├── services/
-│   │   │   ├── api.js         # 后端请求层（含超时与异常处理）
-│   │   │   └── auth.js        # 前端演示鉴权与会话管理
-│   │   ├── mock/
-│   │   │   └── demoScenarios.js  # 内置样例库与离线推演引擎
-│   │   └── styles/
-│   │       └── app.css        # 设计系统与动画
-│   └── PLATFORM_DESIGN.md     # 平台设计说明
-└── README.md
-```
-
-## 快速启动
-
-### 1) 启动后端
+工作台从通过本机核验的产物生成，页面仅包含汇总指标、图表和公开证据链接，不嵌入问答原文、个人路径或完整数据库。
 
 ```powershell
-cd backend
-pip install -r requirements.txt
-python main.py
+python -m research.workbench.build --output-dir research_outputs/workbench_2020
 ```
 
-默认监听 `http://127.0.0.1:8000`
+随后直接打开 `research_outputs/workbench_2020/index.html`。它是静态离线页面，无需安装前端依赖或启动后端。已有产物也可通过 `python -m http.server 8765 --bind 127.0.0.1 --directory research_outputs/workbench_2020` 在本机预览。工作台当前只读，不能据此执行新实验。
 
-### 2) 启动前端
+生成工作台前需具备本机原始来源和 `research_outputs/` 下的运行产物。该目录被 Git 忽略；克隆仓库本身不附带原始 Excel、问答文本或市场下载。完整构建命令见 [研究操作说明](research/README.md)。
+
+## 核验
 
 ```powershell
-cd frontend
-npm install
-npm run dev
+python -m unittest discover -s tests -q
+python -m research.registry.verify_catalog research/configs/integrity_catalog_2020.json --output-dir <新的本地目录>
+python -m research.registry.reexecute research/configs/reexecution_catalog_2020.json --output-dir <新的本地目录>
 ```
 
-浏览器访问 `http://127.0.0.1:5173`
+固定清单的 12 项运行在当前机器上已独立重跑；27 份产物中 25 份逐字节一致，另两份只存在明确限定的生成时间差异。重跑不能证明原始字段的经济含义、历史信息可见时刻、统计显著性或 Agent 的现实行为拟合。
 
-## API 接口
-
-### `GET /api/health` — 健康检查
-
-### `POST /api/simulate` — 执行沙盒推演
-
-请求体：
-
-```json
-{
-  "event_description": "2020年初突发新冠疫情全球蔓延，全球供应链受阻",
-  "target_industry": "房地产行业"
-}
-```
-
-响应体：
-
-```json
-{
-  "policy_parsed": "Parsed Policy: ...",
-  "market_impact_score": -0.72,
-  "scenario_tag": "pandemic-shock:real-estate",
-  "agent_actions": [
-    {
-      "agent_type": "Aggressive (激进型)",
-      "action_type": "Buy on Dip / 抄底",
-      "confidence": 0.82,
-      "reasoning": "High risk tolerance, seeking alpha in volatility."
-    }
-  ],
-  "timestamp": 1714600000.0
-}
-```
-
-## 投资者 Agent 模型
-
-| 类型 | 标识 | 风险偏好 | 典型行为 | 决策逻辑 |
-|------|------|----------|----------|----------|
-| **激进型** | Aggressive (R) | 高风险容忍 | 抄底、做空波动、加杠杆做多 | 逆向交易，在波动中放大仓位 |
-| **保守型** | Conservative (C) | 本金优先 | 恐慌抛售、持币观望 | 降低风险暴露，优先保全资本 |
-| **机构型** | Institutional (I) | 风控驱动 | 对冲风险、板块轮动 | 基于风控模型执行再平衡 |
-
-## 内置演示样例
-
-| 场景 | 冲击级别 | 时间视角 | 目标行业 |
-|------|----------|----------|----------|
-| 2018 去杠杆冲击 | 高 | 中期 (3-6个月) | 房地产行业 |
-| 2020 疫情突发 | 极高 | 短期 (1-3个月) | A股主板 |
-| 平台经济监管升级 | 中 | 中长期 (6-12个月) | 科技行业 |
-
-## 环境配置
-
-后端环境变量（参考 `backend/.env.example`）：
-
-- `MARKETMIRROR_HOST` — 监听地址，默认 `0.0.0.0`
-- `MARKETMIRROR_PORT` — 监听端口，默认 `8000`
-- `MARKETMIRROR_CORS_ORIGINS` — CORS 允许来源，逗号分隔
-
-前端环境变量（`frontend/.env`）：
-
-- `VITE_API_BASE_URL` — 后端 API 地址，默认 `http://127.0.0.1:8000`
-
-## 演示账号
-
-- `admin / Admin@2026` — 监管管理员
-- `analyst / Analyst@2026` — 风险分析师
-
-## 演示流程建议
-
-1. 登录后进入「场景推演」
-2. 在演示样例库中点击任意样例卡片，自动填充冲击事件与目标行业
-3. 点击「启动推演」调用后端 API，或点击「离线演示」直接生成结果
-4. 依次展示：市场影响指数 → 冲击传播曲线 → Agent 行为强度映射 → Agent 决策路径明细
-5. 点击「自动连播演示」循环切换样例，适合展台无人值守展示
-6. 点击「复制讲解稿」导出演讲提词器文本
-
-## 下一步演进
-
-- [ ] 接入 LLM 文本信号抽取服务，替换规则引擎
-- [ ] 支持多轮迭代仿真与时间序列建模
-- [ ] 后端 JWT/OAuth2 鉴权替换前端演示登录
-- [ ] 接入真实风控指标与审计日志系统
+原先的 Vue/FastAPI 静态演示不采用研究数据和验证流程，已从当前分支移除；如需查看可从 Git 历史恢复。新研究系统以 `research/` 为实现入口，不把旧演示的分数或演示账号当成研究能力。

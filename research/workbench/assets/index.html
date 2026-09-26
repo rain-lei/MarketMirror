@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>MarketMirror · 研究工作台</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="mark">M</span><span>MarketMirror <small>研究工作台</small></span></div>
+    <span class="top-label">离线只读 · 探索性研究</span>
+  </header>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">REPRODUCIBLE RESEARCH / 2020 PILOT</p>
+        <h1>从证据到结果，<br><em>每一步都能复核。</em></h1>
+        <p class="lead">本地已核验的问答、行情、事件研究与 Agent 规则回放。页面只展示筛选后的汇总数据；原始文本和个人路径不会写入页面。</p>
+        <div class="hero-actions"><a href="#experiments" class="button primary">查看实验结果 <span>↘</span></a><a href="#provenance" class="button secondary">核对证据链</a></div>
+      </div>
+      <aside class="hero-note"><span class="signal-dot"></span><strong>研究状态</strong><p>可复现性已通过本机核验。文本增益、投资者行为参数和价格冲击机制尚无充分验证。</p></aside>
+    </section>
+
+    <section class="metrics" id="metrics" aria-label="研究概况"></section>
+
+    <section class="section" id="experiments">
+      <div class="section-head"><div><p class="eyebrow">01 / EVIDENCE</p><h2>历史事件窗口</h2><p>同一武汉通告的两种可见时间口径，不能视为两次独立事件。</p></div><span class="section-tag">3 只股票 · 2 种对齐</span></div>
+      <div class="grid two">
+        <article class="card chart-card"><div class="card-head"><div><h3>异常收益路径</h3><p>市场模型 CAR：日异常收益之和</p></div><label class="field-label">事件口径<select id="event-select"></select></label></div><div id="event-chart" class="chart" role="img" aria-label="异常收益路径图"></div><p id="event-caption" class="note"></p></article>
+        <article class="card"><div class="card-head"><div><h3>股票对照</h3><p>CAR 与事件日成交额 / 基期中位数</p></div></div><div id="event-table"></div><div class="callout"><span>日期诊断</span><p id="placebo-summary"></p></div></article>
+      </div>
+    </section>
+
+    <section class="section" id="prediction">
+      <div class="section-head"><div><p class="eyebrow">02 / BASELINE</p><h2>文本增量预测</h2><p>固定测试期的纯行情模型与行情加文本模型对照。</p></div><span class="section-tag">时间切分 · 收盘后预测</span></div>
+      <div class="grid two">
+        <article class="card"><h3>测试误差</h3><div id="prediction-bars" class="bar-list"></div><p id="prediction-interval" class="note"></p></article>
+        <article class="card contrast"><span class="card-kicker">结论边界</span><h3>文本改善尚未确认</h3><p>误差差值的区间包含零。问答公开时点仍采用来源时间代理，无法从这次小样本结果推断稳定的预测增益。</p><div class="contrast-rule"></div><p class="small">预测目标是下一交易日简单收益；没有使用未经确认的财务快照或公司违规标签。</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="agents">
+      <div class="section-head"><div><p class="eyebrow">03 / MECHANISM</p><h2>Agent 规则诊断</h2><p>相同规则与示意参数在历史收益路径上的价格接受型回放。</p></div><span class="section-tag">三类角色 · 两段时期</span></div>
+      <div class="card"><div class="filters"><label class="field-label">时期<select id="period-select"></select></label><label class="field-label">股票<select id="stock-select"></select></label><span class="filter-note">期末财富 / 初始现金；1.000 为现金基准</span></div><div id="replay-table"></div><p class="note">归一化收益指数并非实际成交价。订单假定在参考收盘价全部成交，不改变历史价格；角色参数未用真实投资者交易校准。</p></div>
+    </section>
+
+    <section class="section" id="provenance">
+      <div class="section-head"><div><p class="eyebrow">04 / PROVENANCE</p><h2>运行与证据</h2><p>先核对固定清单，再从当前本地输入重新执行。</p></div><span class="section-tag">本机文件版本</span></div>
+      <div class="grid two">
+        <article class="card"><h3>运行核验</h3><div id="run-list" class="run-list"></div></article>
+        <article class="card"><h3>证据来源与标注状态</h3><div id="semantic-status" class="semantic-status"></div><div id="evidence-links" class="evidence-links"></div><p class="note">外部网页链接用于来源复核；本地缓存与 SHA-256 留在研究产物中。</p></article>
+      </div>
+    </section>
+
+    <section class="limits"><p class="eyebrow">RESEARCH LIMITS</p><h2>阅读这些结果前</h2><ul id="limitations"></ul></section>
+  </main>
+  <footer><span>MarketMirror · Research rebuild</span><span>本地生成的只读研究摘要</span></footer>
+  <script src="data.js"></script><script src="app.js"></script>
+</body>
+</html>
