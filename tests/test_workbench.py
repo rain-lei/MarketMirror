@@ -103,7 +103,9 @@ class WorkbenchPayloadTest(unittest.TestCase):
                 port = server.server_port
                 conn = http.client.HTTPConnection("127.0.0.1", port)
                 conn.request("GET", "/api/capabilities")
-                self.assertIn("observed_event", json.loads(conn.getresponse().read())["runs"])
+                capabilities = json.loads(conn.getresponse().read())
+                self.assertIn("observed_event", capabilities["runs"])
+                self.assertTrue(capabilities["versions"]["observed_event"]["data_version"].startswith("inputs-"))
                 body = json.dumps({"run_id": "observed_event"})
                 conn.request("POST", "/api/jobs", body, {"Content-Type": "application/json"})
                 response = conn.getresponse()

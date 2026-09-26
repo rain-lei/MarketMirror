@@ -25,7 +25,7 @@
 | 跨实验完整性目录 | `registry/verify_catalog.py` | 12 份固定清单，136 个输入/代码/输出文件引用逐项核对；篡改清单、代码和结果的检查已覆盖 |
 | 从输入独立重跑 | `registry/reexecute.py` | 12 项运行重新执行；27 份产物中 25 份逐字节一致，事件 JSON 与统一 SQLite 各有一项限定的时间戳例外 |
 | 离线研究摘要页面 | `workbench/build.py`、`workbench/assets/` | 12 项通过核验的运行汇总，事件/Agent 筛选、图表和公开证据链接；原始问答及个人路径排除 |
-| 固定实验受控重跑、证据查看与报告导出 | `workbench/run.py`、`workbench/serve.py`、`workbench/build.py` | 固定清单内单项选择、独立配置与运行记录；页面逐项展示 27 份产物的名称和比较状态；历史事件实验从 CLI 和页面各重跑一次，均通过 3 份产物比较；同一白名单摘要生成 `report.md` |
+| 固定实验受控重跑、版本选择、证据查看与报告导出 | `workbench/run.py`、`workbench/serve.py`、`workbench/build.py` | 固定清单内单项选择，显示并校验每项的输入/执行版本与独立运行记录；页面逐项展示 27 份产物的名称和比较状态；历史事件实验从 CLI 和页面各重跑一次，均通过 3 份产物比较；同一白名单摘要生成 `report.md` |
 | 语义事件标注与抽取接口 | `semantic/annotation_pack.py`、`semantic/signal_validation.py`、`semantic/parse_model_outputs.py` | 2020 上半年 128 条本地待审核文本；公司级分组、来源时间隔离、证据跨度和模型原始输出校验 |
 | 双人审核包与裁定门槛 | `semantic/review_workflow.py` | 两份结构化字段盲化且顺序不同的空白任务包；独立身份/分歧比较和逐项裁定出口已验证；真实标签仍为 0 |
 | 实际成交活动与事件窗口 | `data_pipeline/market_activity.py`、`baselines/activity_event_study.py` | 3 只股票 × 388 日，共 1,164 条股数/人民币成交额；6 个事件窗口、54 条逐日相对基期记录 |

@@ -428,7 +428,7 @@ firecrawl scrape "https://www.baostock.com/mainContent?file=pythonAPI.md" -o .fi
 & $py -m research.workbench.serve --site-dir research_outputs/workbench_controlled_2020
 ```
 
-打开 `http://127.0.0.1:8766/`，选择清单中的运行并执行。页面顶部可下载由同一份白名单摘要生成的 `report.md`，用于归档或复核。也可用 `& $py -m research.workbench.run observed_event` 单独重跑。执行入口只接受固定清单内的运行 ID、一次运行一项，不接受网页传入配置路径；每次在被 Git 忽略的 `research_outputs/workbench_runs/<job_id>/` 保存所选配置、主配置与清单哈希、状态、对照报告和产物哈希。页面读取状态时会重新核对关键记录文件。上方事件/股票筛选不改动固定配置；自定义事件、数据或模型版本尚未实现。旧 Vue/FastAPI 静态演示已从当前分支移除，代码可在 Git 历史中找回。
+打开 `http://127.0.0.1:8766/`，选择清单中的运行并执行。页面会显示并提交该运行的固定数据版本和执行版本，服务端只接受与清单匹配的组合。页面顶部可下载由同一份白名单摘要生成的 `report.md`，用于归档或复核。也可用 `& $py -m research.workbench.run observed_event` 单独重跑。执行入口只接受固定清单内的运行 ID、一次运行一项，不接受网页传入配置路径；每次在被 Git 忽略的 `research_outputs/workbench_runs/<job_id>/` 保存所选配置、版本、主配置与清单哈希、状态、对照报告和产物哈希。页面读取状态时会重新核对关键记录文件。上方事件/股票筛选不改动固定配置；自定义事件、数据或模型版本尚未实现。旧 Vue/FastAPI 静态演示已从当前分支移除，代码可在 Git 历史中找回。
 
 ### 从输入重新执行并比较结果
 

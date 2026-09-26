@@ -68,7 +68,16 @@
 
   const runStates={queued:"排队中",running:"记录未结束",passed:"通过",different:"产物不同",
                    failed:"失败",failed_preflight:"输入核验失败",record_changed:"运行记录已变化"};
-  const rerunSelect=$("rerun-select"),rerunButton=$("rerun-button"),rerunStatus=$("rerun-status");
+  const rerunSelect=$("rerun-select"),dataVersionSelect=$("data-version-select"),modelVersionSelect=$("model-version-select"),rerunButton=$("rerun-button"),rerunStatus=$("rerun-status");
+  let versionCatalog={};
+  function updateVersionSelectors(){
+    const versions=versionCatalog[rerunSelect.value];
+    if(!versions){dataVersionSelect.innerHTML="";modelVersionSelect.innerHTML="";dataVersionSelect.disabled=true;modelVersionSelect.disabled=true;rerunButton.disabled=true;return;}
+    dataVersionSelect.innerHTML=`<option value="${safe(versions.data_version)}">${safe(versions.data_version)}</option>`;
+    modelVersionSelect.innerHTML=`<option value="${safe(versions.model_version)}">${safe(versions.model_version)}</option>`;
+    dataVersionSelect.disabled=false;modelVersionSelect.disabled=false;rerunButton.disabled=false;
+  }
+  rerunSelect.addEventListener("change",updateVersionSelectors);
   async function refreshHistory(){
     const response=await fetch("/api/jobs",{cache:"no-store"});
     if(!response.ok)throw new Error("history unavailable");
@@ -93,7 +102,7 @@
     rerunButton.disabled=true;
     rerunStatus.textContent="正在提交固定运行…";
     try{
-      const response=await fetch("/api/jobs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({run_id:rerunSelect.value})});
+      const response=await fetch("/api/jobs",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({run_id:rerunSelect.value,data_version:dataVersionSelect.value,model_version:modelVersionSelect.value})});
       if(!response.ok){rerunStatus.textContent=response.status===409?"已有一项重跑正在执行，请稍后刷新。":"提交失败；请核对本地执行服务。";rerunButton.disabled=false;return;}
       const job=await response.json();
       await watchJob(job.job_id);
@@ -104,10 +113,11 @@
       const response=await fetch("/api/capabilities",{cache:"no-store"});
       if(!response.ok)throw new Error("execution unavailable");
       const capabilities=await response.json();
+      versionCatalog=capabilities.versions||{};
       rerunSelect.innerHTML=capabilities.runs.map(id=>`<option value="${safe(id)}">${safe(runLabels[id]||id)}</option>`).join("");
       rerunSelect.value=capabilities.runs.includes("observed_event")?"observed_event":capabilities.runs[0];
-      rerunSelect.disabled=false;rerunButton.disabled=false;
-      rerunStatus.textContent=`本地执行服务已连接；固定配置 ${capabilities.master_config_sha256.slice(0,12)}…`;
+      rerunSelect.disabled=false;updateVersionSelectors();
+      rerunStatus.textContent=`本地执行服务已连接；配置 ${capabilities.master_config_sha256.slice(0,12)}…`;
       await refreshHistory();
     }catch(_){rerunStatus.textContent="离线只读模式。启动本地执行服务后可选择固定实验重跑。";}
   })();

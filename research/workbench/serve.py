@@ -11,7 +11,7 @@ from uuid import uuid4
 
 from ..data_pipeline.provenance import file_sha256
 from .build import CONFIG as INTEGRITY_CONFIG
-from .run import CONFIG, DEFAULT_OUTPUT_ROOT, ROOT, available_runs, read_public_job, run_selected
+from .run import CONFIG, DEFAULT_OUTPUT_ROOT, ROOT, available_runs, read_public_job, run_selected, version_catalog
 
 DEFAULT_SITE = ROOT / "research_outputs/workbench_controlled_2020"
 ASSET_TYPES = {"index.html": "text/html", "app.js": "text/javascript",
@@ -35,27 +35,33 @@ class JobManager:
         self.output_root = output_root.resolve()
         self.config_path = config_path.resolve()
         self.allowed = available_runs(self.config_path)
+        self.versions = version_catalog(self.config_path)
         self.lock = threading.Lock()
         self.active: threading.Thread | None = None
         self.active_id: str | None = None
         self.active_run: str | None = None
         self.active_error: str | None = None
 
-    def start(self, run_id: str) -> str | None:
+    def start(self, run_id: str, data_version: str, model_version: str) -> str | None:
         if run_id not in self.allowed:
             raise ValueError("run_id is absent from the pinned catalog")
+        expected = self.versions[run_id]
+        if data_version != expected["data_version"] or model_version != expected["model_version"]:
+            raise ValueError("version selection is not pinned for this run")
         with self.lock:
             if self.active is not None and self.active.is_alive():
                 return None
             job_id = uuid4().hex
             self.active_id, self.active_run, self.active_error = job_id, run_id, None
-            self.active = threading.Thread(target=self._execute, args=(job_id, run_id), daemon=False)
+            self.active = threading.Thread(target=self._execute,
+                                           args=(job_id, run_id, data_version, model_version), daemon=False)
             self.active.start()
             return job_id
 
-    def _execute(self, job_id: str, run_id: str) -> None:
+    def _execute(self, job_id: str, run_id: str, data_version: str, model_version: str) -> None:
         try:
-            run_selected(run_id, self.output_root, self.config_path, job_id)
+            run_selected(run_id, self.output_root, self.config_path, job_id,
+                         data_version=data_version, model_version=model_version)
         except Exception as exc:
             with self.lock:
                 self.active_error = type(exc).__name__
@@ -114,6 +120,7 @@ def create_server(site_dir: Path = DEFAULT_SITE, output_root: Path = DEFAULT_OUT
             path = self.path.split("?", 1)[0]
             if path == "/api/capabilities":
                 self._json(200, {"runs": manager.allowed,
+                                 "versions": manager.versions,
                                  "master_config_sha256": file_sha256(manager.config_path)})
                 return
             if path == "/api/jobs":
@@ -149,9 +156,11 @@ def create_server(site_dir: Path = DEFAULT_SITE, output_root: Path = DEFAULT_OUT
                 if length < 1 or length > 512:
                     raise ValueError("invalid request length")
                 request = json.loads(self.rfile.read(length))
-                if not isinstance(request, dict) or set(request) != {"run_id"} or not isinstance(request["run_id"], str):
-                    raise ValueError("request requires one run_id")
-                job_id = manager.start(request["run_id"])
+                required = {"run_id", "data_version", "model_version"}
+                if (not isinstance(request, dict) or set(request) != required
+                        or any(not isinstance(request[key], str) for key in required)):
+                    raise ValueError("request requires run_id, data_version and model_version")
+                job_id = manager.start(request["run_id"], request["data_version"], request["model_version"])
             except (ValueError, json.JSONDecodeError):
                 self._json(400, {"error": "invalid run request"})
                 return
