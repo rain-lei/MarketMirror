@@ -474,6 +474,18 @@ v2 使用 `evidence_quotes`，仅由本地程序按逐字、唯一匹配计算�
 
 证据引用的文本、起止字符索引与来源段必须逐字匹配，源文本哈希不一致会被拒绝。评估只使用 `status=labeled` 的人工审核条目，解析失败按漏检计入，报告标注覆盖和只适用于单事件类型匹配子集的方向/证据指标。v1 原始响应重验为 94/128 条通过，v2 独立运行得到 127/128 条通过；详见 [v2 协议开发对照](SEMANTIC_PROTOCOL_V2.md)。没有独立人工金标准前不得报告准确率。
 
+留出比较门槛通过后，才允许把标准化事件转换成 Agent 可消费的文本信号。适配器会核对当前比较器代码哈希、比较结果清单和完整预测覆盖，并输出带来源哈希的 `text_signal`、`uncertainty` 与解析失败标记；输出只具备受控 Agent 消融实验资格，不会自动接入历史价格回放：
+
+```powershell
+& $py -m research.semantic.agent_signal_adapter `
+  research_outputs/semantic_holdout_h2_2020 `
+  research_outputs/semantic_holdout_h2_2020_normalized/model_predictions.jsonl `
+  research_outputs/semantic_holdout_h2_2020_scored `
+  --output-dir <新的本地信号目录>
+```
+
+当前真实下半年留出结果仍没有人工金标准，门槛为未通过，因此上述命令会明确拒绝生成信号；这一步必须等两位审核者和第三位裁定者完成后再运行。
+
 ## 验证
 
 ```powershell
