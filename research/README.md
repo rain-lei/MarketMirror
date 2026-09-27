@@ -417,6 +417,8 @@ $env:MARKETMIRROR_LLM_MODEL = "DeepSeek-V4-Flash-0731-W8A8"
 
 如果调用中断，可在同一目录加 `--resume` 继续；程序会核对数据、提示、模型和网关版本哈希，只重试未完成或此前失败的条目，并保持每个 `item_id` 在原始输出中唯一。
 
+执行器在首次请求前及每次返回后写入检查点。恢复时核对已提交字节的哈希；尚未提交的尾部字节（包括不完整 JSONL 行）会舍弃并重新请求该条目。已提交内容被改变时拒绝恢复。运行清单不保存密钥；远端模型即使固定温度也不保证再次请求逐字节一致。
+
 ```powershell
 & $py -m research.semantic.parse_model_outputs research_outputs/semantic_annotation_pilot_2020 `
   --raw <本地模型原始输出.jsonl> --output-dir <新的本地标准化目录>
@@ -439,7 +441,17 @@ $env:MARKETMIRROR_LLM_MODEL = "DeepSeek-V4-Flash-0731-W8A8"
 
 审计报告会明确写出 `accuracy_claim_allowed=false`，除非后续另行完成并裁定人工金标准，否则不会把模型运行当作准确率证据。
 
-证据引用的文本、起止字符索引与来源段必须逐字匹配，源文本哈希不一致会被拒绝。评估只使用 `status=labeled` 的人工审核条目，解析失败按漏检计入，报告标注覆盖和只适用于单事件类型匹配子集的方向/证据指标。当前仅完成网关调用适配，尚未形成真实模型效果结论；没有独立人工金标准前不得报告准确率。
+运行诊断可进一步按提问/回复、数据分组及抽样层统计有效空事件、有事件、解析失败和缺失条目，并输出固定类别的失败计数。诊断不复制原文或解析错误中的动态内容，也不报告准确率：
+
+```powershell
+& $py -m research.semantic.diagnose_model `
+  research_outputs/semantic_annotation_pilot_2020 `
+  research_outputs/semantic_model_deepseek_v1 `
+  research_outputs/semantic_model_deepseek_v1_normalized `
+  --output-dir research_outputs/semantic_model_deepseek_v1_diagnostics
+```
+
+证据引用的文本、起止字符索引与来源段必须逐字匹配，源文本哈希不一致会被拒绝。评估只使用 `status=labeled` 的人工审核条目，解析失败按漏检计入，报告标注覆盖和只适用于单事件类型匹配子集的方向/证据指标。已完成 DeepSeek 128 条真实抽取，95 条结构/证据通过、33 条失败，主要是字符索引错误，详见 [真实初测说明](SEMANTIC_PILOT_2020.md)；没有独立人工金标准前不得报告准确率。
 
 ## 验证
 
@@ -469,13 +481,13 @@ $env:MARKETMIRROR_LLM_MODEL = "DeepSeek-V4-Flash-0731-W8A8"
 工作台对 15 项固定运行再次校验输入、代码和输出，再从事件、预测、成交活动与 Agent 回放结果中按白名单抽取汇总。原始问答、个人路径和完整数据库不会写进页面；页面提供事件口径、回放时期与股票筛选、15 项运行的 34 份产物名称及比较状态、核验状态和公开证据链接。
 
 ```powershell
-& $py -m research.workbench.build --output-dir research_outputs/workbench_2018_2020
+& $py -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_llm
 ```
 
 在浏览器打开生成的 `index.html` 可离线查看摘要；输出目录必须是新空目录。要在页面上重跑固定实验，启动只监听 `127.0.0.1` 的本地服务：
 
 ```powershell
-& $py -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020
+& $py -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_llm
 ```
 
 打开 `http://127.0.0.1:8766/`，选择清单中的运行并执行。页面会显示并提交该运行的固定数据版本和执行版本，服务端只接受与清单匹配的组合；财务字段口径卡片展示字段统计、来源哈希和未确认项。页面顶部可下载由同一份白名单摘要生成的 `report.md`，用于归档或复核。也可用 `& $py -m research.workbench.run observed_event` 单独重跑。执行入口只接受固定清单内的运行 ID、一次运行一项，不接受网页传入配置路径；每次在被 Git 忽略的 `research_outputs/workbench_runs/<job_id>/` 保存所选配置、版本、主配置与清单哈希、状态、对照报告和产物哈希。页面读取状态时会重新核对关键记录文件。上方事件/股票筛选不改动固定配置；自定义事件、数据或模型版本尚未实现。旧 Vue/FastAPI 静态演示已从当前分支移除，代码可在 Git 历史中找回。

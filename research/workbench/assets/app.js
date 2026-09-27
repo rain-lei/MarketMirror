@@ -84,7 +84,8 @@
     $("model-run-status").innerHTML="<strong>LLM 尚未运行</strong><p>DeepSeek 原始抽取尚未执行；没有模型准确率结论。</p>";
   }else{
     const raw=mr.raw||{}, norm=mr.normalized||{};
-    $("model-run-status").innerHTML=`<strong>LLM 运行审计</strong><p>${safe(mr.model_id||"模型未知")}：原始 ${safe(raw.rows)}/${safe(mr.scope.requested_rows)} 条，失败 ${safe(raw.request_failures)} 条；标准化 ${safe(norm.status)}；准确率声明已禁用。</p>`;
+    const normalizedSummary=norm.rows===undefined?'尚未标准化':`标准化 ${safe(norm.rows)} 条，解析失败 ${safe(norm.parse_errors)} 条，缺失 ${safe(norm.missing_predictions)} 条`;
+    $("model-run-status").innerHTML=`<strong>LLM 运行审计</strong><p>${safe(mr.model_id||"模型未知")}：原始 ${safe(raw.rows)}/${safe(mr.scope.requested_rows)} 条，请求失败 ${safe(raw.request_failures)} 条；${normalizedSummary}。结构和证据校验不能代表语义准确率，尚需人工金标准。</p>`;
   }
   $("evidence-links").innerHTML=data.evidence.map(e=>`<a href="${safe(e.url)}" target="_blank" rel="noopener noreferrer"><span>${safe(e.label)}</span><span>↗</span></a>`).join("");
   $("limitations").innerHTML=data.limitations.map(x=>`<li>${safe(x)}</li>`).join("");

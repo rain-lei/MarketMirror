@@ -9,6 +9,55 @@ from research.semantic.run_model import list_models, run_model
 
 
 class ModelRunnerTest(unittest.TestCase):
+    def _pack(self, root):
+        items = {f"item-{index}": {"item_id": f"item-{index}", "source_text_sha256": str(index) * 64,
+                                  "segments": [{"source": "question", "text": f"问题 {index}"}]}
+                 for index in (1, 2)}
+        pack = root / "pack"
+        pack.mkdir()
+        (pack / "annotation_manifest.json").write_text("{}", encoding="utf-8")
+        (pack / "annotation_items.jsonl").write_text(
+            "\n".join(json.dumps(item, ensure_ascii=False) for item in items.values()) + "\n", encoding="utf-8")
+        return pack, items
+
+    def test_interrupted_first_run_resumes_from_committed_response(self):
+        for completed in (0, 1):
+            with self.subTest(completed=completed), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                pack, items = self._pack(root)
+                with patch("research.semantic.run_model.load_pack", return_value=(items, {"experiment_id": "exp"})), \
+                     patch("research.semantic.run_model.request_completion",
+                           side_effect=['{"events":[]}'] * completed + [KeyboardInterrupt()]):
+                    with self.assertRaises(KeyboardInterrupt):
+                        run_model(pack, root / "out", "secret")
+                checkpoint = json.loads((root / "out/model_run_manifest.json").read_text(encoding="utf-8"))
+                self.assertEqual(checkpoint["model_rows"], completed)
+                self.assertEqual(checkpoint["remaining_rows"], 2 - completed)
+                # Simulate a write interrupted before the next manifest commit.
+                with (root / "out/model_raw_outputs.jsonl").open("ab") as handle:
+                    handle.write(b'{"item_id":"torn')
+                (root / "out/model_run_manifest.json.tmp").write_text("partial", encoding="utf-8")
+                with patch("research.semantic.run_model.load_pack", return_value=(items, {"experiment_id": "exp"})), \
+                     patch("research.semantic.run_model.request_completion", return_value='{"events":[]}') as request:
+                    result = run_model(pack, root / "out", "secret", resume=True)
+                self.assertEqual(request.call_count, 2 - completed)
+                self.assertEqual(result["model_rows"], 2)
+                self.assertEqual(result["request_failures"], 0)
+
+    def test_resume_rejects_changed_committed_raw_output_before_requesting(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pack, items = self._pack(root)
+            with patch("research.semantic.run_model.load_pack", return_value=(items, {"experiment_id": "exp"})), \
+                 patch("research.semantic.run_model.request_completion", return_value='{"events":[]}') as request:
+                run_model(pack, root / "out", "secret", limit=1)
+                raw = root / "out/model_raw_outputs.jsonl"
+                raw.write_bytes(raw.read_bytes().replace(b'events', b'evEnts'))
+                request.reset_mock()
+                with self.assertRaisesRegex(ValueError, "hash mismatch"):
+                    run_model(pack, root / "out", "secret", resume=True)
+                request.assert_not_called()
+
     def test_model_listing_is_read_only_and_returns_ids(self):
         class Response:
             def __enter__(self):

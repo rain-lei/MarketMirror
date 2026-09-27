@@ -15,7 +15,7 @@ from ..data_pipeline.provenance import file_sha256
 from ..registry.verify_catalog import audit_run, load_catalog
 from ..semantic.audit_model_run import audit_model_run
 
-VERSION = "research-workbench-v4"
+VERSION = "research-workbench-v5"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 OUTPUTS = ROOT / "research_outputs"
@@ -294,6 +294,8 @@ def render_report(data: dict[str, Any]) -> str:
             raw = model_run["raw"]
             normalized = model_run["normalized"]
             lines.append(f"模型 `{model_run.get('model_id')}`；原始响应 {raw['rows']}/{model_run['scope']['requested_rows']} 条，失败 {raw['request_failures']} 条；标准化状态 `{normalized['status']}`；`accuracy_claim_allowed=false`。")
+            if "rows" in normalized:
+                lines.append(f"标准化 {normalized['rows']} 条，解析失败 {normalized['parse_errors']} 条，缺失预测 {normalized['missing_predictions']} 条。结构和证据跨度校验不证明语义准确，仍需人工金标准。")
     lines += ["", "## 研究限制", ""]
     lines.extend(f"- {item}" for item in data["limitations"])
     return "\n".join(lines) + "\n"
