@@ -132,6 +132,10 @@
     ? `<strong>下半年独立留出 · ${safe(hm.items)}/${safe(hm.items)}</strong><p>固定 ${safe(hm.prompt_version)}：请求失败 ${safe(hm.request_failures)}，解析失败 ${safe(hm.parse_errors)}；有效空事件 ${safe(hm.valid_empty_rows)} 条，含事件 ${safe(hm.valid_event_rows)} 条，共 ${safe(hm.validated_events)} 个抽取事件。</p><p>尚无独立双人裁定金标准；不能计算准确率或允许接入 Agent。</p>`
     : `<strong>下半年留出尚未审计</strong><p>没有可展示的留出模型结果。</p>`;
   const rr=data.review_readiness;
+  const gate=data.agent_signal_gate;
+  $("agent-signal-gate-status").innerHTML=gate
+    ? `<strong>Agent 语义信号 · ${safe(gate.status)}</strong><p>适配器 ${safe(gate.adapter_version)}；已审 ${safe(gate.reviewed_items)}/${safe(gate.required_items)} 条。</p><p>${safe(gate.reason)}</p>`
+    : `<strong>Agent 语义信号门槛尚未核验</strong><p>没有生成真实语义信号流。</p>`;
   $("review-readiness-status").innerHTML=rr
     ? `<strong>人工审核包 · ${safe(rr.status)}</strong><p>固定 ${safe(rr.items)} 条，${safe(rr.reviewer_slots)} 个独立审核位；当前已审核 ${safe(rr.reviewed_items)} 条；空白标签 ${safe(rr.blank_label_rows_per_reviewer)} 条/人，离线页面 ${safe(rr.interface_pages)} 个。</p><p>来源绑定、页面脱敏和哈希已通过；尚未产生人工金标准。</p>`
     : `<strong>人工审核包尚未核验</strong><p>没有可展示的审核交接状态。</p>`;

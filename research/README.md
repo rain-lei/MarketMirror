@@ -514,13 +514,13 @@ v2 使用 `evidence_quotes`，仅由本地程序按逐字、唯一匹配计算�
 工作台对 18 项固定运行再次校验输入、代码和输出，再从事件、预测、成交活动与 Agent 回放结果中按白名单抽取汇总。原始问答、个人路径和完整数据库不会写进页面；页面提供事件口径、回放时期与股票筛选、18 项运行的 41 份产物名称及比较状态、核验状态和公开证据链接。
 
 ```powershell
-& $py -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_llm_v3
+& $py -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_llm_v14
 ```
 
 在浏览器打开生成的 `index.html` 可离线查看摘要；输出目录必须是新空目录。要在页面上重跑固定实验，启动只监听 `127.0.0.1` 的本地服务：
 
 ```powershell
-& $py -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_llm_v3
+& $py -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_llm_v14
 ```
 
 打开 `http://127.0.0.1:8766/`，选择清单中的运行并执行。页面会显示并提交该运行的固定数据版本和执行版本，服务端只接受与清单匹配的组合；财务字段口径卡片展示字段统计、来源哈希和未确认项。页面顶部可下载由同一份白名单摘要生成的 `report.md`，用于归档或复核。也可用 `& $py -m research.workbench.run observed_event` 单独重跑。执行入口只接受固定清单内的运行 ID、一次运行一项，不接受网页传入配置路径；每次在被 Git 忽略的 `research_outputs/workbench_runs/<job_id>/` 保存所选配置、版本、主配置与清单哈希、状态、对照报告和产物哈希。页面读取状态时会重新核对关键记录文件。上方事件/股票筛选不改动固定配置；自定义事件、数据或模型版本尚未实现。旧 Vue/FastAPI 静态演示已从当前分支移除，代码可在 Git 历史中找回。

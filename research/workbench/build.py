@@ -14,10 +14,11 @@ from typing import Any
 
 from ..data_pipeline.provenance import file_sha256
 from ..registry.verify_catalog import audit_run, load_catalog
+from ..semantic.agent_signal_adapter import VERSION as AGENT_SIGNAL_ADAPTER_VERSION
 from ..semantic.audit_model_run import audit_model_run
 from ..semantic.review_readiness import audit_review_package
 
-VERSION = "research-workbench-v15"
+VERSION = "research-workbench-v16"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 CAPACITY_CONFIG = ROOT / "research/configs/integrity_catalog_capacity_series.json"
@@ -548,6 +549,23 @@ def checked_review_readiness() -> dict[str, Any]:
     return public
 
 
+def checked_agent_signal_gate(review_readiness: dict[str, Any], holdout_model: dict[str, Any]) -> dict[str, Any]:
+    """Publish the current Agent signal eligibility without manufacturing a score."""
+    if review_readiness.get("gold_ready") is not False:
+        raise ValueError("workbench expects the current H2 package to have no gold standard")
+    if review_readiness.get("reviewed_items") != 0 or review_readiness.get("items") != 128:
+        raise ValueError("workbench Agent gate summary no longer matches the blank H2 package")
+    if holdout_model.get("items") != 128 or holdout_model.get("request_failures") != 0:
+        raise ValueError("workbench Agent gate summary no longer matches the frozen model run")
+    result = {"status": "blocked_until_human_gold", "passed": False,
+              "gold_ready": False, "reviewed_items": 0, "required_items": 128,
+              "adapter_version": AGENT_SIGNAL_ADAPTER_VERSION,
+              "scope": "受控 Agent 语义信号消融资格；不代表投资者校准、历史因果复现或监管预测。",
+              "reason": "尚无独立双人审核、第三人裁定和留出评分金标准；适配器会拒绝生成真实信号流。"}
+    validate_public_payload(result)
+    return result
+
+
 def collect_data() -> dict[str, Any]:
     pinned = load_catalog(CONFIG)
     cache: dict[Path, str] = {}
@@ -581,6 +599,7 @@ def collect_data() -> dict[str, Any]:
     visibility_lag_series = checked_visibility_lag_series()
     independent_quotes = checked_independent_quotes()
     review_readiness = checked_review_readiness()
+    agent_signal_gate = checked_agent_signal_gate(review_readiness, holdout_model)
     if ({row["event_id"] for row in counterfactual_series}
             != {row["event_id"] for row in lagged_impact_series}):
         raise ValueError("fixed and lagged impact events differ; shared filter is unsafe")
@@ -662,6 +681,7 @@ def collect_data() -> dict[str, Any]:
         "visibility_lag_series": visibility_lag_series,
         "independent_quotes": independent_quotes,
         "review_readiness": review_readiness,
+        "agent_signal_gate": agent_signal_gate,
         "semantic": {"items": reviewed["pack_items"], "dual_reviewed": reviewed["dual_reviewed_items"],
                      "pending": reviewed["pending_items"], "conflicts": reviewed["conflict_items"],
                      "gold_ready": reviewed["gold_ready"], "status": reviewed["status"]},
@@ -811,6 +831,11 @@ def render_report(data: dict[str, Any]) -> str:
         lines += ["## 下半年留出人工审核准备", "",
                   f"审核包状态 `{readiness['status']}`；固定条目 {readiness['items']} 条；独立审核位 {readiness['reviewer_slots']} 个；当前已审核 {readiness['reviewed_items']} 条；每位审核者的空白标签行 {readiness['blank_label_rows_per_reviewer']} 条；离线页面 {readiness['interface_pages']} 个。",
                   "该状态只证明来源绑定、页面脱敏、空白标签和哈希一致，不代表语义准确率，也没有生成金标准。", ""]
+    gate = data.get("agent_signal_gate")
+    if gate:
+        lines += ["## Agent 语义信号接入门槛", "",
+                  f"状态 `{gate['status']}`；适配器 `{gate['adapter_version']}`；已审 {gate['reviewed_items']}/{gate['required_items']} 条。",
+                  gate["reason"], gate["scope"], ""]
     lines += ["## 公开证据", ""]
     lines.extend(f"- [{item['label']}]({item['url']})" for item in data["evidence"])
     financial = data.get("financial_dictionary")
@@ -903,6 +928,7 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
             "holdout_model_normalization_manifest": OUTPUTS / "semantic_holdout_h2_2020_normalized/normalization_manifest.json",
             "holdout_model_diagnostics_manifest": OUTPUTS / "semantic_holdout_h2_2020_diagnostics/diagnostics_manifest.json",
             "semantic_comparison": OUTPUTS / "semantic_review_comparison_pilot_2020/comparison_results.json",
+            "agent_signal_adapter": ROOT / "research/semantic/agent_signal_adapter.py",
             "financial_quality_report": OUTPUTS / "financial_2020/financial_quality_report.json",
             "financial_dictionary": OUTPUTS / "financial_2020/field_dictionary.json"}.items()}
         for version in ("v1", "v2"):

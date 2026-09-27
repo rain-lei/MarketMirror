@@ -8,12 +8,21 @@ from unittest.mock import patch
 
 from research.data_pipeline.provenance import file_sha256
 from research.workbench import build as workbench_build
-from research.workbench.build import render_report, validate_public_payload
+from research.workbench.build import checked_agent_signal_gate, render_report, validate_public_payload
 from research.workbench.run import CONFIG, read_public_job, run_selected, selected_config
 from research.workbench.serve import create_server, validate_site
 
 
 class WorkbenchPayloadTest(unittest.TestCase):
+    def test_agent_signal_gate_is_blocked_until_human_gold(self):
+        result = checked_agent_signal_gate(
+            {"gold_ready": False, "reviewed_items": 0, "items": 128},
+            {"items": 128, "request_failures": 0},
+        )
+        self.assertFalse(result["passed"])
+        self.assertEqual(result["status"], "blocked_until_human_gold")
+        self.assertIn("适配器会拒绝", result["reason"])
+
     def test_summary_only_payload_accepts_public_metrics_and_sources(self):
         validate_public_payload({"events": [{"car": -0.04, "stock_code": "000001"}],
                                  "evidence": [{"url": "https://example.org/notice"}]})
@@ -47,6 +56,11 @@ class WorkbenchPayloadTest(unittest.TestCase):
                                  "reviewer_slots": 2, "reviewed_items": 0,
                                  "blank_label_rows_per_reviewer": 128,
                                  "interface_pages": 2, "gold_ready": False},
+            "agent_signal_gate": {"status": "blocked_until_human_gold", "passed": False,
+                                  "gold_ready": False, "reviewed_items": 0, "required_items": 128,
+                                  "adapter_version": "semantic-agent-signal-adapter-v1",
+                                  "scope": "受控 Agent 语义信号消融资格；不代表投资者校准、历史因果复现或监管预测。",
+                                  "reason": "尚无独立双人审核、第三人裁定和留出评分金标准；适配器会拒绝生成真实信号流。"},
             "activity": [{"event_id": "asset_management_guidance_date_only", "stock_code": "000001",
                           "amount_fold": 0.781}],
             "placebo": {"asset_management_guidance_date_only": {"before": 150, "after": 27}},
@@ -93,6 +107,8 @@ class WorkbenchPayloadTest(unittest.TestCase):
         self.assertIn("东方财富不复权 CAR", report)
         self.assertIn("下半年留出人工审核准备", report)
         self.assertIn("ready_for_human_review", report)
+        self.assertIn("Agent 语义信号接入门槛", report)
+        self.assertIn("blocked_until_human_gold", report)
         self.assertIn("[-3, +5]", report)
         self.assertIn("2018-01-02 至 2018-01-03：2 日", report)
         self.assertIn("问答可见时间敏感性", report)
