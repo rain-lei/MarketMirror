@@ -1,0 +1,10 @@
+{
+  "runs": [
+    {
+      "run_id": "independent_quote_check_2018_2020",
+      "manifest": "../../research_outputs/independent_eastmoney_2018_2020/check_v2/independent_quote_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "1b581cb47d45b4ac25479c58dc321831194a6f8b3c7684e6c8c4424dd571d9c6"
+    }
+  ]
+}

@@ -38,6 +38,10 @@
     $("event-caption").textContent = `等权三股累计异常收益；窗口 [-${rows[0].window_before}, +${rows[0].window_after}]，包括事件前交易日。${eventNames[id] || id}，不能解释为政策发布后的跌幅。`;
     const activity = new Map(data.activity.filter(a=>a.event_id===id).map(a=>[a.stock_code,a]));
     $("event-table").innerHTML=`<table class="data-table"><thead><tr><th>股票</th><th>对齐日</th><th style="text-align:right">CAR</th><th style="text-align:right">成交额倍数</th></tr></thead><tbody>${rows.map(e=>`<tr><td>${safe(codes[e.stock_code]||e.stock_code)}</td><td>${safe(e.event_date)}</td><td class="num ${e.car>=0?'positive':'negative'}">${pct(e.car)}</td><td class="num">${activity.has(e.stock_code)?Number(activity.get(e.stock_code).amount_fold).toFixed(2)+'×':'—'}</td></tr>`).join("")}</tbody></table>`;
+    const quotes=(data.independent_quotes||[]).filter(e=>e.event_id===id).sort((a,b)=>a.stock_code.localeCompare(b.stock_code));
+    $("independent-quote-table").innerHTML=quotes.length
+      ? `<table class="data-table"><thead><tr><th>股票</th><th style="text-align:right">BaoStock CAR</th><th style="text-align:right">东方财富不复权 CAR</th><th style="text-align:right">差（百分点）</th><th style="text-align:right">窗口最大日差（百分点）</th><th>估计期差异</th></tr></thead><tbody>${quotes.map(e=>`<tr><td>${safe(codes[e.stock_code]||e.stock_code)}</td><td class="num">${pct(e.baostock_car)}</td><td class="num">${pct(e.eastmoney_unadjusted_car)}</td><td class="num">${Number(e.car_difference_pp).toFixed(4)}</td><td class="num">${Number(e.event_window_max_absolute_difference_pp).toFixed(4)}</td><td>${e.estimation_basis_exception?'有大差异日':'无大差异日'}</td></tr>`).join("")}</tbody></table>`
+      : "<p class=\"note\">该事件尚无通过核验的第二行情源结果。</p>";
     const placebo=data.placebo[id];
     $("placebo-summary").textContent=placebo
       ? `${eventNames[id]||id}窗口 ${placebo.blackout_start}—${placebo.blackout_end} 被隔离后，事前 ${placebo.before} 日、事后 ${placebo.after} 日可作描述性日期对照；排名不是 p 值。`

@@ -1,0 +1,41 @@
+{
+  "run_id": "independent_quote_check_2018_2020",
+  "capture_date": "2026-09-27",
+  "capture_method": "Firecrawl CLI scrape of Eastmoney historical K-line JSON; the saved file is a fenced JSON rendering, not original HTTP wire bytes",
+  "provider_endpoint": "https://push2his.eastmoney.com/api/qt/stock/kline/get",
+  "request_parameters": {
+    "klt": "101",
+    "fqt": "0",
+    "fields1": "f1,f2,f3,f4,f5,f6",
+    "fields2": "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61",
+    "ut": "fa5fd1943c7b386f172d6893dbfba10b"
+  },
+  "documentation_url": "https://akshare.akfamily.xyz/data/stock/stock.html",
+  "documentation_sha256": "395370be2596cba3faea9c9710091c0dac4714bb367e2548f7c6d30e39489c09",
+  "rounding_tolerance_percentage_points": 0.0052,
+  "material_difference_percentage_points": 0.02,
+  "periods": [
+    {
+      "year": "2018",
+      "start_date": "2017-09-01",
+      "end_date": "2018-05-15",
+      "captures": {
+        "000001": "9dfe29515661a373325934ad56da62686ea372b45a3efa1a423ca2a2683d2a38",
+        "000002": "a6e64fde2a92b6fefe213ac688e3d4210b1baf3f94cc3ac5dca553d34c8422fd",
+        "600519": "86164f6c7d3bac22278cbaa47c1d770f66285f97fd6fb66c46801cb5ef972af7",
+        "000300": "a91cac669c79a229d7edcf6a9ced534a73c2589ed8ab86b78415d617b9db3c10"
+      }
+    },
+    {
+      "year": "2020",
+      "start_date": "2019-06-01",
+      "end_date": "2020-02-15",
+      "captures": {
+        "000001": "ac2424f3c6b35fbc08096dd48846a9592a2e1de5eac899e252f216efd9ff544c",
+        "000002": "8e3cf6e5314d1f4197a0f4cb2fadeb43e4bcbe0fd00dfd738c0c41687c62af80",
+        "600519": "9b95ffbb5e8510f084884b2d036973e2144d5a2d0e1fa94e0df99907598ad395",
+        "000300": "77a77b62c2adc9a003dc9096914c60a4c38668ada67646d4cbec1fddd0adec02"
+      }
+    }
+  ]
+}

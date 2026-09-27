@@ -31,6 +31,7 @@
         <article class="card chart-card"><div class="card-head"><div><h3>异常收益路径</h3><p>市场模型 CAR：日异常收益之和</p></div><label class="field-label">事件口径<select id="event-select"></select></label></div><div id="event-chart" class="chart" role="img" aria-label="异常收益路径图"></div><p id="event-caption" class="note"></p></article>
         <article class="card"><div class="card-head"><div><h3>股票对照</h3><p>CAR 与事件日成交额 / 基期中位数</p></div></div><div id="event-table"></div><div class="callout"><span>日期诊断</span><p id="placebo-summary"></p></div></article>
       </div>
+      <article class="card"><h3>第二行情源口径敏感性</h3><p class="note">原 BaoStock 事件研究使用 adjustflag=1，东方财富当前历史快照使用 fqt=0 不复权日涨跌幅。两种 CAR 的差混合了显示舍入与调整基准差异，不能当作同口径独立复现。</p><div id="independent-quote-table"></div><p class="note">九组事件窗口逐日收益差均在 0.0052 个百分点内；2020 年核对区间三只股票各有一处更大差异，仅万科 A 的 2019-08-15 进入两种武汉对齐口径的估计窗口。该快照不是 2018/2020 当时留存的数据。</p></article>
     </section>
 
     <section class="section" id="prediction">

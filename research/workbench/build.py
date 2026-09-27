@@ -16,7 +16,7 @@ from ..data_pipeline.provenance import file_sha256
 from ..registry.verify_catalog import audit_run, load_catalog
 from ..semantic.audit_model_run import audit_model_run
 
-VERSION = "research-workbench-v13"
+VERSION = "research-workbench-v14"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 CAPACITY_CONFIG = ROOT / "research/configs/integrity_catalog_capacity_series.json"
@@ -24,6 +24,7 @@ CAPACITY_REEXEC_CONFIG = ROOT / "research/configs/reexecution_catalog_capacity_s
 COUNTERFACTUAL_CONFIG = ROOT / "research/configs/integrity_catalog_observed_counterfactual.json"
 LAGGED_IMPACT_CONFIG = ROOT / "research/configs/integrity_catalog_lagged_impact.json"
 VISIBILITY_LAG_CONFIG = ROOT / "research/configs/integrity_catalog_visibility_lag_2020.json"
+INDEPENDENT_QUOTE_CONFIG = ROOT / "research/configs/integrity_catalog_independent_quotes.json"
 HOLDOUT_MODEL_CONFIG = ROOT / "research/configs/integrity_catalog_semantic_holdout_model_h2_2020.json"
 OUTPUTS = ROOT / "research_outputs"
 ASSETS = Path(__file__).resolve().parent / "assets"
@@ -455,6 +456,61 @@ def checked_visibility_lag_series() -> list[dict[str, Any]]:
     return public
 
 
+def checked_independent_quotes() -> list[dict[str, Any]]:
+    """Expose the current-vintage cross-provider diagnostic with its basis caveat."""
+    pinned = load_catalog(INDEPENDENT_QUOTE_CONFIG)
+    if len(pinned) != 1 or pinned[0]["run_id"] != "independent_quote_check_2018_2020":
+        raise ValueError("independent quote catalog has an unexpected run")
+    if audit_run(pinned[0], INDEPENDENT_QUOTE_CONFIG.parent, ROOT / "research", OUTPUTS, {})["status"] != "passed":
+        raise ValueError("independent quote run failed pinned integrity checks")
+    integrity = checked_report(OUTPUTS / "integrity_catalog_independent_quotes_v1",
+                               "integrity_manifest.json", "integrity_results.json",
+                               ROOT / "research/registry/verify_catalog.py")
+    if (integrity["catalog_sha256"] != file_sha256(INDEPENDENT_QUOTE_CONFIG)
+            or integrity["passed_runs"] != 1):
+        raise ValueError("stored independent quote audit does not match catalog")
+    original_path = (INDEPENDENT_QUOTE_CONFIG.parent / pinned[0]["manifest"]).resolve()
+    original = json.loads(original_path.read_text(encoding="utf-8"))
+    rerun_dir = OUTPUTS / "independent_eastmoney_2018_2020/check_verified_rerun_v1"
+    rerun = json.loads((rerun_dir / "independent_quote_manifest.json").read_text(encoding="utf-8"))
+    artifacts = {"independent_quote_results.json", "independent_quote_report.md"}
+    if (original.get("pipeline_version") != "independent-quote-check-v1"
+            or rerun != original or set(original["artifacts"]) != artifacts
+            or any(file_sha256(rerun_dir / name) != original["artifacts"][name]["sha256"]
+                   for name in artifacts)):
+        raise ValueError("independent quote rerun differs from original")
+    result = json.loads((original_path.parent / "independent_quote_results.json").read_text(encoding="utf-8"))
+    periods = result.get("periods", [])
+    if (result.get("pipeline_version") != original["pipeline_version"]
+            or result.get("data_kind") != "cross_provider_current_vintage_diagnostic"
+            or [p["year"] for p in periods] != ["2018", "2020"]
+            or [len(p["events"]) for p in periods] != [3, 6]
+            or any(set(p["quotes"]) != {"000001", "000002", "600519", "000300"}
+                   or any(q["sessions"] != sessions for q in p["quotes"].values())
+                   for p, sessions in zip(periods, (168, 171)))):
+        raise ValueError("independent quote result has unexpected scope")
+    tolerance = result["rounding_tolerance_percentage_points"]
+    rows = []
+    for period in periods:
+        for event in period["events"]:
+            if event["event_window_beyond_rounding_days"] != 0 or event["event_window_max_absolute_difference_pp"] > tolerance:
+                raise ValueError("independent quote event-window returns exceed rounding tolerance")
+            row = {"period": period["year"], "event_id": event["event_id"],
+                   "stock_code": event["stock_code"],
+                   "baostock_car": event["baostock_adjusted_car"],
+                   "eastmoney_unadjusted_car": event["eastmoney_unadjusted_car"],
+                   "car_difference_pp": event["car_difference_pp"],
+                   "event_window_max_absolute_difference_pp": event["event_window_max_absolute_difference_pp"],
+                   "estimation_basis_exception": bool(event["estimation_material_difference_dates"])}
+            if any(type(row[key]) not in (int, float) or not math.isfinite(row[key])
+                   for key in ("baostock_car", "eastmoney_unadjusted_car", "car_difference_pp",
+                               "event_window_max_absolute_difference_pp")):
+                raise ValueError("independent quote public metric is not finite")
+            rows.append(row)
+    validate_public_payload(rows)
+    return rows
+
+
 def collect_data() -> dict[str, Any]:
     pinned = load_catalog(CONFIG)
     cache: dict[Path, str] = {}
@@ -486,6 +542,7 @@ def collect_data() -> dict[str, Any]:
     counterfactual_series = checked_counterfactual_series()
     lagged_impact_series = checked_lagged_impact_series()
     visibility_lag_series = checked_visibility_lag_series()
+    independent_quotes = checked_independent_quotes()
     if ({row["event_id"] for row in counterfactual_series}
             != {row["event_id"] for row in lagged_impact_series}):
         raise ValueError("fixed and lagged impact events differ; shared filter is unsafe")
@@ -565,6 +622,7 @@ def collect_data() -> dict[str, Any]:
         "counterfactual_series": counterfactual_series,
         "lagged_impact_series": lagged_impact_series,
         "visibility_lag_series": visibility_lag_series,
+        "independent_quotes": independent_quotes,
         "semantic": {"items": reviewed["pack_items"], "dual_reviewed": reviewed["dual_reviewed_items"],
                      "pending": reviewed["pending_items"], "conflicts": reviewed["conflict_items"],
                      "gold_ready": reviewed["gold_ready"], "status": reviewed["status"]},
@@ -575,13 +633,20 @@ def collect_data() -> dict[str, Any]:
         "evidence": [{"label": "人民银行：2018 资管新规答记者问", "url": event_2018["config"]["events"][0]["evidence_source"]},
                      {"label": "新华社：武汉通告", "url": "https://www.xinhuanet.com/politics/2020-01/23/c_1125495557.htm"},
                      {"label": "上交所：春节休市调整", "url": "http://www.sse.com.cn/disclosure/announcement/general/c/c_20200127_4991582.shtml"},
-                     {"label": "BaoStock API 文档", "url": "https://www.baostock.com/mainContent?file=pythonAPI.md"}],
+                     {"label": "BaoStock API 文档", "url": "https://www.baostock.com/mainContent?file=pythonAPI.md"},
+                     {"label": "AKShare 东方财富历史行情字段文档", "url": "https://akshare.akfamily.xyz/data/stock/stock.html"}],
         "limitations": ["原始问答公开时点、财务单位与标签定义尚未独立核实。",
                         "三类 Agent 参数是示意值；没有可观察持仓、净订单流或盘口深度作行为与冲击校准。",
                         "假设冲击情景把模拟冲击叠加在已实现收益上，可能重复计入真实市场运动；不是历史价格复现或预警验证。",
                         "2018 资管新规是去杠杆背景下的一个节点；窗口包含发布前交易日，存在预期和同期冲击。2018 回放未接入当年问答或政策文本。",
                         "文本预测增益区间包含零；语义标注尚无双人完成条目。"],
     }
+    displayed_events = {(row["event_id"], row["stock_code"]): row for row in summary["events"]}
+    if set(displayed_events) != {(row["event_id"], row["stock_code"]) for row in independent_quotes}:
+        raise ValueError("independent quote event set differs from displayed original events")
+    if any(not math.isclose(row["baostock_car"], displayed_events[(row["event_id"], row["stock_code"])]["car"],
+                            abs_tol=1e-12, rel_tol=0) for row in independent_quotes):
+        raise ValueError("independent quote baseline CAR differs from displayed event")
     for label, replay in (("2018 H1", replay_2018), ("2020 Q1", replay_q1), ("2020 Apr–Dec", replay_later)):
         for code, paths in replay["paths"].items():
             active, control = paths["market_signal"]["summary"], paths["zero_signal"]["summary"]
@@ -620,6 +685,17 @@ def render_report(data: dict[str, Any]) -> str:
         lines += ["", "事件窗口（相对交易日）："]
         windows = {r["event_id"]: (r["window_before"], r["window_after"]) for r in data["events"]}
         lines.extend(f"- {event_id}：[-{before}, +{after}]。" for event_id, (before, after) in windows.items())
+    if data.get("independent_quotes"):
+        lines += ["", "### 第二行情源口径敏感性", "",
+                  "东方财富当次历史快照为不复权日涨跌幅，原事件实验为 BaoStock adjustflag=1；两者并非同一收益定义。下表的 CAR 差值混合了显示舍入与收益调整基准差异，只用于口径敏感性诊断。", "",
+                  "| 年份 | 事件口径 | 股票 | BaoStock CAR | 东方财富不复权 CAR | 差（百分点） | 事件窗口最大日差（百分点） | 估计期存在大差异日 |",
+                  "|---|---|---|---:|---:|---:|---:|---|"]
+        for row in data["independent_quotes"]:
+            lines.append(f"| {row['period']} | {row['event_id']} | {row['stock_code']} | "
+                         f"{row['baostock_car']:.4%} | {row['eastmoney_unadjusted_car']:.4%} | "
+                         f"{row['car_difference_pp']:+.4f} | {row['event_window_max_absolute_difference_pp']:.4f} | "
+                         f"{'是' if row['estimation_basis_exception'] else '否'} |")
+        lines += ["", "2018/2020 九组事件窗口内的日收益差均未超过 0.0052 个百分点；2020 年核对区间有三处更大的股票收益口径差，仅万科 A 的 2019-08-15 进入两种武汉对齐口径的估计期。数据为 2026-09-27 抓取的当前历史版本，尚未核对当时可见版本、公司行为公告或同定义复权结果。"]
     if data.get("activity") or data.get("placebo"):
         lines += ["", "## 成交活动与日期对照", "",
                   "成交倍数以事件估计期的日中位数为基期；日期排名只描述所选候选集合，不是 p 值或因果检验。", "",
@@ -770,6 +846,10 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
             "visibility_lag_integrity_results": OUTPUTS / "integrity_catalog_visibility_lag_2020_v1/integrity_results.json",
             "visibility_lag_original_manifest": OUTPUTS / "text_pilot_2020/visibility_lag_v2/visibility_lag_manifest.json",
             "visibility_lag_rerun_manifest": OUTPUTS / "text_pilot_2020/visibility_lag_verified_rerun_v1/visibility_lag_manifest.json",
+            "independent_quote_catalog": INDEPENDENT_QUOTE_CONFIG,
+            "independent_quote_integrity_results": OUTPUTS / "integrity_catalog_independent_quotes_v1/integrity_results.json",
+            "independent_quote_original_manifest": OUTPUTS / "independent_eastmoney_2018_2020/check_v2/independent_quote_manifest.json",
+            "independent_quote_rerun_manifest": OUTPUTS / "independent_eastmoney_2018_2020/check_verified_rerun_v1/independent_quote_manifest.json",
             "holdout_model_catalog": HOLDOUT_MODEL_CONFIG,
             "holdout_model_integrity_results": OUTPUTS / "integrity_catalog_semantic_holdout_model_h2_2020_v1/integrity_results.json",
             "holdout_model_raw_manifest": OUTPUTS / "semantic_holdout_h2_2020_model/model_run_manifest.json",

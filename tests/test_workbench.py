@@ -37,6 +37,12 @@ class WorkbenchPayloadTest(unittest.TestCase):
                         "event_date": "2018-05-02", "car": -0.09, "window_before": 3, "window_after": 5},
                        {"event_id": "event", "stock_code": "000001", "event_date": "2020-01-01",
                         "car": 0.01, "window_before": 3, "window_after": 5}],
+            "independent_quotes": [{"period": "2018", "event_id": "asset_management_guidance_date_only",
+                                    "stock_code": "000001", "baostock_car": -0.09,
+                                    "eastmoney_unadjusted_car": -0.089,
+                                    "car_difference_pp": 0.1,
+                                    "event_window_max_absolute_difference_pp": 0.004,
+                                    "estimation_basis_exception": False}],
             "activity": [{"event_id": "asset_management_guidance_date_only", "stock_code": "000001",
                           "amount_fold": 0.781}],
             "placebo": {"asset_management_guidance_date_only": {"before": 150, "after": 27}},
@@ -79,6 +85,8 @@ class WorkbenchPayloadTest(unittest.TestCase):
         self.assertIn("# MarketMirror 研究摘要报告", report)
         self.assertIn("2018-05-02", report)
         self.assertIn("2020-01-01", report)
+        self.assertIn("第二行情源口径敏感性", report)
+        self.assertIn("东方财富不复权 CAR", report)
         self.assertIn("[-3, +5]", report)
         self.assertIn("2018-01-02 至 2018-01-03：2 日", report)
         self.assertIn("问答可见时间敏感性", report)

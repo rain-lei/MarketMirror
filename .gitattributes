@@ -1,3 +1,6 @@
 research/baselines/visibility_lag.py text eol=lf
 research/configs/visibility_lag_2020.json text eol=lf
 research/configs/integrity_catalog_visibility_lag_2020.json text eol=lf
+research/configs/independent_quote_check_2018_2020.json text eol=lf
+research/data_pipeline/crosscheck_quotes.py text eol=lf
+research/configs/integrity_catalog_independent_quotes.json text eol=lf
