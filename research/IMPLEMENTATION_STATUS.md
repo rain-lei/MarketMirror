@@ -173,6 +173,8 @@
 
 双人审核准备包已生成于 `research_outputs/semantic_review_pilot_2020/`。两份任务按不同顺序排列，隐藏结构化股票代码、样本分组和抽样层，仅保留可见文本、阶段及哈希；原文可能仍可识别公司。为便于真实双人标注，已从核验后的空白包生成 `research_outputs/semantic_review_interface_2020/reviewer_a.html` 和 `reviewer_b.html`，页面不含模型预测，支持逐条人工填写和下载 JSONL 草稿；代码检查了包哈希、盲化字段、脚本注入转义及浏览器端证据位置。下半年留出包的 A/B 页面另已在真实浏览器核对不同首页条目、阶段可见内容、计数和逐条导航，交接步骤见[留出盲审交接](SEMANTIC_REVIEW_HANDOFF_H2_2020.md)。当前空白模板比较报告在 `research_outputs/semantic_review_comparison_pilot_2020/comparison_report.md`，状态 `no_dual_review`，0 条双人完成、128 条待审。代码可核对标注覆盖、事件有无 κ、完整事件一致性、分歧及证据跨度；只有双人全量完成且裁定者逐项签署、分歧留有书面理由，才导出供模型评分的金标准文件。程序不能证明身份真实或语义判断正确，仍需实际独立审核和负责人抽查。
 
+本轮另做了一次单人临时复核，入口为 `semantic/provisional_review.py`，结果写入 Git 忽略的 `research_outputs/semantic_holdout_h2_2020_codex_provisional_review/`：128/128 条通过标签和逐字证据校验，共 53 个回复事件。该结果主动压制问题阶段的未确认推测、删除没有回复证据的候选，并补充了 3 个回复中的明确状态；由于模型候选在工程复核时可见，且没有第二名审核者和裁定者，它不是独立金标准，也不改变 `blocked_until_human_gold` 门控。
+
 ## 历史成交活动初测
 
 BaoStock 已留存的原始逐日响应含成交股数和人民币成交额，单位与已缓存的官方 API 文档核对。对 `000001`、`000002`、`600519` 的 388 个开市日共 1,164 条记录执行来源文件哈希、日历、代码、复权/交易状态及数值检查，输出在 `research_outputs/observed_2020/activity/`。没有用断点异常的后复权价格解释成交额。
