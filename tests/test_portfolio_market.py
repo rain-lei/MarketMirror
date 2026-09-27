@@ -9,7 +9,7 @@ from pathlib import Path
 from research.simulation.call_auction import AuctionAccount, CallAuction, LimitOrder
 from research.simulation.portfolio_auction import PortfolioAccount, PortfolioAuction
 from research.simulation.portfolio_audit import audit_portfolio_day
-from research.simulation.portfolio_market import simulate_portfolio, portfolio_decision
+from research.simulation.portfolio_market import initial_portfolio, simulate_portfolio, portfolio_decision
 from research.simulation.portfolio_experiment import run_experiment, load_summary
 from research.simulation.audit_portfolio import audit_directory, load_audit
 from research.data_pipeline.provenance import file_sha256
@@ -51,17 +51,33 @@ class PortfolioMarketTest(unittest.TestCase):
             (root/'background.json').write_text(json.dumps(bgcfg),encoding='utf-8')
             cfg=json.loads((Path(__file__).parents[1]/'research/configs/semantic_portfolio_all126_2020.json').read_text(encoding='utf-8'))
             cfg.update(background_config='background.json',basket_size=2)
+            cfg['cases'].append({'case_id':'separated_weighted','cash_mode':'separated','institutional_asset_cap':0.35,
+                                 'initial_cash_weights':[9,1]})
             config=root/'portfolio.json';config.write_text(json.dumps(cfg),encoding='utf-8')
             summary=run_experiment(config,root/'output')
             self.assertEqual(summary,run_experiment(config,root/'repeat'))
             self.assertEqual(summary,load_summary(root/'output'))
-            self.assertEqual((summary['paths'],summary['ledger_rows'],summary['asset_call_rows']),(16,96,192))
+            self.assertEqual((summary['paths'],summary['ledger_rows'],summary['asset_call_rows']),(20,120,240))
+            result_data=json.loads((root/'output/portfolio_results.json').read_text(encoding='utf-8'))
+            path_summaries={row['path_id']:row for row in result_data['path_summaries']}
+            for response in cfg['quote_response_bps']:
+                for enabled in (False,True):
+                    shared=path_summaries[f'0:shared_institution35:{response}:{int(enabled)}']
+                    equal=path_summaries[f'0:separated_institution35:{response}:{int(enabled)}']
+                    ignored={'path_id','case_id','cash_mode','initial_cash_weights','trace_sha256','accounts'}
+                    self.assertEqual({k:v for k,v in shared.items() if k not in ignored},
+                                     {k:v for k,v in equal.items() if k not in ignored})
+                    for name,account in shared['accounts'].items():
+                        other=equal['accounts'][name]
+                        self.assertEqual({k:v for k,v in account.items() if k!='wallets'},
+                                         {k:v for k,v in other.items() if k!='wallets'})
+                        self.assertEqual(sum(account['wallets'].values()),sum(other['wallets'].values()))
             a=json.loads((root/'output/portfolio_manifest.json').read_text(encoding='utf-8'))
             b=json.loads((root/'repeat/portfolio_manifest.json').read_text(encoding='utf-8'))
             self.assertEqual(a['artifacts'],b['artifacts'])
             audited=audit_directory(root/'output',config,root/'audit')
             self.assertEqual(audited,load_audit(root/'output',root/'audit'))
-            self.assertEqual(audited['sampled_dense_asset_calls'],32)
+            self.assertEqual(audited['sampled_dense_asset_calls'],40)
             self.assertTrue(audited['checks']['grouped_results'])
             summary_file=root/'output/portfolio_summary.json'
             results_file=root/'output/portfolio_results.json'
@@ -112,6 +128,30 @@ class PortfolioMarketTest(unittest.TestCase):
             accounts={'buyer':PortfolioAccount({'shared':1002},{'A':0,'B':0},{'A':0,'B':0}),
                       'seller':PortfolioAccount({'A':0,'B':0},{'A':20,'B':20},{'A':20,'B':20})}
             audit_portfolio_day(record(damaged),prior(PortfolioAuction(accounts,['A','B'],settings)),settings,0)
+
+    def test_initial_cash_weights_are_exact_and_preserve_total_resources(self):
+        agents=[AgentParameters(**p) for p in PARAMETERS]
+        assets=['A','B','C']
+        background=CONFIG['background_cases'][3]
+        equal={'case_id':'equal','cash_mode':'separated','institutional_asset_cap':0.35,'initial_cash_weights':[1,1,1]}
+        skewed={'case_id':'skewed','cash_mode':'separated','institutional_asset_cap':0.35,'initial_cash_weights':[98,1,1]}
+        _, equal_accounts, equal_specs, _=initial_portfolio(agents,CORE,background,assets,equal,VENUE)
+        _, skewed_accounts, skewed_specs, _=initial_portfolio(agents,CORE,background,assets,skewed,VENUE)
+        for name, spec in equal_specs.items():
+            if spec['kind'] != 'strategy':
+                continue
+            equal_account=equal_accounts[name]
+            skewed_account=skewed_accounts[name]
+            total=sum(equal_account.wallets.values())
+            expected=[total*98//100,total//100,total//100]
+            expected[0]+=total-sum(expected)
+            self.assertEqual(skewed_specs[name],spec)
+            self.assertEqual(skewed_account.wallets,dict(zip(assets,expected,strict=True)))
+            self.assertEqual(sum(skewed_account.wallets.values()),total)
+            self.assertEqual(skewed_account.shares,equal_account.shares)
+        for name, spec in equal_specs.items():
+            if spec['kind'] == 'background':
+                self.assertEqual(skewed_accounts[name],equal_accounts[name])
 
     def test_sale_proceeds_do_not_finance_same_session_and_invalid_books_are_atomic(self):
         settings={**VENUE,'price_start_minor':100,'lot_size':1,'fee_bps':0}

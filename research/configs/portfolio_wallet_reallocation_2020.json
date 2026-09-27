@@ -1,7 +1,7 @@
 {
   "run_id": "portfolio_wallet_reallocation_h2_2020",
-  "source_run": "semantic_h2_2020_portfolio_all126_v1",
-  "source_audit": "semantic_h2_2020_portfolio_all126_v1_audit_v2",
+  "source_run": "semantic_h2_2020_portfolio_all126_rebuilt_v2",
+  "source_audit": "semantic_h2_2020_portfolio_all126_rebuilt_v2_audit_v3",
   "source_config": "semantic_portfolio_all126_2020.json",
   "source_case_id": "shared_institution35",
   "sample_sessions": [0, 31, 62, 93],

@@ -8,7 +8,7 @@
 
 ## 配对设置
 
-来源是 `shared_institution35` 全量结果；来源实验 ID 为 `8f31c83d983ff0db25ec1d58c5933a07f052758a8c3712a920f49a582f6ee00f`。延用 42 个固定三资产篮子、两档报价响应（200、500 基点）、文本/无文本两种状态。对每条路径取事前固定的模型日索引 0、31、62、93，共 `42 × 2 × 2 × 4 = 672` 个篮子—日期快照。
+来源是 `shared_institution35` 全量结果；当前 v2 来源实验 ID 为 `523de238ba862964a5dc3543fdd3c6ddffccf4d473b57081e2f0f0ea4328b31e`。延用 42 个固定三资产篮子、两档报价响应（200、500 基点）、文本/无文本两种状态。对每条路径取事前固定的模型日索引 0、31、62、93，共 `42 × 2 × 2 × 4 = 672` 个篮子—日期快照。
 
 每个快照回放八种状态：原共享钱包、等额分账户，以及两档集中度下轮换的三种分账户配置。80% 档按 80/10/10 分配；98% 档按 98/1/1 分配。集中位置在篮子内轮换，减轻总把第一项设成主资金池带来的代码顺序偏差。所有变体保持同一策略总现金、股票、当前价格、订单簿、报价、背景账户和文本状态。
 
@@ -37,9 +37,11 @@
 
 开始实验前，来源 672 条组合路径及 83,328 条日账本的来源绑定审计通过。每个共享钱包快照都必须与来源当日的资产成交、账户结算精确相同；其余七种现金分配均用独立钱包账本复建现金、股票、费用和价格，并检查总资源守恒。每个策略主体各变体的现金总额和库存必须匹配。
 
-独立重跑的三份诊断产物逐字节一致，672 个快照、来源运行、审计清单、输入配置和代码均绑定哈希。203 项原研究测试及新增的 3 项现金分配诊断测试全部通过，共 206 项。
+独立重跑的三份诊断产物逐字节一致，672 个快照、来源运行、审计清单、输入配置和代码均绑定哈希。现有完整研究测试共 207 项通过，其中 203 项为此前研究测试、3 项为现金分配诊断测试，另 1 项覆盖初始权重钱包分配。
 
 ```powershell
+python -m research.simulation.portfolio_experiment research/configs/semantic_portfolio_all126_2020.json --output-dir research_outputs/semantic_h2_2020_portfolio_all126_rebuilt_v2
+python -m research.simulation.audit_portfolio research_outputs/semantic_h2_2020_portfolio_all126_rebuilt_v2 --config research/configs/semantic_portfolio_all126_2020.json --output-dir research_outputs/semantic_h2_2020_portfolio_all126_rebuilt_v2_audit_v3
 python -m research.simulation.portfolio_wallet_diagnostic research/configs/portfolio_wallet_reallocation_2020.json --output-dir <新的诊断目录>
 python -m unittest discover -s tests -q
 ```

@@ -20,7 +20,7 @@ from .portfolio_audit import audit_portfolio_day
 from .portfolio_experiment import load_summary, experiment_inputs
 from .portfolio_market import initial_portfolio, portfolio_decision
 
-VERSION = "source-aware-portfolio-audit-v2"
+VERSION = "source-aware-portfolio-audit-v3"
 
 
 def independent_covariance(histories, cutoff, settings):
@@ -42,7 +42,8 @@ def verify_grouped_results(summary, results, paths, cases, responses, baskets, s
         for response in responses:
             group = grouped[case["case_id"], response]
             if (group["cash_mode"] != case["cash_mode"]
-                    or group["institutional_asset_cap"] != case["institutional_asset_cap"]):
+                    or group["institutional_asset_cap"] != case["institutional_asset_cap"]
+                    or group["initial_cash_weights"] != case.get("initial_cash_weights")):
                 raise ValueError("portfolio group case metadata differs")
             means = {}
             for flag, prefix in ((False, "no_text"), (True, "text")):
@@ -116,7 +117,9 @@ def audit_directory(directory, config, output_dir, progress=None):
             assets = baskets[path["basket_index"]]
             if (key != f"{path['basket_index']}:{path['case_id']}:{path['quote_response_bps']}:{int(path['use_text'])}"
                     or path["quote_response_bps"] not in cfg["quote_response_bps"] or path["assets"] != assets
-                    or path["cash_mode"] != case["cash_mode"] or type(path["use_text"]) is not bool):
+                    or path["cash_mode"] != case["cash_mode"]
+                    or path["initial_cash_weights"] != case.get("initial_cash_weights")
+                    or type(path["use_text"]) is not bool):
                 raise ValueError("portfolio path assets or funding mode differs")
             venue = {**auction["venue"], "quote_response_bps":path["quote_response_bps"]}
             if key not in states:

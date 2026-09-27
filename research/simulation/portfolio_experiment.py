@@ -17,7 +17,7 @@ from .background_experiment import CODE_PATHS as BACKGROUND_CODE, experiment_inp
 from .portfolio_market import simulate_portfolio, validate_case
 from .semantic_memory_sensitivity import canonical_hash
 
-VERSION = "shared-portfolio-experiment-v1"
+VERSION = "shared-portfolio-experiment-v2"
 CODE_PATHS = {**BACKGROUND_CODE, **{f"simulation/{n}": Path(__file__).with_name(n)
               for n in ("portfolio_auction.py", "portfolio_market.py", "portfolio_experiment.py")}}
 ARTIFACTS = {"portfolio_summary.json", "portfolio_results.json", "portfolio_ledger.jsonl.gz", "portfolio_report.md"}
@@ -50,6 +50,9 @@ def experiment_inputs(path):
     stocks = sorted(joined)
     if len(stocks) % cfg["basket_size"]:
         raise ValueError("fixed baskets must cover every company with no dropped remainder")
+    if any("initial_cash_weights" in case and len(case["initial_cash_weights"]) != cfg["basket_size"]
+           for case in cfg["cases"]):
+        raise ValueError("initial cash weights must match the configured basket size")
     baskets = [stocks[i:i+cfg["basket_size"]] for i in range(0, len(stocks), cfg["basket_size"])]
     inputs[str(path)] = file_sha256(path)
     return cfg, parent, auction, base, market, gate, inputs, joined, core, background, baskets
@@ -87,7 +90,9 @@ def run_experiment(config_path, output_dir, progress=None):
         for case in cfg["cases"]:
             for response in cfg["quote_response_bps"]:
                 subset = [p for p in paths if p["case_id"] == case["case_id"] and p["quote_response_bps"] == response]
-                group = {"case_id": case["case_id"], "quote_response_bps": response, "cash_mode": case["cash_mode"], "institutional_asset_cap": case["institutional_asset_cap"]}
+                group = {"case_id": case["case_id"], "quote_response_bps": response, "cash_mode": case["cash_mode"],
+                         "institutional_asset_cap": case["institutional_asset_cap"],
+                         "initial_cash_weights": case.get("initial_cash_weights")}
                 for enabled, prefix in ((False, "no_text"), (True, "text")):
                     selected = [p for p in subset if p["use_text"] == enabled]
                     requested, accepted, filled = [sum(p[k] for p in selected) for k in ("strategy_requested", "strategy_accepted", "strategy_filled")]

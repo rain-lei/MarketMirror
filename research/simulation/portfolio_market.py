@@ -14,15 +14,31 @@ from .semantic_auction_experiment import _validate_venue
 from .semantic_memory_sensitivity import canonical_hash
 from .semantic_replay import _check_steps
 
-VERSION = "causal-portfolio-market-v1"
+VERSION = "causal-portfolio-market-v2"
 
 
 def validate_case(case):
-    if (not isinstance(case, dict) or set(case) != {"case_id", "cash_mode", "institutional_asset_cap"}
+    required = {"case_id", "cash_mode", "institutional_asset_cap"}
+    if (not isinstance(case, dict) or set(case) not in (required, required | {"initial_cash_weights"})
             or not isinstance(case["case_id"], str) or not case["case_id"]
             or case["cash_mode"] not in {"shared", "separated"}):
         raise ValueError("explicit portfolio cash mode and institutional concentration required")
     finite_range(case["institutional_asset_cap"], 0.01, 1.0, "institutional asset cap")
+    weights = case.get("initial_cash_weights")
+    if weights is not None and (case["cash_mode"] != "separated" or not isinstance(weights, list)
+                               or len(weights) < 2 or any(type(v) is not int or v <= 0 for v in weights)):
+        raise ValueError("initial cash weights require positive integers and separated wallets")
+
+
+def _initial_wallets(total_cash, assets, weights):
+    weights = weights or [1] * len(assets)
+    if len(weights) != len(assets):
+        raise ValueError("initial cash weights must match the portfolio assets")
+    denominator = sum(weights)
+    cash = [total_cash * weight // denominator for weight in weights]
+    remainder = total_cash - sum(cash)
+    cash[max(range(len(weights)), key=lambda i: weights[i])] += remainder
+    return dict(zip(assets, cash, strict=True))
 
 
 def covariance(histories, cutoff, settings):
@@ -51,7 +67,9 @@ def initial_portfolio(agents, core, background, assets, case, venue):
             raise ValueError("portfolio initial cash must have at most two decimal places")
         cash = int(raw)
         shares = {a: core["inventory"][int(agent.name.rsplit("_", 1)[1])] for a in assets}
-        wallets = {"shared": cash * len(assets)} if case["cash_mode"] == "shared" else {a: cash for a in assets}
+        total_cash = cash * len(assets)
+        wallets = {"shared": total_cash} if case["cash_mode"] == "shared" else _initial_wallets(
+            total_cash, assets, case.get("initial_cash_weights"))
         accounts[agent.name] = PortfolioAccount(wallets, shares, dict(shares))
         specs[agent.name] = {"kind": "strategy", "parameters": asdict(agent), "profile": profile}
     for asset in assets:
@@ -206,7 +224,8 @@ def simulate_portfolio(joined, agents, core, background, venue_settings, feedbac
     accepted = sum(o["accepted_quantity"] for o in strategy_orders)
     filled = sum(o["filled_quantity"] for o in strategy_orders)
     requested = sum(o["quantity"] for o in strategy_orders)
-    summary = {"assets": assets, "sessions": len(calendar), "cash_mode": case["cash_mode"], "use_text": use_text,
+    summary = {"assets": assets, "sessions": len(calendar), "cash_mode": case["cash_mode"],
+               "initial_cash_weights": case.get("initial_cash_weights"), "use_text": use_text,
                "final_prices_minor": venue.prices, "fee_pool_minor": venue.fee_pool_minor, "accounts": summaries,
                "strategy_requested": requested, "strategy_accepted": accepted, "strategy_filled": filled,
                "strategy_fill_fraction": filled / accepted if accepted else 0.0,
