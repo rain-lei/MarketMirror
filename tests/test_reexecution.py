@@ -6,7 +6,7 @@ from contextlib import closing
 from pathlib import Path
 
 from research.data_pipeline.provenance import file_sha256
-from research.registry.reexecute import compare_artifacts, load_config, sqlite_logical_digest
+from research.registry.reexecute import METADATA_ONLY_DIFFERENCES, compare_artifacts, load_config, sqlite_logical_digest
 
 
 class ReexecutionTest(unittest.TestCase):
@@ -39,12 +39,16 @@ class ReexecutionTest(unittest.TestCase):
             (fresh / name).write_text(json.dumps({"generated_at": "new", "car": 0.02,
                                                   "nested": {"generated_at": "fixed"}}), encoding="utf-8")
             expected = {name: {"sha256": file_sha256(original / name)}}
-            self.assertEqual(compare_artifacts(expected, fresh, original, {name})[0]["status"],
-                             "equivalent_except_generated_at")
+            for run_id in ("observed_event", "observed_event_2018"):
+                self.assertEqual(compare_artifacts(expected, fresh, original,
+                                                   METADATA_ONLY_DIFFERENCES[run_id])[0]["status"],
+                                 "equivalent_except_generated_at")
             (fresh / name).write_text(json.dumps({"generated_at": "new", "car": 0.03,
                                                   "nested": {"generated_at": "fixed"}}), encoding="utf-8")
-            self.assertEqual(compare_artifacts(expected, fresh, original, {name})[0]["status"],
-                             "different_or_missing")
+            for run_id in ("observed_event", "observed_event_2018"):
+                self.assertEqual(compare_artifacts(expected, fresh, original,
+                                                   METADATA_ONLY_DIFFERENCES[run_id])[0]["status"],
+                                 "different_or_missing")
 
     def test_nested_timestamp_difference_remains_failure(self):
         with tempfile.TemporaryDirectory() as tmp:

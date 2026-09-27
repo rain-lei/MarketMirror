@@ -80,6 +80,24 @@
       "manifest": "../../research_outputs/semantic_keyword_baseline_2020/keyword_manifest.json",
       "extra_hashes": {},
       "manifest_sha256": "2c0307c4ce2321187e1b64cd99fbc20addebe5f7708a85b418e953f3a81882b7"
+    },
+    {
+      "run_id": "observed_market_2018",
+      "manifest": "../../research_outputs/observed_2018/prepared/market_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "61fbc40310d89a7682f948e45b155a8d9219c827e249da7897e638fc87b58d25"
+    },
+    {
+      "run_id": "observed_event_2018",
+      "manifest": "../../research_outputs/observed_2018/results/experiment_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "c9c545c99840853b883450b9327cce9239ccaa8e16a673d326f6ea84096241e2"
+    },
+    {
+      "run_id": "historical_replay_2018",
+      "manifest": "../../research_outputs/observed_2018/historical_replay/historical_replay_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "10de1047d28ad9df969a80ce9eb2461095d233f023be5874d86eeb1cbe6e18ae"
     }
   ]
 }

@@ -30,8 +30,13 @@ class WorkbenchPayloadTest(unittest.TestCase):
         report = render_report({
             "context": "summary",
             "overview": {"question_rows": 1, "stocks": 2, "market_sessions": 3,
+                         "market_periods": [{"start": "2018-01-02", "end": "2018-01-03", "sessions": 2},
+                                            {"start": "2020-01-02", "end": "2020-01-02", "sessions": 1}],
                          "integrity_passed": 1, "reexecution_passed": 1, "run_total": 1},
-            "events": [{"event_id": "event", "stock_code": "000001", "event_date": "2020-01-01", "car": 0.01}],
+            "events": [{"event_id": "asset_management_guidance_date_only", "stock_code": "000001",
+                        "event_date": "2018-05-02", "car": -0.09, "window_before": 3, "window_after": 5},
+                       {"event_id": "event", "stock_code": "000001", "event_date": "2020-01-01",
+                        "car": 0.01, "window_before": 3, "window_after": 5}],
             "prediction": {"rows": 1, "market_mae": 0.02, "text_mae": 0.01, "paired_difference": -0.01,
                            "interval_95": [-0.02, 0.01]},
             "replays": [{"period": "Q1", "stock_code": "000001", "role": "role", "signal_multiple": 1.0,
@@ -43,6 +48,10 @@ class WorkbenchPayloadTest(unittest.TestCase):
             "limitations": ["limit"],
         })
         self.assertIn("# MarketMirror 研究摘要报告", report)
+        self.assertIn("2018-05-02", report)
+        self.assertIn("2020-01-01", report)
+        self.assertIn("[-3, +5]", report)
+        self.assertIn("2018-01-02 至 2018-01-03：2 日", report)
         self.assertNotIn("question_text", report)
         self.assertNotIn("wxid_", report)
 
@@ -53,6 +62,8 @@ class WorkbenchPayloadTest(unittest.TestCase):
                          CONFIG.parent / "observed_pilot_2020.json")
         with self.assertRaisesRegex(ValueError, "absent"):
             selected_config(CONFIG, "../../private-script")
+        selected_2018 = selected_config(CONFIG, "observed_event_2018")
+        self.assertEqual(Path(selected_2018["runs"][0]["input"]), CONFIG.parent / "observed_pilot_2018.json")
 
     def test_single_run_persists_selection_and_result_hashes(self):
         def fake_reexecute(config_path, output_dir):

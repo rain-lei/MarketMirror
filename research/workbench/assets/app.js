@@ -7,15 +7,16 @@
   const pct = (n, digits=2) => `${(n * 100).toFixed(digits)}%`;
   const mult = (n) => Number(n).toFixed(3);
   const eventNames = {
-    "wuhan_date_only_conservative":"日期保守口径 · 2 月 3 日",
-    "wuhan_effective_time_upper_bound":"生效时间代理 · 1 月 23 日"
+    "asset_management_guidance_date_only":"2018 资管新规 · 5 月 2 日",
+    "wuhan_date_only_conservative":"2020 武汉通告 · 日期保守 · 2 月 3 日",
+    "wuhan_effective_time_upper_bound":"2020 武汉通告 · 生效代理 · 1 月 23 日"
   };
   const codes = {"000001":"平安银行 · 000001","000002":"万科 A · 000002","600519":"贵州茅台 · 600519"};
   const roles = {aggressive:"激进型", conservative:"保守型", institutional:"机构型"};
   const metrics = [
     ["问答来源行",data.overview.question_rows.toLocaleString("zh-CN"),"三份本地 Excel"],
     ["来源股票代码",data.overview.stocks.toLocaleString("zh-CN"),"身份仍待核实"],
-    ["行情交易日",String(data.overview.market_sessions),"2019.06—2020.12"],
+    ["行情交易日",String(data.overview.market_sessions),data.overview.market_periods.map(p=>`${p.start.slice(0,7)}—${p.end.slice(0,7)}`).join("；")],
     ["重跑通过",`${data.overview.reexecution_passed}/${data.overview.run_total}`,"已固定清单"],
   ];
   $("metrics").innerHTML = metrics.map(([label,value,note]) => `<div class="metric"><span>${safe(label)}</span><strong>${safe(value)}</strong><small>${safe(note)}</small></div>`).join("");
@@ -34,12 +35,14 @@
     const points=values.map((v,i)=>`${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
     const ticks=[low,0,high];
     $("event-chart").innerHTML=`<svg viewBox="0 0 ${W} ${H}" aria-hidden="true">${ticks.map(t=>`<line class="${t===0?'zero':'gridline'}" x1="${L}" x2="${W-R}" y1="${y(t)}" y2="${y(t)}"/><text x="${L-6}" y="${y(t)+3}" text-anchor="end">${pct(t,0)}</text>`).join("")}<polyline class="series" points="${points}"/>${values.map((v,i)=>`<circle class="dot" cx="${x(i)}" cy="${y(v)}" r="3"/>`).join("")}${rows[0].daily.map((d,i)=>`<text x="${x(i)}" y="${H-8}" text-anchor="middle">${d.relative_day > 0 ? '+' : ''}${d.relative_day}</text>`).join("")}</svg>`;
-    $("event-caption").textContent = `等权三股累计异常收益路径；横轴是相对交易日。${eventNames[id] || id}。`;
+    $("event-caption").textContent = `等权三股累计异常收益；窗口 [-${rows[0].window_before}, +${rows[0].window_after}]，包括事件前交易日。${eventNames[id] || id}，不能解释为政策发布后的跌幅。`;
     const activity = new Map(data.activity.filter(a=>a.event_id===id).map(a=>[a.stock_code,a]));
     $("event-table").innerHTML=`<table class="data-table"><thead><tr><th>股票</th><th>对齐日</th><th style="text-align:right">CAR</th><th style="text-align:right">成交额倍数</th></tr></thead><tbody>${rows.map(e=>`<tr><td>${safe(codes[e.stock_code]||e.stock_code)}</td><td>${safe(e.event_date)}</td><td class="num ${e.car>=0?'positive':'negative'}">${pct(e.car)}</td><td class="num">${activity.has(e.stock_code)?Number(activity.get(e.stock_code).amount_fold).toFixed(2)+'×':'—'}</td></tr>`).join("")}</tbody></table>`;
+    $("placebo-summary").textContent=data.placebo.event_ids.includes(id)
+      ? `武汉通告窗口 ${data.placebo.blackout_start}—${data.placebo.blackout_end} 被隔离后，事前 ${data.placebo.before} 日、事后 ${data.placebo.after} 日可作描述性日期对照；排名不是 p 值。`
+      : "2018 事件尚未运行日期对照和成交额倍数分析；表中 — 表示没有该结果。政策征求意见在正式发布前已经开始。";
   }
   $("event-select").addEventListener("change",drawEvent);drawEvent();
-  $("placebo-summary").textContent=`真实事件窗口 ${data.placebo.blackout_start}—${data.placebo.blackout_end} 被隔离后，事前 ${data.placebo.before} 日、事后 ${data.placebo.after} 日可作描述性日期对照；排名不是 p 值。`;
   const p=data.prediction;
   const predictionBars=[["纯行情 MAE",p.market_mae,false],["行情 + 文本 MAE",p.text_mae,true]];
   $("prediction-bars").innerHTML=predictionBars.map(([label,value,alt])=>`<div class="bar-row"><div class="bar-row-head"><span>${safe(label)}</span><strong>${pct(value,3)}</strong></div><div class="bar-track"><div class="bar-fill ${alt?'alt':''}" style="width:${Math.min(100,value/.03*100).toFixed(1)}%"></div></div></div>`).join("");
@@ -68,7 +71,9 @@
     unified_dataset:"统一问答数据集",observed_market:"公开行情导入",observed_event:"历史事件研究",
     event_date_diagnostic:"事件日期对照",observed_activity:"成交活动导入",activity_event:"事件成交活动",
     text_prediction:"文本预测对照",synthetic_stress:"合成 Agent 压力",historical_replay_q1:"历史回放 · 一季度",
-    historical_replay_later:"历史回放 · 后三季度",semantic_annotation:"语义抽样包",keyword_baseline:"关键词基线"
+    historical_replay_later:"历史回放 · 2020 后三季度",semantic_annotation:"语义抽样包",keyword_baseline:"关键词基线",
+    observed_market_2018:"公开行情导入 · 2017–2018",observed_event_2018:"事件研究 · 2018 资管新规",
+    historical_replay_2018:"历史回放 · 2018 上半年"
   };
   $("run-list").innerHTML=data.runs.map(r=>`<div class="run-item"><strong>${safe(r.id.replaceAll('_',' '))}</strong><span>${r.integrity==='passed'&&r.reexecution==='equivalent'?'✓ 已重跑':'待核验'}</span></div>`).join("");
   $("run-details").innerHTML=data.runs.map(r=>{const artifacts=r.artifacts||[];return `<details class="evidence-run"><summary><span>${safe(runLabels[r.id]||r.id)}</span><small>${artifacts.length} 份产物 · ${r.hash_checks} 项哈希检查</small></summary><div class="evidence-artifacts">${artifacts.map(item=>`<div><code>${safe(item.name)}</code><span class="artifact-${item.status==='identical'?'ok':'normalized'}">${safe(item.status)}</span></div>`).join("")}</div></details>`;}).join("");

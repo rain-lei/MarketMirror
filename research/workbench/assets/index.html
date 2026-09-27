@@ -15,7 +15,7 @@
   <main class="shell">
     <section class="hero">
       <div>
-        <p class="eyebrow">REPRODUCIBLE RESEARCH / 2020 PILOT</p>
+        <p class="eyebrow">REPRODUCIBLE RESEARCH / 2018 + 2020 PILOTS</p>
         <h1>从证据到结果，<br><em>每一步都能复核。</em></h1>
         <p class="lead">本地已核验的问答、行情、事件研究与 Agent 规则回放。页面只展示筛选后的汇总数据；原始文本和个人路径不会写入页面。</p>
         <div class="hero-actions"><a href="#experiments" class="button primary">查看实验结果 <span>↘</span></a><a href="#provenance" class="button secondary">核对证据链</a><a href="report.md" download class="button secondary">下载摘要报告</a></div>
@@ -26,7 +26,7 @@
     <section class="metrics" id="metrics" aria-label="研究概况"></section>
 
     <section class="section" id="experiments">
-      <div class="section-head"><div><p class="eyebrow">01 / EVIDENCE</p><h2>历史事件窗口</h2><p>同一武汉通告的两种可见时间口径，不能视为两次独立事件。</p></div><span class="section-tag">3 只股票 · 2 种对齐</span></div>
+      <div class="section-head"><div><p class="eyebrow">01 / EVIDENCE</p><h2>历史事件窗口</h2><p>2018 资管新规与 2020 武汉通告；武汉通告的两种对齐属于同一事件。</p></div><span class="section-tag">3 只股票 · 2 个历史节点</span></div>
       <div class="grid two">
         <article class="card chart-card"><div class="card-head"><div><h3>异常收益路径</h3><p>市场模型 CAR：日异常收益之和</p></div><label class="field-label">事件口径<select id="event-select"></select></label></div><div id="event-chart" class="chart" role="img" aria-label="异常收益路径图"></div><p id="event-caption" class="note"></p></article>
         <article class="card"><div class="card-head"><div><h3>股票对照</h3><p>CAR 与事件日成交额 / 基期中位数</p></div></div><div id="event-table"></div><div class="callout"><span>日期诊断</span><p id="placebo-summary"></p></div></article>
@@ -51,7 +51,7 @@
     </section>
 
     <section class="section" id="agents">
-      <div class="section-head"><div><p class="eyebrow">04 / MECHANISM</p><h2>Agent 规则诊断</h2><p>相同规则与示意参数在历史收益路径上的价格接受型回放。</p></div><span class="section-tag">三类角色 · 两段时期</span></div>
+      <div class="section-head"><div><p class="eyebrow">04 / MECHANISM</p><h2>Agent 规则诊断</h2><p>相同规则与示意参数在历史收益路径上的价格接受型回放。</p></div><span class="section-tag">三类角色 · 三段时期</span></div>
       <div class="card"><div class="filters"><label class="field-label">时期<select id="period-select"></select></label><label class="field-label">股票<select id="stock-select"></select></label><span class="filter-note">期末财富 / 初始现金；1.000 为现金基准</span></div><div id="replay-table"></div><p class="note">归一化收益指数并非实际成交价。订单假定在参考收盘价全部成交，不改变历史价格；角色参数未用真实投资者交易校准。</p></div>
     </section>
 

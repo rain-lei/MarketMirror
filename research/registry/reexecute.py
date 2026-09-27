@@ -38,18 +38,22 @@ def rerun_unified_dataset(manifest_path: Path, output_dir: Path) -> Any:
 RUNNERS: dict[str, Callable[[Path, Path], Any]] = {
     "unified_dataset": rerun_unified_dataset,
     "observed_market": import_market,
+    "observed_market_2018": import_market,
     "observed_activity": import_activity,
     "activity_event": run_activity_event,
     "synthetic_stress": run_stress,
     "observed_event": run_experiments,
+    "observed_event_2018": run_experiments,
     "text_prediction": run_prediction,
     "event_date_diagnostic": run_placebo,
     "historical_replay_q1": run_replay,
     "historical_replay_later": run_replay,
+    "historical_replay_2018": run_replay,
     "semantic_annotation": build_annotation_pack,
     "keyword_baseline": run_baseline,
 }
-METADATA_ONLY_DIFFERENCES = {"observed_event": {"event_results.json"}}
+METADATA_ONLY_DIFFERENCES = {"observed_event": {"event_results.json"},
+                             "observed_event_2018": {"event_results.json"}}
 SQLITE_METADATA_ONLY_DIFFERENCES = {"unified_dataset": {"dataset.sqlite"}}
 
 

@@ -1,17 +1,65 @@
 {
   "integrity_catalog": "integrity_catalog_2020.json",
   "runs": [
-    {"run_id": "unified_dataset", "input": "../../research_outputs/unified/run_manifest.json"},
-    {"run_id": "observed_market", "input": "../../research_outputs/observed_2020/download/market_import.json"},
-    {"run_id": "observed_event", "input": "observed_pilot_2020.json"},
-    {"run_id": "observed_activity", "input": "market_activity_pilot_2020.json"},
-    {"run_id": "activity_event", "input": "activity_event_pilot_2020.json"},
-    {"run_id": "event_date_diagnostic", "input": "placebo_pilot_2020.json"},
-    {"run_id": "text_prediction", "input": "text_pilot_2020.json"},
-    {"run_id": "synthetic_stress", "input": "synthetic_stress_v1.json"},
-    {"run_id": "historical_replay_q1", "input": "historical_replay_pilot_2020.json"},
-    {"run_id": "historical_replay_later", "input": "historical_replay_later_2020.json"},
-    {"run_id": "semantic_annotation", "input": "annotation_pilot_2020.json"},
-    {"run_id": "keyword_baseline", "input": "../../research_outputs/semantic_annotation_pilot_2020"}
+    {
+      "run_id": "unified_dataset",
+      "input": "../../research_outputs/unified/run_manifest.json"
+    },
+    {
+      "run_id": "observed_market",
+      "input": "../../research_outputs/observed_2020/download/market_import.json"
+    },
+    {
+      "run_id": "observed_event",
+      "input": "observed_pilot_2020.json"
+    },
+    {
+      "run_id": "observed_activity",
+      "input": "market_activity_pilot_2020.json"
+    },
+    {
+      "run_id": "activity_event",
+      "input": "activity_event_pilot_2020.json"
+    },
+    {
+      "run_id": "event_date_diagnostic",
+      "input": "placebo_pilot_2020.json"
+    },
+    {
+      "run_id": "text_prediction",
+      "input": "text_pilot_2020.json"
+    },
+    {
+      "run_id": "synthetic_stress",
+      "input": "synthetic_stress_v1.json"
+    },
+    {
+      "run_id": "historical_replay_q1",
+      "input": "historical_replay_pilot_2020.json"
+    },
+    {
+      "run_id": "historical_replay_later",
+      "input": "historical_replay_later_2020.json"
+    },
+    {
+      "run_id": "semantic_annotation",
+      "input": "annotation_pilot_2020.json"
+    },
+    {
+      "run_id": "keyword_baseline",
+      "input": "../../research_outputs/semantic_annotation_pilot_2020"
+    },
+    {
+      "run_id": "observed_market_2018",
+      "input": "../../research_outputs/observed_2018/download/market_import.json"
+    },
+    {
+      "run_id": "observed_event_2018",
+      "input": "observed_pilot_2018.json"
+    },
+    {
+      "run_id": "historical_replay_2018",
+      "input": "historical_replay_2018.json"
+    }
   ]
 }
