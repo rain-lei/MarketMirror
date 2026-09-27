@@ -22,8 +22,10 @@ from ..simulation.semantic_historical_replay import load_verified_summary
 from ..simulation.semantic_memory_sensitivity import load_memory_summary
 from ..simulation.semantic_auction_experiment import load_auction_summary
 from ..simulation.audit_auction import load_audit
+from ..simulation.feedback_experiment import load_summary as load_feedback_summary
+from ..simulation.audit_feedback import load_audit as load_feedback_audit
 
-VERSION = "research-workbench-v20"
+VERSION = "research-workbench-v21"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 CAPACITY_CONFIG = ROOT / "research/configs/integrity_catalog_capacity_series.json"
@@ -663,6 +665,31 @@ def checked_semantic_auction() -> dict[str, Any] | None:
     return result
 
 
+def checked_semantic_feedback() -> dict[str, Any] | None:
+    directory = OUTPUTS / "semantic_h2_2020_feedback_all126_v1"
+    rerun = OUTPUTS / "semantic_h2_2020_feedback_all126_v1_rerun"
+    if not directory.exists():
+        return None
+    summary, repeated = load_feedback_summary(directory), load_feedback_summary(rerun)
+    if (summary != repeated or summary["stocks"] != 126 or summary["paths"] != 3528 or summary["ledger_rows"] != 437472
+            or len(summary["scenarios"]) != 7 or summary["quote_response_bps"] != [200, 500]
+            or summary["conditioned_baseline_parity_paths"] != 504 or summary["conditioned_baseline_trajectory_parity"] is not True):
+        raise ValueError("feedback scenario coverage, baseline or rerun differs")
+    manifests = [json.loads((p / "feedback_manifest.json").read_text(encoding="utf-8")) for p in (directory, rerun)]
+    if manifests[0]["artifacts"] != manifests[1]["artifacts"]:
+        raise ValueError("feedback artifacts are not byte-identical")
+    audits = [load_feedback_audit(p, OUTPUTS / (p.name + "_audit")) for p in (directory, rerun)]
+    if any(a["experiment_id"] != summary["experiment_id"] or a["paths"] != 3528 or a["ledger_rows"] != 437472
+           or a["endogenous_input_rows"] != 374976 for a in audits):
+        raise ValueError("feedback trade and information audit lacks full coverage")
+    result = {key: summary[key] for key in ("stocks", "paths", "ledger_rows", "agents_per_market", "scenarios",
+              "quote_response_bps", "feedback_parameters", "conditioned_baseline_parity_paths", "grouped")}
+    result["audit"] = {key: audits[0][key] for key in ("status", "dense_tick_sweeps", "endogenous_input_rows", "checks")}
+    result["reexecution"] = "identical"
+    validate_public_payload(result)
+    return result
+
+
 def collect_data() -> dict[str, Any]:
     pinned = load_catalog(CONFIG)
     cache: dict[Path, str] = {}
@@ -700,6 +727,7 @@ def collect_data() -> dict[str, Any]:
     semantic_ablation = checked_semantic_ablation()
     semantic_memory = checked_semantic_memory()
     semantic_auction = checked_semantic_auction()
+    semantic_feedback = checked_semantic_feedback()
     if ({row["event_id"] for row in counterfactual_series}
             != {row["event_id"] for row in lagged_impact_series}):
         raise ValueError("fixed and lagged impact events differ; shared filter is unsafe")
@@ -786,6 +814,7 @@ def collect_data() -> dict[str, Any]:
         "semantic_ablation": semantic_ablation,
         "semantic_memory": semantic_memory,
         "semantic_auction": semantic_auction,
+        "semantic_feedback": semantic_feedback,
         "semantic": {"items": 128, "reviewed_items": assistant_review["reviewed_items"] if assistant_review else 0,
                      "protocol": "assistant_review_v1", "gold_ready": False,
                      "status": assistant_review["status"] if assistant_review else "awaiting_assistant_review"},
@@ -984,6 +1013,23 @@ def render_report(data: dict[str, Any]) -> str:
             lines.append(f"| {row['quote_response_bps']} | {row['mean_price_difference_multiple']:+.4%} | "
                          f"{row['changed_stock_prices']} | {row['text_matched_volume']} | {row['no_text_matched_volume']} |")
         lines += ["", "报价响应、持仓梯度、交易批量、报价档位及价格带均为模型假设。每家公司是单独的归一化资产市场，资金不跨公司共享；尚未验证真实价格、投资者行为或监管预测。", ""]
+    feedback = data.get("semantic_feedback")
+    if feedback:
+        lines += ["## 模拟价格反馈与主体差异", "",
+                  f"{feedback['stocks']} 家公司，7 个固定情景、{feedback['paths']} 条路径、{feedback['ledger_rows']:,} 条完整日账本。",
+                  f"{feedback['conditioned_baseline_parity_paths']} 条外部条件基线完全复现原撮合；四份产物独立重跑逐字节一致。",
+                  f"全部账本重建通过，{feedback['audit']['endogenous_input_rows']:,} 条内生输入从自身截至 t-2 的成交价格复算；{feedback['audit']['dense_tick_sweeps']} 次有成交竞价经完整档位扫描。",
+                  "", "| 情景 | 报价响应 | 平均末价差 / 初价 | 改变公司 | 有文本成交率 | 无文本成交率 |", "|---|---:|---:|---:|---:|---:|"]
+        for row in feedback["grouped"]:
+            lines.append(f"| {row['scenario_id']} | {row['quote_response_bps']} | {row['mean_price_difference_multiple']:+.6%} | "
+                         f"{row['changed_stock_prices']} | {row['text_accepted_fill_fraction']:.4%} | {row['no_text_accepted_fill_fraction']:.4%} |")
+        endogenous_ids = {s["scenario_id"] for s in feedback.get("scenarios", []) if s["feedback_mode"] == "endogenous"}
+        endogenous_rows = [r for r in feedback["grouped"] if r["scenario_id"] in endogenous_ids]
+        if endogenous_rows and all(r["no_text_matched_volume"] == 0 for r in endogenous_rows):
+            lines += ["", "本批全部内生无文本对照没有成交。预设主体差异尚未形成充分流动性，市场仍易停滞；这些价格差不能视为真实市场冲击。"]
+        lines += ["", "主体画像、波动率下限与库存均为固定假设；冷启动缺失收益按零补齐，正反顺序和两个种子不是统计置信区间。",
+                  "均衡库存保持总供给与角色初始总财富不变。内生情景不读取历史实际收益、动量或波动率；日期、停牌代理和问答仍来自历史数据。",
+                  "参数尚未校准，多资产组合、真实历史拟合与预警验证仍未完成。", ""]
     lines += ["## 公开证据", ""]
     lines.extend(f"- [{item['label']}]({item['url']})" for item in data["evidence"])
     financial = data.get("financial_dictionary")
@@ -1101,6 +1147,11 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
                                      ("semantic_auction_rerun", "semantic_h2_2020_auction_all126_v1_rerun")):
                 source_reports[label] = file_sha256(OUTPUTS / directory / "auction_manifest.json")
                 source_reports[label + "_audit"] = file_sha256(OUTPUTS / (directory + "_audit") / "auction_audit_manifest.json")
+        if data.get("semantic_feedback"):
+            for label, directory in (("semantic_feedback", "semantic_h2_2020_feedback_all126_v1"),
+                                     ("semantic_feedback_rerun", "semantic_h2_2020_feedback_all126_v1_rerun")):
+                source_reports[label] = file_sha256(OUTPUTS / directory / "feedback_manifest.json")
+                source_reports[label + "_audit"] = file_sha256(OUTPUTS / (directory + "_audit") / "feedback_audit_manifest.json")
         manifest = {"pipeline_version": VERSION, "generated_at": datetime.now(timezone.utc).isoformat(),
                     "integrity_catalog_sha256": file_sha256(CONFIG),
                     "source_reports": source_reports,

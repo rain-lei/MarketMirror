@@ -36,6 +36,17 @@
   }else{
     $("semantic-auction-summary").textContent="尚无通过来源和成交账本核验的有限市场结果。";
   }
+  const feedback=data.semantic_feedback;
+  if(feedback){
+    const scenarioLabels={conditioned_base:"外部条件基线",endogenous_homogeneous:"内生 · 同质主体",endogenous_cohort_forward:"内生 · 差异主体 · 正序",endogenous_cohort_reverse:"内生 · 差异主体 · 反序",endogenous_cohort_seed7:"内生 · 差异主体 · 种子 7",endogenous_cohort_seed19:"内生 · 差异主体 · 种子 19",endogenous_balanced_seed7:"内生 · 均衡库存 · 种子 7"};
+    $("semantic-feedback-summary").textContent=`${feedback.stocks} 家公司，${feedback.scenarios.length} 个预先固定情景，${Number(feedback.paths).toLocaleString('zh-CN')} 条路径、${Number(feedback.ledger_rows).toLocaleString('zh-CN')} 条完整日账本。${feedback.conditioned_baseline_parity_paths} 条外部条件基线逐日复现原撮合；四份产物重跑一致。全部账本通过成交重建，${Number(feedback.audit.endogenous_input_rows).toLocaleString('zh-CN')} 条内生输入由各自的过去价格复算。末价差为有文本减无文本，再除以初始价格。`;
+    $("semantic-feedback-table").innerHTML=`<table class="data-table"><thead><tr><th>情景</th><th>报价响应</th><th class="num">平均末价差 / 初价</th><th class="num">改变公司</th><th class="num">有文本成交率</th><th class="num">无文本成交率</th></tr></thead><tbody>${feedback.grouped.map(row=>`<tr><td>${safe(scenarioLabels[row.scenario_id]||row.scenario_id)}</td><td>${safe(row.quote_response_bps)} 基点</td><td class="num">${pct(row.mean_price_difference_multiple,4)}</td><td class="num">${safe(row.changed_stock_prices)}</td><td class="num">${pct(row.text_accepted_fill_fraction,2)}</td><td class="num">${pct(row.no_text_accepted_fill_fraction,2)}</td></tr>`).join('')}</tbody></table>`;
+    const endogenousIds=new Set(feedback.scenarios.filter(row=>row.feedback_mode==='endogenous').map(row=>row.scenario_id));
+    const endogenousRows=feedback.grouped.filter(row=>endogenousIds.has(row.scenario_id));
+    $("semantic-feedback-diagnosis").textContent=endogenousRows.length&&endogenousRows.every(row=>row.no_text_matched_volume===0)?"当前全部内生无文本对照没有成交。主体差异尚未形成充分流动性，市场仍容易停滞；这些价格差不能视为已验证的真实市场冲击。":"不同情景的成交率与价格差应联合判断；主体差异尚未经过真实行为校准。";
+  }else{
+    $("semantic-feedback-summary").textContent="尚无通过重跑、成交重建和信息时点复核的模拟价格反馈结果。";
+  }
   const metrics = [
     ["问答来源行",data.overview.question_rows.toLocaleString("zh-CN"),"三份本地 Excel"],
     ["来源股票代码",data.overview.stocks.toLocaleString("zh-CN"),"身份仍待核实"],

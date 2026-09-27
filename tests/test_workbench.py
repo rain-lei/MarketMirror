@@ -76,6 +76,12 @@ class WorkbenchPayloadTest(unittest.TestCase):
                                  "grouped": [{"quote_response_bps": 200, "mean_price_difference_multiple": 0.00012857,
                                               "changed_stock_prices": 23, "text_matched_volume": 220000,
                                               "no_text_matched_volume": 218300}]},
+            "semantic_feedback": {"stocks": 126, "paths": 3528, "ledger_rows": 437472,
+                                  "conditioned_baseline_parity_paths": 504,
+                                  "audit": {"endogenous_input_rows": 374976, "dense_tick_sweeps": 10000},
+                                  "grouped": [{"scenario_id": "endogenous_cohort_seed7", "quote_response_bps": 200,
+                                               "mean_price_difference_multiple": 0.002, "changed_stock_prices": 30,
+                                               "text_accepted_fill_fraction": 0.02, "no_text_accepted_fill_fraction": 0.03}]},
             "agent_signal_gate": {"status": "eligible_under_ai_review", "passed": True,
                                   "gold_ready": False, "reviewed_items": 128, "required_items": 128,
                                   "adapter_version": "semantic-agent-signal-adapter-v1",
@@ -157,6 +163,10 @@ class WorkbenchPayloadTest(unittest.TestCase):
         self.assertIn("有限资金与持仓的集合竞价", report)
         self.assertIn("93,744 条完整日账本", report)
         self.assertIn("3917 次有成交竞价", report)
+        self.assertIn("模拟价格反馈与主体差异", report)
+        self.assertIn("437,472 条完整日账本", report)
+        self.assertIn("374,976 条内生输入", report)
+        self.assertIn("endogenous_cohort_seed7", report)
         self.assertNotIn("question_text", report)
         self.assertNotIn("wxid_", report)
 
