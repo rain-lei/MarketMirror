@@ -21,7 +21,7 @@
 
 ## 复现与范围
 
-固定配置和代码分别位于 `configs/capacity_diagnostic_2018.json`、`configs/capacity_diagnostic_2020_q1.json`、`configs/capacity_diagnostic_2020_later.json` 与 `simulation/capacity_diagnostic.py`。运行清单、原回放、实际成交额和输出的 SHA-256 都写入产物；三项新增运行由 `configs/integrity_catalog_capacity_diagnostic.json` 核验为 3/3。
+固定配置和代码分别位于 `configs/capacity_diagnostic_2018.json`、`configs/capacity_diagnostic_2020_q1.json`、`configs/capacity_diagnostic_2020_later.json` 与 `simulation/capacity_diagnostic.py`。运行清单、原回放、实际成交额和输出的 SHA-256 都写入产物；三项新增运行由 `configs/integrity_catalog_capacity_diagnostic.json` 核验为 3/3。与三份容量约束回放合并后，六项运行又从输入独立重跑，12 份产物逐字节一致。
 
 ```powershell
 python -m research.simulation.capacity_diagnostic research/configs/capacity_diagnostic_2018.json --output-dir research_outputs/observed_2018/capacity_diagnostic_v2

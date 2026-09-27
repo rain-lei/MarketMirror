@@ -66,6 +66,10 @@
   function drawReplay(){
     const rows=data.replays.filter(r=>r.period===$("period-select").value && r.stock_code===$("stock-select").value);
     $("replay-table").innerHTML=`<table class="data-table"><thead><tr><th>角色</th><th style="text-align:right">市场信号</th><th style="text-align:right">零信号</th><th style="text-align:right">买入持有</th><th style="text-align:right">最大回撤</th><th style="text-align:right">交易</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${safe(roles[r.role]||r.role)}</td><td class="num">${mult(r.signal_multiple)}</td><td class="num">${mult(r.control_multiple)}</td><td class="num">${mult(r.buyhold_multiple)}</td><td class="num">${pct(r.max_drawdown,1)}</td><td class="num">${r.trades}</td></tr>`).join("")}</tbody></table>`;
+    const capacity=(data.capacity_series||[]).find(r=>r.period===$("period-select").value && r.stock_code===$("stock-select").value);
+    $("capacity-table").innerHTML=capacity
+      ? `<table class="data-table"><thead><tr><th>假设资金</th><th style="text-align:right">事后参与比例 95 分位</th><th style="text-align:right">触及上限</th><th style="text-align:right">请求额完成比例</th><th style="text-align:right">激进型无限制</th><th style="text-align:right">激进型受限</th></tr></thead><tbody><tr><td>10 亿元 / Agent</td><td class="num">${pct(capacity.diagnostic_p95_fraction)}</td><td class="num">${safe(capacity.binding_days)}/${safe(capacity.sessions)}</td><td class="num">${pct(capacity.aggregate_fill_rate)}</td><td class="num">${mult(capacity.aggressive_uncapped_multiple)}</td><td class="num">${mult(capacity.aggressive_capped_multiple)}</td></tr></tbody></table>`
+      : "<p class=\"note\">该组合尚无容量情景。</p>";
   }
   $("period-select").addEventListener("change",drawReplay);$("stock-select").addEventListener("change",drawReplay);drawReplay();
   const runLabels={

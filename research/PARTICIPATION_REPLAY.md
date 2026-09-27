@@ -4,7 +4,7 @@
 
 容量预算在交易决策时只使用**信号截止日**的实际总成交额。按原回放的时序，信号截止日为收益日 `t` 前两交易日，执行参考日为 `t-1`：预算 = 假设参与比例 × `t-2` 已观察总成交额。三类 Agent 的买卖绝对订单额共用预算，超额时同比例缩小成交；未成交部分留在现金与持仓状态，由后续交易日重新决策。若 `t-1` 参考日停牌，则没有成交。当天 `t` 和 `t-1` 的成交额均不用于计算预算。价格继续沿用既有的实际收益路径，Agent 不能改变市场价格。
 
-程序独立核对了无限制情景与原固定历史回放的各角色期末财富比例，并在每步检查现金、份额和费用账本。三个时期分别生成 36 个情景，含 4,284、2,088、6,660 条逐日情景记录；全部记录满足时间顺序、容量预算与账本约束。三份清单的输入、代码与输出哈希由 `configs/integrity_catalog_participation_replay.json` 核验为 3/3。
+程序独立核对了无限制情景与原固定历史回放的各角色期末财富比例，并在每步检查现金、份额和费用账本。三个时期分别生成 36 个情景，含 4,284、2,088、6,660 条逐日情景记录；全部记录满足时间顺序、容量预算与账本约束。三份清单的输入、代码与输出哈希由 `configs/integrity_catalog_participation_replay.json` 核验为 3/3。与三份事后容量诊断合并后，还按固定输入独立重跑六项，12 份产物逐字节一致；见 `research_outputs/reexecution_catalog_capacity_series/reexecution_report.md`。
 
 以平安银行 `000001`、市场信号路径、每类 Agent 每股假设 10 亿元为例：
 
@@ -29,6 +29,7 @@ python -m research.simulation.participation_replay research/configs/participatio
 python -m research.simulation.participation_replay research/configs/participation_replay_2020_q1.json --output-dir research_outputs/observed_2020/participation_replay_q1_v2
 python -m research.simulation.participation_replay research/configs/participation_replay_2020_later.json --output-dir research_outputs/observed_2020/participation_replay_later_v2
 python -m research.registry.verify_catalog research/configs/integrity_catalog_participation_replay.json --output-dir research_outputs/integrity_catalog_participation_replay
+python -m research.registry.reexecute research/configs/reexecution_catalog_capacity_series.json --output-dir research_outputs/reexecution_catalog_capacity_series
 ```
 
 上述输出目录在本机已有产物，重跑时须选新目录并重新固定清单哈希。各目录的 `participation_report.md` 给出所有情景的可读汇总，`participation_results.json` 保存逐日决策、容量预算、成交与账本。

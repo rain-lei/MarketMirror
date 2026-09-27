@@ -24,6 +24,8 @@ from ..data_pipeline.provenance import file_sha256
 from ..semantic.annotation_pack import build_annotation_pack
 from ..semantic.keyword_baseline import run_baseline
 from ..simulation.historical_replay import run_replay
+from ..simulation.capacity_diagnostic import run_diagnostic as run_capacity_diagnostic
+from ..simulation.participation_replay import run_participation_replay
 from ..simulation.stress_market import run_stress
 
 VERSION = "research-reexecution-v1"
@@ -53,6 +55,12 @@ RUNNERS: dict[str, Callable[[Path, Path], Any]] = {
     "historical_replay_q1": run_replay,
     "historical_replay_later": run_replay,
     "historical_replay_2018": run_replay,
+    "historical_capacity_2018_h1": run_capacity_diagnostic,
+    "historical_capacity_2020_q1": run_capacity_diagnostic,
+    "historical_capacity_2020_later": run_capacity_diagnostic,
+    "historical_participation_2018_h1": run_participation_replay,
+    "historical_participation_2020_q1": run_participation_replay,
+    "historical_participation_2020_later": run_participation_replay,
     "semantic_annotation": build_annotation_pack,
     "keyword_baseline": run_baseline,
 }

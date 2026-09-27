@@ -15,9 +15,11 @@ from ..data_pipeline.provenance import file_sha256
 from ..registry.verify_catalog import audit_run, load_catalog
 from ..semantic.audit_model_run import audit_model_run
 
-VERSION = "research-workbench-v8"
+VERSION = "research-workbench-v9"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
+CAPACITY_CONFIG = ROOT / "research/configs/integrity_catalog_capacity_series.json"
+CAPACITY_REEXEC_CONFIG = ROOT / "research/configs/reexecution_catalog_capacity_series.json"
 OUTPUTS = ROOT / "research_outputs"
 ASSETS = Path(__file__).resolve().parent / "assets"
 PRIVATE_FIELDS = {"question_text", "reply_text", "user_name", "source_path", "source_file_hash",
@@ -116,6 +118,70 @@ def checked_model_run(version: str = "v1") -> dict[str, Any]:
     return result
 
 
+def checked_capacity_series() -> list[dict[str, Any]]:
+    """Summarize only pinned, rerun-equivalent capacity scenarios."""
+    pinned = load_catalog(CAPACITY_CONFIG)
+    cache: dict[Path, str] = {}
+    audits = [audit_run(run, CAPACITY_CONFIG.parent, ROOT / "research", OUTPUTS, cache)
+              for run in pinned]
+    integrity = checked_report(OUTPUTS / "integrity_catalog_capacity_series",
+                               "integrity_manifest.json", "integrity_results.json",
+                               ROOT / "research/registry/verify_catalog.py")
+    reexecution = checked_report(OUTPUTS / "reexecution_catalog_capacity_series",
+                                 "reexecution_manifest.json", "reexecution_results.json",
+                                 ROOT / "research/registry/reexecute.py")
+    expected = {run["run_id"] for run in pinned}
+    if (len(pinned) != 6 or any(audit["status"] != "passed" for audit in audits)
+            or integrity["catalog_sha256"] != file_sha256(CAPACITY_CONFIG)
+            or integrity["passed_runs"] != len(pinned)
+            or reexecution["integrity_catalog_sha256"] != file_sha256(CAPACITY_CONFIG)
+            or reexecution["config_sha256"] != file_sha256(CAPACITY_REEXEC_CONFIG)
+            or reexecution["passed_runs"] != len(pinned)
+            or {run["run_id"] for run in reexecution["runs"]} != expected
+            or any(run["status"] != "equivalent" for run in reexecution["runs"])):
+        raise ValueError("capacity series is not fully pinned and independently reexecuted")
+    manifests = {run["run_id"]: (CAPACITY_CONFIG.parent / run["manifest"]).resolve()
+                 for run in pinned}
+    periods = (("2018 H1", "2018_h1"), ("2020 Q1", "2020_q1"),
+               ("2020 Apr–Dec", "2020_later"))
+    rows = []
+    for period, suffix in periods:
+        capacity_manifest = manifests[f"historical_capacity_{suffix}"]
+        participation_manifest = manifests[f"historical_participation_{suffix}"]
+        capacity = json.loads((capacity_manifest.parent / "capacity_results.json").read_text(encoding="utf-8"))
+        participation = json.loads((participation_manifest.parent / "participation_results.json").read_text(encoding="utf-8"))
+        for code in ("000001", "000002", "600519"):
+            matching_capacity = [row for row in capacity["results"]
+                                 if row["stock_code"] == code and row["path"] == "market_signal"
+                                 and row["aum_cny_per_agent"] == 1_000_000_000]
+            matching_control = [row for row in participation["scenarios"]
+                                if row["stock_code"] == code and row["use_market_signal"]
+                                and row["aum_cny_per_agent"] == 1_000_000_000
+                                and row["participation_rate"] is None]
+            matching_capped = [row for row in participation["scenarios"]
+                               if row["stock_code"] == code and row["use_market_signal"]
+                               and row["aum_cny_per_agent"] == 1_000_000_000
+                               and row["participation_rate"] == 0.01]
+            if any(len(group) != 1 for group in (matching_capacity, matching_control, matching_capped)):
+                raise ValueError("capacity summary scenario is absent or ambiguous")
+            diagnostic, control, capped = matching_capacity[0], matching_control[0], matching_capped[0]
+            if (diagnostic["sessions"] != control["sessions"]
+                    or control["sessions"] != capped["sessions"]
+                    or set(control["summary"]) != set(capped["summary"])):
+                raise ValueError("capacity summary scenarios use different sessions or agents")
+            aggressive = next(name for name, agent in control["summary"].items()
+                              if agent["role"] == "aggressive")
+            rows.append({"period": period, "stock_code": code,
+                         "sessions": capped["sessions"],
+                         "diagnostic_p95_fraction": diagnostic["p95_fraction"],
+                         "binding_days": capped["binding_days"],
+                         "aggregate_fill_rate": capped["aggregate_fill_rate"],
+                         "aggressive_uncapped_multiple": 1 + control["summary"][aggressive]["return"],
+                         "aggressive_capped_multiple": 1 + capped["summary"][aggressive]["return"]})
+    validate_public_payload(rows)
+    return rows
+
+
 def collect_data() -> dict[str, Any]:
     pinned = load_catalog(CONFIG)
     cache: dict[Path, str] = {}
@@ -124,7 +190,7 @@ def collect_data() -> dict[str, Any]:
         raise ValueError("workbench refuses to display runs with failed pinned integrity checks")
     integrity = checked_report(OUTPUTS / "integrity_catalog_2018_2020_v3", "integrity_manifest.json",
                                "integrity_results.json", ROOT / "research/registry/verify_catalog.py")
-    reexecution = checked_report(OUTPUTS / "reexecution_catalog_2018_2020_v3", "reexecution_manifest.json",
+    reexecution = checked_report(OUTPUTS / "reexecution_catalog_2018_2020_v4", "reexecution_manifest.json",
                                  "reexecution_results.json", ROOT / "research/registry/reexecute.py")
     if (integrity["catalog_sha256"] != file_sha256(CONFIG)
             or integrity["passed_runs"] != len(pinned)
@@ -142,6 +208,7 @@ def collect_data() -> dict[str, Any]:
     model_runs = [checked_model_run(version) for version in ("v1", "v2")]
     completed_model_runs = [run for run in model_runs if run["status"] != "not_run"]
     model_run = completed_model_runs[-1] if completed_model_runs else model_runs[0]
+    capacity_series = checked_capacity_series()
     manifests = {run["run_id"]: (CONFIG.parent / run["manifest"]).resolve() for run in pinned}
 
     def artifact(run_id: str, name: str) -> dict[str, Any]:
@@ -210,6 +277,7 @@ def collect_data() -> dict[str, Any]:
                    "agents": [{"name": name, "role": row["role"], "trades": row["trades"],
                                "max_drawdown": row["max_drawdown"]} for name, row in stress["summary"].items()]},
         "replays": [],
+        "capacity_series": capacity_series,
         "semantic": {"items": reviewed["pack_items"], "dual_reviewed": reviewed["dual_reviewed_items"],
                      "pending": reviewed["pending_items"], "conflicts": reviewed["conflict_items"],
                      "gold_ready": reviewed["gold_ready"], "status": reviewed["status"]},
@@ -280,6 +348,16 @@ def render_report(data: dict[str, Any]) -> str:
               "| 时期 | 股票 | 角色 | 市场信号 | 零信号 | 买入持有 | 最大回撤 | 交易 |", "|---|---:|---|---:|---:|---:|---:|---:|"]
     for row in data["replays"]:
         lines.append(f"| {row['period']} | {row['stock_code']} | {role_labels.get(row['role'], row['role'])} | {row['signal_multiple']:.3f} | {row['control_multiple']:.3f} | {row['buyhold_multiple']:.3f} | {row['max_drawdown']:.2%} | {row['trades']} |")
+    if data.get("capacity_series"):
+        lines += ["", "## 资金规模与容量情景", "",
+                  "每类 Agent 在每只股票分别假设 10 亿元；诊断列用同日实际总成交额作事后比例，回放列只用决策前的 t-2 总成交额设 1% 假设上限。6 项容量相关运行另经固定清单核验并从输入独立重跑，12 份产物逐字节一致。", "",
+                  "| 时期 | 股票 | 事后参与比例 95 分位 | 触及上限 | 请求额实际完成比例 | 激进型无限制末值/初值 | 激进型容量约束末值/初值 |",
+                  "|---|---|---:|---:|---:|---:|---:|"]
+        for row in data["capacity_series"]:
+            lines.append(f"| {row['period']} | {row['stock_code']} | {row['diagnostic_p95_fraction']:.2%} | "
+                         f"{row['binding_days']}/{row['sessions']} | {row['aggregate_fill_rate']:.2%} | "
+                         f"{row['aggressive_uncapped_multiple']:.3f} | {row['aggressive_capped_multiple']:.3f} |")
+        lines += ["", "1% 是未经校准的敏感性参数；日总成交额不是盘口可执行深度，期末财富差异不证明策略改善或预测能力。"]
     lines += ["", "## 运行核验", "", "| 运行 | 完整性 | 重跑 | 哈希检查 | 比较产物 |", "|---|---|---|---:|---:|"]
     for row in data["runs"]:
         lines.append(f"| {row['id']} | {row['integrity']} | {row['reexecution']} | {row['hash_checks']} | {row['compared_artifacts']} |")
@@ -344,7 +422,9 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
         (staging / "report.md").write_text(render_report(data), encoding="utf-8")
         source_reports = {name: file_sha256(path) for name, path in {
             "integrity_results": OUTPUTS / "integrity_catalog_2018_2020_v3/integrity_results.json",
-            "reexecution_results": OUTPUTS / "reexecution_catalog_2018_2020_v3/reexecution_results.json",
+            "reexecution_results": OUTPUTS / "reexecution_catalog_2018_2020_v4/reexecution_results.json",
+            "capacity_integrity_results": OUTPUTS / "integrity_catalog_capacity_series/integrity_results.json",
+            "capacity_reexecution_results": OUTPUTS / "reexecution_catalog_capacity_series/reexecution_results.json",
             "semantic_comparison": OUTPUTS / "semantic_review_comparison_pilot_2020/comparison_results.json",
             "financial_quality_report": OUTPUTS / "financial_2020/financial_quality_report.json",
             "financial_dictionary": OUTPUTS / "financial_2020/field_dictionary.json"}.items()}

@@ -44,6 +44,11 @@ class WorkbenchPayloadTest(unittest.TestCase):
                            "interval_95": [-0.02, 0.01]},
             "replays": [{"period": "Q1", "stock_code": "000001", "role": "role", "signal_multiple": 1.0,
                          "control_multiple": 1.0, "buyhold_multiple": 1.0, "max_drawdown": 0.1, "trades": 1}],
+            "capacity_series": [{"period": "Q1", "stock_code": "000001", "sessions": 58,
+                                 "diagnostic_p95_fraction": 0.3, "binding_days": 58,
+                                 "aggregate_fill_rate": 0.05,
+                                 "aggressive_uncapped_multiple": 0.95,
+                                 "aggressive_capped_multiple": 0.94}],
             "runs": [{"id": "run", "integrity": "passed", "reexecution": "equivalent", "hash_checks": 2,
                       "compared_artifacts": 1}],
             "semantic": {"items": 1, "dual_reviewed": 0, "pending": 1, "conflicts": 0, "status": "no_dual_review"},
@@ -57,6 +62,8 @@ class WorkbenchPayloadTest(unittest.TestCase):
         self.assertIn("2018-01-02 至 2018-01-03：2 日", report)
         self.assertIn("0.781", report)
         self.assertIn("150", report)
+        self.assertIn("资金规模与容量情景", report)
+        self.assertIn("58/58", report)
         self.assertNotIn("question_text", report)
         self.assertNotIn("wxid_", report)
 
