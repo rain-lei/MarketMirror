@@ -1,6 +1,6 @@
 # Research data pipeline
 
-当前语义流程采用 [AI 逐条复核与评分](AI_REVIEW_H2_2020.md)，128 条已复核并生成信号。双人审核与裁定步骤已取消；本文旧双人命令仅用于追溯历史流程。
+当前语义流程采用 [AI 逐条复核与评分](AI_REVIEW_H2_2020.md)，128 条已复核并生成信号，已完成 [126 公司同期行情上的语义回放](SEMANTIC_REPLAY_H2_2020.md)。双人审核与裁定步骤已取消；本文旧双人命令仅用于追溯历史流程。
 
 这部分代码构建 MarketMirror 的研究数据层：质量报告、可追溯的问答明细、待核对财务快照，以及按指定截止时刻生成的文本特征。原始 Excel 保持只读，生成的数据保存在 Git 忽略的 `research_outputs/` 中。
 
@@ -497,7 +497,7 @@ v2 使用 `evidence_quotes`，仅由本地程序按逐字、唯一匹配计算�
 
 这个合并产物是后续 Agent 消融的输入准备，不会改写已有的 market-only 历史回放，仍需通过当前 AI 复核、评分和来源核验。
 
-`simulation/semantic_replay.py` 会在再次核对合并步骤的门槛后，使用和现有 Agent 相同的现金、份额、手续费、风险预算和账本规则运行文本/无文本对照；当前只在合成步骤上测试，尚未对真实 2020 回放执行。
+`simulation/semantic_replay.py` 会在再次核对合并步骤的门槛后，使用和现有 Agent 相同的现金、份额、手续费、风险预算和账本规则运行文本/无文本对照；已有 `simulation/semantic_historical_replay.py` 对 126 公司各 124 个交易日执行真实收益对照，共 378 组公司/Agent 比较，并加入共同停牌约束；三份产物重跑一致，见 [完整实验记录](SEMANTIC_REPLAY_H2_2020.md)。
 
 ## 验证
 
@@ -527,13 +527,13 @@ v2 使用 `evidence_quotes`，仅由本地程序按逐字、唯一匹配计算�
 工作台对 18 项固定运行再次校验输入、代码和输出，再从事件、预测、成交活动与 Agent 回放结果中按白名单抽取汇总。原始问答、个人路径和完整数据库不会写进页面；页面提供事件口径、回放时期与股票筛选、18 项运行的 41 份产物名称及比较状态、核验状态和公开证据链接。
 
 ```powershell
-& $py -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_ai_review_v16
+& $py -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_semantic_replay_v17
 ```
 
 在浏览器打开生成的 `index.html` 可离线查看摘要；输出目录必须是新空目录。要在页面上重跑固定实验，启动只监听 `127.0.0.1` 的本地服务：
 
 ```powershell
-& $py -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_ai_review_v16
+& $py -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_semantic_replay_v17
 ```
 
 打开 `http://127.0.0.1:8766/`，选择清单中的运行并执行。页面会显示并提交该运行的固定数据版本和执行版本，服务端只接受与清单匹配的组合；财务字段口径卡片展示字段统计、来源哈希和未确认项。页面顶部可下载由同一份白名单摘要生成的 `report.md`，用于归档或复核。也可用 `& $py -m research.workbench.run observed_event` 单独重跑。执行入口只接受固定清单内的运行 ID、一次运行一项，不接受网页传入配置路径；每次在被 Git 忽略的 `research_outputs/workbench_runs/<job_id>/` 保存所选配置、版本、主配置与清单哈希、状态、对照报告和产物哈希。页面读取状态时会重新核对关键记录文件。上方事件/股票筛选不改动固定配置；自定义事件、数据或模型版本尚未实现。旧 Vue/FastAPI 静态演示已从当前分支移除，代码可在 Git 历史中找回。
@@ -548,3 +548,13 @@ v2 使用 `evidence_quotes`，仅由本地程序按逐字、唯一匹配计算�
 ```
 
 本机实测 18/18 项通过，共 41 份声明产物：38 份逐字节一致；事件结果 JSON 只忽略顶层 `generated_at`，其余字段精确一致；统一 SQLite 原始字节因内部构建时间不同而变化，比较器核对完整数据库、表结构和按主键排序的全部表行，仅忽略 `dataset_metadata.generated_at` 一行。重跑约需数分钟，临时数据库在核对后清理。该门槛验证**当前机器上的再生能力**，仍不确认来源文件的经济含义、历史公开时刻、可交易成交假设或 Agent 行为校准；其他未列入目录的产物也不在此结论内。
+
+## 126 公司语义历史回放
+
+当前信号适配器为 v4，输出目录为 `research_outputs/semantic_h2_2020_ai_signals_v5/`。问题阶段与缺少回复证据的模型事件不进入公司确认通道；有效空事件不会施加不确定性惩罚，模型原始评分保持可追溯。
+
+```powershell
+python -m research.simulation.semantic_historical_replay research/configs/semantic_replay_all126_2020.json --output-dir <新的本地回放目录>
+```
+
+配置绑定固定样本的全部 126 家公司、同期行情、5/20 交易日动量/波动率、三类 Agent 参数和 0.1% 成本。无文本对照移除完整文本通道，停牌执行参考日零成交。摘要按方向信号、仅事件不确定性和无文本作用分组，不能把末值差视为稳定预测增益。详见 [实验方法和结果](SEMANTIC_REPLAY_H2_2020.md)。

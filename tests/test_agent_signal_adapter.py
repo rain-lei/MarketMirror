@@ -12,6 +12,10 @@ from research.semantic.agent_signal_adapter import (
     run_adapter,
 )
 from research.semantic.annotation_pack import VERSION as PACK_VERSION, canonical_hash
+from test_assistant_review import fixture
+from research.semantic.assistant_review import finalize_review
+from research.semantic.compare_holdout import compare_holdout
+from research.semantic.parse_model_outputs import normalize_file
 
 
 def jsonl(path, rows):
@@ -32,6 +36,7 @@ class AgentSignalAdapterTest(unittest.TestCase):
         self.assertAlmostEqual(uncertainty, 0.1)
         self.assertEqual(count, 2)
         self.assertEqual(prediction_to_signal({"parse_error": "bad", "events": []}), (0.0, 1.0, 0))
+        self.assertEqual(prediction_to_signal({"parse_error": None, "events": []}), (0.0, 0.0, 0))
 
     def test_adapter_requires_passed_gate_and_writes_bound_stream(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -67,8 +72,10 @@ class AgentSignalAdapterTest(unittest.TestCase):
                 "artifacts": {result_path.name: {"sha256": file_sha256(result_path)}}}), encoding="utf-8")
             rows, audit = build_signal_rows(pack_dir, predictions, comparison_dir)
             self.assertEqual(audit["items"], 2)
-            self.assertAlmostEqual(rows[0]["text_signal"], 0.64)
-            self.assertEqual(rows[1]["uncertainty"], 1.0)
+            self.assertEqual(rows[0]["text_signal"], 0.0)
+            self.assertEqual(audit["suppressed_question_event_items"], 1)
+            self.assertEqual(audit["suppressed_question_events"], 1)
+            self.assertEqual(rows[1]["uncertainty"], 0.0)
             output = root / "output"
             run_adapter(pack_dir, predictions, comparison_dir, output)
             self.assertEqual(len((output / "agent_signal_rows.jsonl").read_text(encoding="utf-8").splitlines()), 2)
@@ -93,6 +100,32 @@ class AgentSignalAdapterTest(unittest.TestCase):
                 "artifacts": {result_path.name: {"sha256": file_sha256(result_path)}}}), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "has not passed"):
                 build_signal_rows(pack, root / "predictions.jsonl", comparison)
+
+    def test_reply_event_with_only_question_evidence_is_suppressed(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            _, _, decisions = fixture(root)
+            raw_path = root / "raw/model_raw_outputs.jsonl"
+            raw_rows = [json.loads(line) for line in raw_path.read_text(encoding="utf-8").splitlines()]
+            response = json.loads(raw_rows[1]["raw_response"])
+            response["events"][0]["evidence_quotes"] = [{"source": "question", "quote": "盈利是否增加？"}]
+            raw_rows[1]["raw_response"] = json.dumps(response, ensure_ascii=False)
+            jsonl(raw_path, raw_rows)
+            manifest_path = root / "raw/model_run_manifest.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["artifacts"][raw_path.name]["sha256"] = file_sha256(raw_path)
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            normalize_file(root / "pack", raw_path, root / "question_evidence_normalized")
+            finalize_review(root / "pack", decisions, root / "review")
+            compare_holdout(root / "pack", None, None, root / "raw", root / "question_evidence_normalized",
+                            root / "keyword", root / "scored", ai_review_dir=root / "review")
+            rows, audit = build_signal_rows(root / "pack",
+                                           root / "question_evidence_normalized/model_predictions.jsonl",
+                                           root / "scored")
+            self.assertEqual(audit["suppressed_reply_ungrounded_events"], 1)
+            self.assertEqual(rows[1]["stage"], "reply")
+            self.assertEqual((rows[1]["text_signal"], rows[1]["uncertainty"], rows[1]["event_count"]),
+                             (0.0, 0.0, 0))
 
 
 if __name__ == "__main__":

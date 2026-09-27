@@ -54,6 +54,7 @@
 
     <section class="section" id="agents">
       <div class="section-head"><div><p class="eyebrow">04 / MECHANISM</p><h2>Agent 规则诊断</h2><p>相同规则与示意参数在历史收益路径上的价格接受型回放。</p></div><span class="section-tag">三类角色 · 三段时期</span></div>
+      <div class="card"><h3>126 公司语义信号对照</h3><p id="semantic-ablation-summary" class="note"></p><div id="semantic-ablation-table"></div><p class="note">两条路径共用真实收益、交易成本和停牌限制。方向未知的事件可以通过不确定性影响持仓；无事件记录不施加风险惩罚。Agent 参数未校准，文本按累计可见条目均值保留，末值差不证明文本预测能力。</p></div>
       <div class="card"><div class="filters"><label class="field-label">时期<select id="period-select"></select></label><label class="field-label">股票<select id="stock-select"></select></label><span class="filter-note">期末财富 / 初始现金；1.000 为现金基准</span></div><div id="replay-table"></div><p class="note">归一化收益指数并非实际成交价。订单假定在参考收盘价全部成交，不改变历史价格；角色参数未用真实投资者交易校准。</p></div>
       <div class="card"><h3>资金规模与容量情景</h3><p class="note">每类 Agent 在每只股票分别假设 10 亿元。事后比例用同日实际总成交额；容量约束只用决策前已知的成交额设 1% 情景上限。六项容量运行已独立重跑。</p><div id="capacity-table"></div><p class="note">1% 不是从盘口估计的可成交深度；财富差异不证明策略改善或监管预测能力。</p></div>
       <div class="card"><div class="card-head"><div><h3>已观察收益上的假设价格冲击</h3><p>同一事件的有/无情景信号配对；三种冲击系数。</p></div><label class="field-label">历史节点<select id="counterfactual-select"></select></label></div><p id="counterfactual-assumptions" class="note"></p><div id="counterfactual-table"></div><p class="note">仅平安银行。事件方向、流动性和冲击系数均为手设；实际收益已包含真实交易运动，叠加冲击可能重复计入。价格指数差不是预测或历史拟合。</p></div>

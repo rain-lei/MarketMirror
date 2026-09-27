@@ -38,7 +38,7 @@
 - `research_outputs/semantic_h2_2020_assistant_review/`：参考标签、报告与来源清单。
 - `research_outputs/semantic_h2_2020_ai_scored_v2/`：评分与输入、代码、结果哈希。
 - `research_outputs/semantic_h2_2020_ai_signals_v2/`：Agent 信号与接入检查。
-- `research_outputs/workbench_2018_2020_ai_review_v16/`：当前工作台与脱敏摘要。
+- `research_outputs/workbench_2018_2020_semantic_replay_v17/`：当前工作台与脱敏摘要。
 
 每次运行使用新的空目录，保留已有证据：
 
@@ -48,6 +48,8 @@ python -m research.semantic.compare_holdout research_outputs/semantic_holdout_h2
 python -m research.semantic.agent_signal_adapter research_outputs/semantic_holdout_h2_2020 research_outputs/semantic_holdout_h2_2020_normalized/model_predictions.jsonl <新评分目录> --output-dir <新信号目录>
 ```
 
-下一步是补齐这批 126 家公司的同期行情和交易日数据，按可见时点接入历史回放，比较有文本与无文本两条路径。原三股行情（000001、000002、600519）与本批公司没有重叠，不能把不同公司的文本强行接上。当前尚未完成真实语义回放、投资者行为校准或监管预测验证。
+后续已补齐这批 126 家公司的同期行情并完成有文本/无文本真实收益回放，详见 [回放记录](SEMANTIC_REPLAY_H2_2020.md)。原三股行情（000001、000002、600519）与本批公司没有重叠，本次使用各公司自己的行情。投资者行为校准与监管预测验证仍未完成。
 
 验证结果：161 项测试全部通过，包含 AI 复核到评分到信号的端到端链路、参考改动拒绝和评分后预测替换拒绝；最终工作台与真实信号流的来源核验通过。
+
+后续接入修正：当前适配器 v4 与 `semantic_h2_2020_ai_signals_v5/` 在固定模型输出上压制 4 个提问事件及 2 个没有回复证据的事件，并使有效空事件不施加不确定性惩罚。当前保留 15 条方向信号及 29 条仅事件不确定性记录。上文 16 条非零信号对应初次适配的历史结果；原模型评分未替换，接入修正和结果见 [真实回放记录](SEMANTIC_REPLAY_H2_2020.md)。

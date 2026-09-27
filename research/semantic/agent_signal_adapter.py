@@ -20,7 +20,7 @@ from ..data_pipeline.provenance import file_sha256
 from .signal_validation import load_pack, read_jsonl, validate_predictions
 from .assistant_review import load_review
 
-VERSION = "semantic-agent-signal-adapter-v1"
+VERSION = "semantic-agent-signal-adapter-v4"
 GATE_PIPELINE = "semantic-holdout-comparison-v1"
 AI_GATE_PIPELINE = "semantic-ai-reference-comparison-v1"
 GATE_SCOPE = ("Eligibility for a controlled Agent signal ablation only; not real investor calibration, "
@@ -99,7 +99,8 @@ def prediction_to_signal(prediction: dict[str, Any]) -> tuple[float, float, int]
         return 0.0, 1.0, 0
     events = prediction["events"]
     if not events:
-        return 0.0, 1.0, 0
+        # No extracted event is an absence of signal, not evidence of stress.
+        return 0.0, 0.0, 0
     signal = sum(_event_contribution(event) for event in events) / len(events)
     uncertainty = sum(event["uncertainty"] for event in events) / len(events)
     return max(-1.0, min(1.0, signal)), max(0.0, min(1.0, uncertainty)), len(events)
@@ -121,9 +122,20 @@ def build_signal_rows(pack_dir: Path, predictions_path: Path,
     if len(models) != 1:
         raise ValueError("Agent signal adaptation requires one model and prompt version")
     rows = []
+    suppressed_question_events = 0
+    suppressed_question_items = 0
+    suppressed_reply_ungrounded_events = 0
     for prediction in predictions:
         item = items[prediction["item_id"]]
-        signal, uncertainty, event_count = prediction_to_signal(prediction)
+        if item["stage"] == "question":
+            suppressed_question_events += len(prediction["events"])
+            suppressed_question_items += int(bool(prediction["events"]))
+            signal, uncertainty, event_count = 0.0, 0.0, 0
+        else:
+            supported = [event for event in prediction["events"]
+                         if any(span["source"] == "reply" for span in event["evidence_spans"])]
+            suppressed_reply_ungrounded_events += len(prediction["events"]) - len(supported)
+            signal, uncertainty, event_count = prediction_to_signal({**prediction, "events": supported})
         rows.append({"item_id": prediction["item_id"], "stock_code": item["stock_code"],
                      "available_at": item["available_at"], "stage": item["stage"],
                      "source_text_sha256": item["source_text_sha256"],
@@ -133,7 +145,10 @@ def build_signal_rows(pack_dir: Path, predictions_path: Path,
                      "text_evidence": f"sha256:{item['source_text_sha256']}"})
     rows.sort(key=lambda row: (row["available_at"], row["stock_code"], row["item_id"]))
     return rows, {"gate": gate, "prediction_audit": audit, "items": len(rows),
-                  "parse_error_items": sum(row["parse_error"] is not None for row in rows)}
+                  "parse_error_items": sum(row["parse_error"] is not None for row in rows),
+                  "suppressed_question_event_items": suppressed_question_items,
+                  "suppressed_question_events": suppressed_question_events,
+                  "suppressed_reply_ungrounded_events": suppressed_reply_ungrounded_events}
 
 
 def run_adapter(pack_dir: Path, predictions_path: Path, comparison_dir: Path,
@@ -152,6 +167,9 @@ def run_adapter(pack_dir: Path, predictions_path: Path, comparison_dir: Path,
     source_hashes = {str(path): file_sha256(path) for path in source_paths}
     result = {"pipeline_version": VERSION, "pack_experiment_id": load_pack(pack_dir)[1]["experiment_id"],
               "items": len(rows), "parse_error_items": audit["parse_error_items"],
+              "suppressed_question_event_items": audit["suppressed_question_event_items"],
+              "suppressed_question_events": audit["suppressed_question_events"],
+              "suppressed_reply_ungrounded_events": audit["suppressed_reply_ungrounded_events"],
               "model_id": rows[0]["model_id"] if rows else None,
               "prompt_version": rows[0]["prompt_version"] if rows else None,
               "gate": audit["gate"],
@@ -167,6 +185,9 @@ def run_adapter(pack_dir: Path, predictions_path: Path, comparison_dir: Path,
         report = staging / "agent_signal_report.md"
         report.write_text("# Agent 语义信号适配结果\n\n"
                           f"已生成 {len(rows)} 条带来源哈希的文本信号；解析失败 {audit['parse_error_items']} 条。\n\n"
+                          f"当前公司确认事件通道压制问题阶段模型误报 {audit['suppressed_question_event_items']} 条，"
+                          f"涉及 {audit['suppressed_question_events']} 个模型事件；空事件不施加风险惩罚。\n\n"
+                          f"回复阶段另压制 {audit['suppressed_reply_ungrounded_events']} 个没有回复原文证据的事件。\n\n"
                           f"审核协议：{audit['gate']['review_basis']['protocol']}。该产物在对应复核与评分门槛通过后生成，仅用于受控 Agent 消融实验；"
                           "不表示历史投资者校准、因果复现或监管预测。\n", encoding="utf-8")
         manifest = {"pipeline_version": VERSION, "generated_at": datetime.now(timezone.utc).isoformat(),

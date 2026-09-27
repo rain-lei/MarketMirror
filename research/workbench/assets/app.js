@@ -13,6 +13,14 @@
   };
   const codes = {"000001":"平安银行 · 000001","000002":"万科 A · 000002","600519":"贵州茅台 · 600519"};
   const roles = {aggressive:"激进型", conservative:"保守型", institutional:"机构型"};
+  const ablation=data.semantic_ablation;
+  if(ablation){
+    const categories={directional:"方向信号",uncertainty_only:"仅事件不确定性",no_effect:"无文本作用"};
+    $("semantic-ablation-summary").textContent=`${ablation.stocks} 家公司 × 每家 ${ablation.sessions_per_stock.join('/')} 个交易日；${ablation.comparison_rows} 组 Agent 对照。${ablation.directional_stocks} 家有方向信号，${ablation.uncertainty_only_stocks} 家仅事件不确定性，${ablation.no_effect_stocks} 家两条路径完全一致。阻止 ${ablation.blocked_execution_days} 个停牌参考日成交；三份产物重跑一致。`;
+    $("semantic-ablation-table").innerHTML=`<table class="data-table"><thead><tr><th>文本作用</th><th>角色</th><th>公司数</th><th>平均末值差 / 初值</th><th>差值为正</th><th>差值为负</th></tr></thead><tbody>${ablation.grouped.map(row=>`<tr><td>${safe(categories[row.category]||row.category)}</td><td>${safe(roles[row.role]||row.role)}</td><td>${safe(row.stocks)}</td><td class="num">${pct(row.mean_difference_multiple,3)}</td><td>${safe(row.positive)}</td><td>${safe(row.negative)}</td></tr>`).join('')}</tbody></table>`;
+  }else{
+    $("semantic-ablation-summary").textContent="尚无通过来源核验的真实语义回放。";
+  }
   const metrics = [
     ["问答来源行",data.overview.question_rows.toLocaleString("zh-CN"),"三份本地 Excel"],
     ["来源股票代码",data.overview.stocks.toLocaleString("zh-CN"),"身份仍待核实"],

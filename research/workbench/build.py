@@ -18,8 +18,9 @@ from ..semantic.agent_signal_adapter import VERSION as AGENT_SIGNAL_ADAPTER_VERS
 from ..semantic.assistant_review import load_review
 from ..semantic.audit_model_run import audit_model_run
 from ..semantic.review_readiness import audit_review_package
+from ..simulation.semantic_historical_replay import load_verified_summary
 
-VERSION = "research-workbench-v17"
+VERSION = "research-workbench-v18"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 CAPACITY_CONFIG = ROOT / "research/configs/integrity_catalog_capacity_series.json"
@@ -591,6 +592,27 @@ def checked_agent_signal_gate(review: dict[str, Any] | None, holdout_model: dict
     return result
 
 
+def checked_semantic_ablation() -> dict[str, Any] | None:
+    directory = OUTPUTS / "semantic_h2_2020_ablation_all126_v4"
+    rerun = OUTPUTS / "semantic_h2_2020_ablation_all126_v4_rerun"
+    if not directory.exists():
+        return None
+    summary = load_verified_summary(directory)
+    repeated = load_verified_summary(rerun)
+    if summary != repeated or summary["stocks"] != 126 or summary["comparison_rows"] != 378:
+        raise ValueError("semantic ablation repeat or company coverage differs")
+    manifests = [json.loads((path / "semantic_ablation_manifest.json").read_text(encoding="utf-8"))
+                 for path in (directory, rerun)]
+    if manifests[0]["artifacts"] != manifests[1]["artifacts"]:
+        raise ValueError("semantic ablation rerun artifacts are not byte-identical")
+    result = {key: summary[key] for key in ("stocks", "sessions_per_stock", "comparison_rows",
+              "directional_stocks", "uncertainty_only_stocks", "no_effect_stocks",
+              "blocked_execution_days", "grouped")}
+    result["reexecution"] = "identical"
+    validate_public_payload(result)
+    return result
+
+
 def collect_data() -> dict[str, Any]:
     pinned = load_catalog(CONFIG)
     cache: dict[Path, str] = {}
@@ -625,6 +647,7 @@ def collect_data() -> dict[str, Any]:
     independent_quotes = checked_independent_quotes()
     review_readiness = None  # Archived dual-review packets are no longer a prerequisite.
     agent_signal_gate = checked_agent_signal_gate(assistant_review, holdout_model)
+    semantic_ablation = checked_semantic_ablation()
     if ({row["event_id"] for row in counterfactual_series}
             != {row["event_id"] for row in lagged_impact_series}):
         raise ValueError("fixed and lagged impact events differ; shared filter is unsafe")
@@ -708,6 +731,7 @@ def collect_data() -> dict[str, Any]:
         "review_readiness": review_readiness,
         "agent_signal_gate": agent_signal_gate,
         "assistant_review": assistant_review,
+        "semantic_ablation": semantic_ablation,
         "semantic": {"items": 128, "reviewed_items": assistant_review["reviewed_items"] if assistant_review else 0,
                      "protocol": "assistant_review_v1", "gold_ready": False,
                      "status": assistant_review["status"] if assistant_review else "awaiting_assistant_review"},
@@ -869,6 +893,19 @@ def render_report(data: dict[str, Any]) -> str:
         lines += ["## Agent 语义信号接入门槛", "",
                   f"状态 `{gate['status']}`；适配器 `{gate['adapter_version']}`；已审 {gate['reviewed_items']}/{gate['required_items']} 条。",
                   gate["reason"], gate["scope"], ""]
+    ablation = data.get("semantic_ablation")
+    if ablation:
+        lines += ["## 126 公司真实收益语义回放", "",
+                  f"{ablation['stocks']} 家公司，每家 {ablation['sessions_per_stock'][0]} 个交易日；"
+                  f"{ablation['comparison_rows']} 组公司与 Agent 对照，重跑三份产物逐字节一致。",
+                  f"方向信号 {ablation['directional_stocks']} 家，仅事件不确定性 {ablation['uncertainty_only_stocks']} 家，"
+                  f"无文本作用 {ablation['no_effect_stocks']} 家；阻止 {ablation['blocked_execution_days']} 个停牌参考日成交。",
+                  "", "| 文本作用 | 角色 | 公司数 | 平均末值差/初值 | 差值为正 | 差值为负 |",
+                  "|---|---|---:|---:|---:|---:|"]
+        for row in ablation["grouped"]:
+            lines.append(f"| {row['category']} | {row['role']} | {row['stocks']} | "
+                         f"{row['mean_difference_multiple']:+.4f} | {row['positive']} | {row['negative']} |")
+        lines += ["", "价格路径由已观察收益给定。行为参数未校准，文本按累计可见条目均值持续保留；末值差是规则敏感性，未证明文本预测增益。", ""]
     lines += ["## 公开证据", ""]
     lines.extend(f"- [{item['label']}]({item['url']})" for item in data["evidence"])
     financial = data.get("financial_dictionary")
@@ -973,6 +1010,10 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
             source_reports["assistant_review"] = file_sha256(OUTPUTS / "semantic_h2_2020_assistant_review/assistant_review_manifest.json")
             if data["assistant_review"].get("scoring"):
                 source_reports["ai_reference_scoring"] = file_sha256(OUTPUTS / "semantic_h2_2020_ai_scored_v2/comparison_manifest.json")
+        if data.get("semantic_ablation"):
+            for label, directory in (("semantic_ablation", "semantic_h2_2020_ablation_all126_v4"),
+                                     ("semantic_ablation_rerun", "semantic_h2_2020_ablation_all126_v4_rerun")):
+                source_reports[label] = file_sha256(OUTPUTS / directory / "semantic_ablation_manifest.json")
         manifest = {"pipeline_version": VERSION, "generated_at": datetime.now(timezone.utc).isoformat(),
                     "integrity_catalog_sha256": file_sha256(CONFIG),
                     "source_reports": source_reports,

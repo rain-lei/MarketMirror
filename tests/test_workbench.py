@@ -60,6 +60,12 @@ class WorkbenchPayloadTest(unittest.TestCase):
             "review_readiness": None,
             "assistant_review": {"scoring": {"model_f1": 0.89, "keyword_f1": 0.51,
                                                "type_macro_f1": 0.66}},
+            "semantic_ablation": {"stocks": 126, "sessions_per_stock": [124],
+                                  "comparison_rows": 378, "directional_stocks": 15,
+                                  "uncertainty_only_stocks": 29, "no_effect_stocks": 82,
+                                  "blocked_execution_days": 18,
+                                  "grouped": [{"category": "no_effect", "role": "aggressive", "stocks": 82,
+                                               "mean_difference_multiple": 0.0, "positive": 0, "negative": 0}]},
             "agent_signal_gate": {"status": "eligible_under_ai_review", "passed": True,
                                   "gold_ready": False, "reviewed_items": 128, "required_items": 128,
                                   "adapter_version": "semantic-agent-signal-adapter-v1",
@@ -131,6 +137,9 @@ class WorkbenchPayloadTest(unittest.TestCase):
         self.assertIn("与 AI 参考一致性", report)
         self.assertIn("非独立人工金标准", report)
         self.assertIn("0.8900", report)
+        self.assertIn("126 公司真实收益语义回放", report)
+        self.assertIn("378 组公司与 Agent 对照", report)
+        self.assertIn("18 个停牌参考日", report)
         self.assertNotIn("question_text", report)
         self.assertNotIn("wxid_", report)
 

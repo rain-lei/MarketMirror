@@ -46,6 +46,8 @@ def _check_steps(steps: list[dict[str, Any]]) -> None:
             raise ValueError("observed_return must be finite and greater than -1")
         if not isinstance(step["text_evidence"], str) or not step["text_evidence"].strip():
             raise ValueError("semantic replay requires text evidence identifiers")
+        if "execution_available" in step and type(step["execution_available"]) is not bool:
+            raise ValueError("execution_available must be a boolean")
 
 
 def replay_semantic_path(steps: list[dict[str, Any]], agents: list[AgentParameters],
@@ -71,7 +73,8 @@ def replay_semantic_path(steps: list[dict[str, Any]], agents: list[AgentParamete
         for agent in agents:
             observation = Observation(
                 index, price, step["estimated_volatility"], step["market_signal"],
-                step["text_signal"], step["text_uncertainty"],
+                step["text_signal"] if use_text else 0.0,
+                step["text_uncertainty"] if use_text else 0.0,
                 f"benchmark-through:{step['signal_cutoff_date']}", step["text_evidence"])
             decisions[agent.name] = decide(agent, states[agent.name], observation, use_text=use_text)
         agent_rows = {}
@@ -80,6 +83,8 @@ def replay_semantic_path(steps: list[dict[str, Any]], agents: list[AgentParamete
             requested = decision.requested_shares
             fill = (min(requested, state.cash / (price * (1 + fee_rate)))
                     if requested > 0 else max(requested, -state.shares))
+            if not step.get("execution_available", True):
+                fill = 0.0
             notional = fill * price
             fee = abs(notional) * fee_rate
             state.cash -= notional + fee
@@ -100,6 +105,7 @@ def replay_semantic_path(steps: list[dict[str, Any]], agents: list[AgentParamete
             risk_breach_days[agent.name] += int(weight > decision.risk_weight_cap + 1e-9)
             agent_rows[agent.name] = {"role": agent.role, "decision": asdict(decision),
                                       "filled_shares": fill, "fees_paid": fee,
+                                      "execution_available": step.get("execution_available", True),
                                       "cash": state.cash, "shares": state.shares,
                                       "closing_wealth": wealth, "closing_weight": weight}
         if not math.isclose(sum(state.cash for state in states.values()) + external_cash + fee_pool,

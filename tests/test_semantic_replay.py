@@ -50,6 +50,28 @@ class SemanticReplayTest(unittest.TestCase):
             self.assertAlmostEqual(sum(row["shares"] for row in trace["agents"].values())
                                    + trace["external_shares"], 0.0, places=8)
 
+    def test_no_text_control_is_invariant_to_text_and_its_uncertainty(self):
+        original = steps()
+        altered = [{**step, "text_signal": -step["text_signal"],
+                    "text_uncertainty": 1.0} for step in original]
+        control = replay_semantic_path(original, self.agents, 0.001, use_text=False)
+        altered_control = replay_semantic_path(altered, self.agents, 0.001, use_text=False)
+        self.assertEqual(control["summary"], altered_control["summary"])
+        self.assertEqual(
+            [[row["decision"] for row in step["agents"].values()] for step in control["trace"]],
+            [[row["decision"] for row in step["agents"].values()] for step in altered_control["trace"]],
+        )
+
+    def test_suspended_reference_session_has_zero_fills_and_fees(self):
+        blocked = [{**step, "execution_available": False} for step in steps()]
+        result = replay_semantic_path(blocked, self.agents, 0.001)
+        for trace in result["trace"]:
+            for row in trace["agents"].values():
+                self.assertEqual(row["filled_shares"], 0.0)
+                self.assertEqual(row["fees_paid"], 0.0)
+        for agent in self.agents:
+            self.assertEqual(result["summary"][agent.name]["final_wealth"], agent.initial_cash)
+
     def test_joined_payload_requires_passed_gate(self):
         payload = {"pipeline_version": JOIN_VERSION, "steps": steps(),
                    "eligible_gate": {"passed": True, "checks": {"reviewed": True}}}
