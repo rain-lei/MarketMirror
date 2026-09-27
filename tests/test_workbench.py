@@ -43,6 +43,10 @@ class WorkbenchPayloadTest(unittest.TestCase):
                                     "car_difference_pp": 0.1,
                                     "event_window_max_absolute_difference_pp": 0.004,
                                     "estimation_basis_exception": False}],
+            "review_readiness": {"status": "ready_for_human_review", "items": 128,
+                                 "reviewer_slots": 2, "reviewed_items": 0,
+                                 "blank_label_rows_per_reviewer": 128,
+                                 "interface_pages": 2, "gold_ready": False},
             "activity": [{"event_id": "asset_management_guidance_date_only", "stock_code": "000001",
                           "amount_fold": 0.781}],
             "placebo": {"asset_management_guidance_date_only": {"before": 150, "after": 27}},
@@ -87,6 +91,8 @@ class WorkbenchPayloadTest(unittest.TestCase):
         self.assertIn("2020-01-01", report)
         self.assertIn("第二行情源口径敏感性", report)
         self.assertIn("东方财富不复权 CAR", report)
+        self.assertIn("下半年留出人工审核准备", report)
+        self.assertIn("ready_for_human_review", report)
         self.assertIn("[-3, +5]", report)
         self.assertIn("2018-01-02 至 2018-01-03：2 日", report)
         self.assertIn("问答可见时间敏感性", report)

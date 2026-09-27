@@ -1,0 +1,10 @@
+{
+  "runs": [
+    {
+      "run_id": "semantic_review_readiness_h2_2020",
+      "manifest": "../../research_outputs/semantic_holdout_h2_2020_readiness_v2/review_readiness_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "37df79404e00e506e386f63dfd1a6fe43464a111988c19d8bd538411c2bcc7b4"
+    }
+  ]
+}

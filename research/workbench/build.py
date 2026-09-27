@@ -15,8 +15,9 @@ from typing import Any
 from ..data_pipeline.provenance import file_sha256
 from ..registry.verify_catalog import audit_run, load_catalog
 from ..semantic.audit_model_run import audit_model_run
+from ..semantic.review_readiness import audit_review_package
 
-VERSION = "research-workbench-v14"
+VERSION = "research-workbench-v15"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 CAPACITY_CONFIG = ROOT / "research/configs/integrity_catalog_capacity_series.json"
@@ -25,6 +26,7 @@ COUNTERFACTUAL_CONFIG = ROOT / "research/configs/integrity_catalog_observed_coun
 LAGGED_IMPACT_CONFIG = ROOT / "research/configs/integrity_catalog_lagged_impact.json"
 VISIBILITY_LAG_CONFIG = ROOT / "research/configs/integrity_catalog_visibility_lag_2020.json"
 INDEPENDENT_QUOTE_CONFIG = ROOT / "research/configs/integrity_catalog_independent_quotes.json"
+REVIEW_READINESS_CONFIG = ROOT / "research/configs/integrity_catalog_semantic_review_readiness_h2_2020.json"
 HOLDOUT_MODEL_CONFIG = ROOT / "research/configs/integrity_catalog_semantic_holdout_model_h2_2020.json"
 OUTPUTS = ROOT / "research_outputs"
 ASSETS = Path(__file__).resolve().parent / "assets"
@@ -511,6 +513,41 @@ def checked_independent_quotes() -> list[dict[str, Any]]:
     return rows
 
 
+def checked_review_readiness() -> dict[str, Any]:
+    """Expose the human-review handoff only after package and page audits pass."""
+    pinned = load_catalog(REVIEW_READINESS_CONFIG)
+    if len(pinned) != 1 or pinned[0]["run_id"] != "semantic_review_readiness_h2_2020":
+        raise ValueError("review readiness catalog has an unexpected run")
+    if audit_run(pinned[0], REVIEW_READINESS_CONFIG.parent, ROOT / "research", OUTPUTS, {})["status"] != "passed":
+        raise ValueError("review readiness run failed pinned integrity checks")
+    integrity = checked_report(OUTPUTS / "integrity_catalog_semantic_review_readiness_h2_2020_v2",
+                               "integrity_manifest.json", "integrity_results.json",
+                               ROOT / "research/registry/verify_catalog.py")
+    if (integrity["catalog_sha256"] != file_sha256(REVIEW_READINESS_CONFIG)
+            or integrity["passed_runs"] != 1):
+        raise ValueError("stored review readiness audit does not match catalog")
+    original_path = (REVIEW_READINESS_CONFIG.parent / pinned[0]["manifest"]).resolve()
+    result = json.loads((original_path.parent / "review_readiness.json").read_text(encoding="utf-8"))
+    if (result.get("pipeline_version") != "semantic-review-readiness-v1"
+            or result.get("status") != "ready_for_human_review"
+            or result.get("items") != 128
+            or result.get("reviewer_slots") != 2
+            or result.get("reviewed_items") != 0
+            or result.get("blank_label_rows_per_reviewer") != 128
+            or result.get("interface_pages") != 2
+            or result.get("gold_ready") is not False):
+        raise ValueError("review readiness result no longer describes the blank H2 package")
+    package = audit_review_package(OUTPUTS / "semantic_holdout_h2_2020",
+                                  OUTPUTS / "semantic_holdout_h2_2020_review",
+                                  OUTPUTS / "semantic_holdout_h2_2020_interface")
+    if package != result:
+        raise ValueError("stored review readiness result differs from a fresh package audit")
+    public = {key: result[key] for key in ("status", "items", "reviewer_slots", "reviewed_items",
+                                           "blank_label_rows_per_reviewer", "interface_pages", "gold_ready")}
+    validate_public_payload(public)
+    return public
+
+
 def collect_data() -> dict[str, Any]:
     pinned = load_catalog(CONFIG)
     cache: dict[Path, str] = {}
@@ -543,6 +580,7 @@ def collect_data() -> dict[str, Any]:
     lagged_impact_series = checked_lagged_impact_series()
     visibility_lag_series = checked_visibility_lag_series()
     independent_quotes = checked_independent_quotes()
+    review_readiness = checked_review_readiness()
     if ({row["event_id"] for row in counterfactual_series}
             != {row["event_id"] for row in lagged_impact_series}):
         raise ValueError("fixed and lagged impact events differ; shared filter is unsafe")
@@ -623,6 +661,7 @@ def collect_data() -> dict[str, Any]:
         "lagged_impact_series": lagged_impact_series,
         "visibility_lag_series": visibility_lag_series,
         "independent_quotes": independent_quotes,
+        "review_readiness": review_readiness,
         "semantic": {"items": reviewed["pack_items"], "dual_reviewed": reviewed["dual_reviewed_items"],
                      "pending": reviewed["pending_items"], "conflicts": reviewed["conflict_items"],
                      "gold_ready": reviewed["gold_ready"], "status": reviewed["status"]},
@@ -766,8 +805,13 @@ def render_report(data: dict[str, Any]) -> str:
         lines.append(f"### {row['id']}")
         lines.extend(f"- `{item['name']}`：{item['status']}" for item in row.get("artifacts", []))
         lines.append("")
-    lines += ["## 语义审核状态", "", f"样本 {semantic['items']} 条；双人完成 {semantic['dual_reviewed']} 条；待审 {semantic['pending']} 条；分歧 {semantic['conflicts']} 条；状态 `{semantic['status']}`。", "",
-              "## 公开证据", ""]
+    lines += ["## 语义审核状态", "", f"样本 {semantic['items']} 条；双人完成 {semantic['dual_reviewed']} 条；待审 {semantic['pending']} 条；分歧 {semantic['conflicts']} 条；状态 `{semantic['status']}`。", ""]
+    readiness = data.get("review_readiness")
+    if readiness:
+        lines += ["## 下半年留出人工审核准备", "",
+                  f"审核包状态 `{readiness['status']}`；固定条目 {readiness['items']} 条；独立审核位 {readiness['reviewer_slots']} 个；当前已审核 {readiness['reviewed_items']} 条；每位审核者的空白标签行 {readiness['blank_label_rows_per_reviewer']} 条；离线页面 {readiness['interface_pages']} 个。",
+                  "该状态只证明来源绑定、页面脱敏、空白标签和哈希一致，不代表语义准确率，也没有生成金标准。", ""]
+    lines += ["## 公开证据", ""]
     lines.extend(f"- [{item['label']}]({item['url']})" for item in data["evidence"])
     financial = data.get("financial_dictionary")
     if financial:
@@ -850,6 +894,9 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
             "independent_quote_integrity_results": OUTPUTS / "integrity_catalog_independent_quotes_v1/integrity_results.json",
             "independent_quote_original_manifest": OUTPUTS / "independent_eastmoney_2018_2020/check_v2/independent_quote_manifest.json",
             "independent_quote_rerun_manifest": OUTPUTS / "independent_eastmoney_2018_2020/check_verified_rerun_v1/independent_quote_manifest.json",
+            "review_readiness_catalog": REVIEW_READINESS_CONFIG,
+            "review_readiness_integrity_results": OUTPUTS / "integrity_catalog_semantic_review_readiness_h2_2020_v2/integrity_results.json",
+            "review_readiness_manifest": OUTPUTS / "semantic_holdout_h2_2020_readiness_v2/review_readiness_manifest.json",
             "holdout_model_catalog": HOLDOUT_MODEL_CONFIG,
             "holdout_model_integrity_results": OUTPUTS / "integrity_catalog_semantic_holdout_model_h2_2020_v1/integrity_results.json",
             "holdout_model_raw_manifest": OUTPUTS / "semantic_holdout_h2_2020_model/model_run_manifest.json",
