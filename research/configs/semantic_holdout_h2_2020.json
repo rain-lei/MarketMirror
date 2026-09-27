@@ -1,0 +1,14 @@
+{
+  "run_id": "semantic_holdout_h2_2020",
+  "qa_database": "../../research_outputs/unified/dataset.sqlite",
+  "qa_source_sha256": "a3a1b0afa2cd13b25a56c89393178d93960cd8867a46a7c469fd567bf82ac812",
+  "visibility_window": {"start_date": "2020-07-01", "end_date": "2020-12-31"},
+  "seed": "marketmirror-semantic-holdout-h2-v1",
+  "company_split_percent": {"train": 60, "validation": 20, "test": 20},
+  "per_stage_stratum_quota": {"train": 4, "validation": 2, "test": 2},
+  "selection_basis": "Untouched second-half 2020 evaluation cohort; exclude every development-pack company, QA identity, and exact visible context before deterministic keyword-stratified sampling. All internal splits belong to the external holdout.",
+  "development_pack": "../../research_outputs/semantic_annotation_pilot_2020",
+  "frozen_prompt_version": "semantic-prompt-v2",
+  "frozen_prompt_sha256": "cb608b2b36cab16653cc74afcc391e24356655b1661845833242c45e66bb3892",
+  "frozen_model_id": "DeepSeek-V4-Flash-0731-W8A8"
+}

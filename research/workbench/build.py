@@ -15,7 +15,7 @@ from ..data_pipeline.provenance import file_sha256
 from ..registry.verify_catalog import audit_run, load_catalog
 from ..semantic.audit_model_run import audit_model_run
 
-VERSION = "research-workbench-v7"
+VERSION = "research-workbench-v8"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 OUTPUTS = ROOT / "research_outputs"
@@ -122,9 +122,9 @@ def collect_data() -> dict[str, Any]:
     audits = [audit_run(run, CONFIG.parent, ROOT / "research", OUTPUTS, cache) for run in pinned]
     if any(run["status"] != "passed" for run in audits):
         raise ValueError("workbench refuses to display runs with failed pinned integrity checks")
-    integrity = checked_report(OUTPUTS / "integrity_catalog_2018_2020_v2", "integrity_manifest.json",
+    integrity = checked_report(OUTPUTS / "integrity_catalog_2018_2020_v3", "integrity_manifest.json",
                                "integrity_results.json", ROOT / "research/registry/verify_catalog.py")
-    reexecution = checked_report(OUTPUTS / "reexecution_catalog_2018_2020_v2", "reexecution_manifest.json",
+    reexecution = checked_report(OUTPUTS / "reexecution_catalog_2018_2020_v3", "reexecution_manifest.json",
                                  "reexecution_results.json", ROOT / "research/registry/reexecute.py")
     if (integrity["catalog_sha256"] != file_sha256(CONFIG)
             or integrity["passed_runs"] != len(pinned)
@@ -343,8 +343,8 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
         (staging / "data.js").write_text("window.MARKETMIRROR_DATA = " + payload + ";\n", encoding="utf-8")
         (staging / "report.md").write_text(render_report(data), encoding="utf-8")
         source_reports = {name: file_sha256(path) for name, path in {
-            "integrity_results": OUTPUTS / "integrity_catalog_2018_2020_v2/integrity_results.json",
-            "reexecution_results": OUTPUTS / "reexecution_catalog_2018_2020_v2/reexecution_results.json",
+            "integrity_results": OUTPUTS / "integrity_catalog_2018_2020_v3/integrity_results.json",
+            "reexecution_results": OUTPUTS / "reexecution_catalog_2018_2020_v3/reexecution_results.json",
             "semantic_comparison": OUTPUTS / "semantic_review_comparison_pilot_2020/comparison_results.json",
             "financial_quality_report": OUTPUTS / "financial_2020/financial_quality_report.json",
             "financial_dictionary": OUTPUTS / "financial_2020/field_dictionary.json"}.items()}

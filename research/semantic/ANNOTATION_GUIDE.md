@@ -30,4 +30,4 @@ python -m research.semantic.review_interface research_outputs/semantic_annotatio
 
 比较目录还会生成空白 `adjudication_template.jsonl`。**先复制到另一文件再填写**，保留比较目录中的原件供哈希复核。`review_workflow finalize` 只有在全部条目完成双人审核、裁定文件逐条 `labeled`、裁定者 ID 与两位审核者不同、每条分歧有书面说明时才导出 `gold_labels.jsonl`。一致条目也需裁定者显式签署，程序不会自动晋升为金标准。最后仍应由研究负责人抽查事件含义和文本证据；格式门槛不能替代人的判断。
 
-当前 128 条仍全部未审核；空白双人模板运行的对照结果为 `no_dual_review`，没有人审准确率或金标准。
+上半年开发包 128 条仍全部未审核；其空白双人模板运行的对照结果为 `no_dual_review`。另有 2020 下半年 128 条独立留出包及空白盲审页面，当前也全部未审核。两包都没有人审准确率或金标准；留出包的固定评价规则见 [下半年实验协议](../SEMANTIC_HOLDOUT_H2_2020.md)。

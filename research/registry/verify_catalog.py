@@ -54,7 +54,7 @@ def _hash_references(node: Any) -> list[tuple[str, str]]:
     return found
 
 
-def _resolve_reference(raw: str, manifest_dir: Path, output_root: Path) -> Path:
+def _resolve_reference(raw: str, manifest_dir: Path, output_root: Path, expected_sha256: str) -> Path:
     path = Path(raw)
     if path.is_absolute():
         return path.resolve()
@@ -66,6 +66,9 @@ def _resolve_reference(raw: str, manifest_dir: Path, output_root: Path) -> Path:
     matches = [p.resolve() for p in output_root.rglob(path.name) if p.is_file() and p.name == path.name]
     if len(matches) == 1:
         return matches[0]
+    matching_hash = [candidate for candidate in matches if file_sha256(candidate) == expected_sha256]
+    if len(matching_hash) == 1:
+        return matching_hash[0]
     raise ValueError(f"relative input reference is missing or ambiguous: {raw}")
 
 
@@ -137,7 +140,7 @@ def audit_run(run: dict[str, Any], catalog_dir: Path, research_root: Path, outpu
             continue
         seen_inputs[raw] = digest
         try:
-            check(_resolve_reference(raw, manifest_path.parent, output_root), digest, "inputs")
+            check(_resolve_reference(raw, manifest_path.parent, output_root, digest), digest, "inputs")
         except ValueError as exc:
             counts["inputs"] += 1
             failures.append(f"inputs: {exc}")
@@ -152,7 +155,7 @@ def audit_run(run: dict[str, Any], catalog_dir: Path, research_root: Path, outpu
             failures.append(f"extra: manifest lacks declared field {field}")
             continue
         try:
-            check(_resolve_reference(raw, catalog_dir, output_root), manifest[field], "extra")
+            check(_resolve_reference(raw, catalog_dir, output_root, manifest[field]), manifest[field], "extra")
         except ValueError as exc:
             counts["extra"] += 1
             failures.append(f"extra: {exc}")

@@ -74,6 +74,20 @@ class IntegrityCatalogTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "duplicate"):
             load_catalog(path)
 
+    def test_same_named_inputs_use_pinned_hash_only_when_unique(self):
+        first = self.output_root / "first"
+        second = self.output_root / "second"
+        first.mkdir()
+        second.mkdir()
+        a, b = first / "shared.json", second / "shared.json"
+        a.write_text('{"source":"development"}', encoding="utf-8")
+        b.write_text('{"source":"holdout"}', encoding="utf-8")
+        self.manifest["inputs"] = {"shared.json": file_sha256(b)}
+        self.save_manifest()
+        self.assertEqual(self.audit()["status"], "passed")
+        a.write_bytes(b.read_bytes())
+        self.assertTrue(any("ambiguous" in issue for issue in self.audit()["failures"]))
+
 
 if __name__ == "__main__":
     unittest.main()
