@@ -13,7 +13,7 @@ from ..data_pipeline.provenance import file_sha256
 from .build import CONFIG as INTEGRITY_CONFIG
 from .run import CONFIG, DEFAULT_OUTPUT_ROOT, ROOT, available_runs, read_public_job, run_selected, version_catalog
 
-DEFAULT_SITE = ROOT / "research_outputs/workbench_2018_2020_llm_v7"
+DEFAULT_SITE = ROOT / "research_outputs/workbench_2018_2020_llm_v8"
 ASSET_TYPES = {"index.html": "text/html", "app.js": "text/javascript",
                "data.js": "text/javascript", "style.css": "text/css", "report.md": "text/markdown"}
 

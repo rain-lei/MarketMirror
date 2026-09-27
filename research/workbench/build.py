@@ -16,12 +16,13 @@ from ..data_pipeline.provenance import file_sha256
 from ..registry.verify_catalog import audit_run, load_catalog
 from ..semantic.audit_model_run import audit_model_run
 
-VERSION = "research-workbench-v10"
+VERSION = "research-workbench-v11"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 CAPACITY_CONFIG = ROOT / "research/configs/integrity_catalog_capacity_series.json"
 CAPACITY_REEXEC_CONFIG = ROOT / "research/configs/reexecution_catalog_capacity_series.json"
 COUNTERFACTUAL_CONFIG = ROOT / "research/configs/integrity_catalog_observed_counterfactual.json"
+HOLDOUT_MODEL_CONFIG = ROOT / "research/configs/integrity_catalog_semantic_holdout_model_h2_2020.json"
 OUTPUTS = ROOT / "research_outputs"
 ASSETS = Path(__file__).resolve().parent / "assets"
 PRIVATE_FIELDS = {"question_text", "reply_text", "user_name", "source_path", "source_file_hash",
@@ -118,6 +119,64 @@ def checked_model_run(version: str = "v1") -> dict[str, Any]:
     result["status"] = "audited"
     validate_public_payload(result)
     return result
+
+
+def checked_holdout_model_run() -> dict[str, Any]:
+    """Publish only frozen holdout coverage after both provenance audits pass."""
+    if (OUTPUTS / "semantic_holdout_h2_2020_gold/gold_manifest.json").exists():
+        raise ValueError("holdout gold exists; workbench scoring integration is required")
+    pinned = load_catalog(HOLDOUT_MODEL_CONFIG)
+    expected = {"semantic_holdout_h2_2020_raw_model", "semantic_holdout_h2_2020_normalized",
+                "semantic_holdout_h2_2020_diagnostics"}
+    if len(pinned) != 3 or {run["run_id"] for run in pinned} != expected:
+        raise ValueError("holdout model catalog must contain the three fixed products")
+    cache: dict[Path, str] = {}
+    if any(audit_run(run, HOLDOUT_MODEL_CONFIG.parent, ROOT / "research", OUTPUTS, cache)["status"]
+           != "passed" for run in pinned):
+        raise ValueError("holdout model failed pinned integrity checks")
+    integrity = checked_report(OUTPUTS / "integrity_catalog_semantic_holdout_model_h2_2020_v1",
+                               "integrity_manifest.json", "integrity_results.json",
+                               ROOT / "research/registry/verify_catalog.py")
+    if (integrity["catalog_sha256"] != file_sha256(HOLDOUT_MODEL_CONFIG)
+            or integrity["passed_runs"] != 3):
+        raise ValueError("stored holdout model audit does not match the pinned catalog")
+    pack_dir = OUTPUTS / "semantic_holdout_h2_2020"
+    raw_dir = OUTPUTS / "semantic_holdout_h2_2020_model"
+    normalized_dir = OUTPUTS / "semantic_holdout_h2_2020_normalized"
+    diagnostics_dir = OUTPUTS / "semantic_holdout_h2_2020_diagnostics"
+    frozen = json.loads((ROOT / "research/configs/semantic_holdout_h2_2020.json").read_text(encoding="utf-8"))
+    pack = json.loads((pack_dir / "annotation_manifest.json").read_text(encoding="utf-8"))
+    raw = json.loads((raw_dir / "model_run_manifest.json").read_text(encoding="utf-8"))
+    audit = audit_model_run(pack_dir, raw_dir, normalized_dir)
+    diagnostic = json.loads((diagnostics_dir / "diagnostics.json").read_text(encoding="utf-8"))
+    coverage = diagnostic["coverage"]
+    if (pack["config"] != frozen or pack["counts"]["items"] != 128
+            or raw["model_id"] != frozen["frozen_model_id"]
+            or raw["prompt_version"] != frozen["frozen_prompt_version"]
+            or raw["input_sha256"]["prompt"] != frozen["frozen_prompt_sha256"]
+            or raw["provider_base_url"] != "http://aigw.dlut.edu.cn/v1"
+            or raw["temperature"] != 0
+            or audit["scope"]["pack_items"] != 128
+            or not audit["scope"]["full_pack_requested"]
+            or audit["raw"]["status"] != "complete"
+            or audit["normalized"]["status"] != "complete"
+            or audit["raw"]["rows"] != 128 or audit["normalized"]["rows"] != 128
+            or coverage["pack_items"] != 128 or coverage["returned_rows"] != 128
+            or coverage["valid_rows"] != 128 or coverage["parse_error_rows"] != 0
+            or coverage["valid_empty_rows"] + coverage["valid_event_rows"] != 128
+            or diagnostic["audit"]["raw"]["sha256"] != audit["raw"]["sha256"]
+            or diagnostic["audit"]["normalized"]["sha256"] != audit["normalized"]["sha256"]):
+        raise ValueError("holdout summary differs from the frozen complete model run")
+    public = {"status": "audited_unscored", "model_id": audit["model_id"],
+              "prompt_version": audit["prompt_version"], "items": 128,
+              "request_failures": audit["raw"]["request_failures"],
+              "parse_errors": audit["normalized"]["parse_errors"],
+              "valid_empty_rows": coverage["valid_empty_rows"],
+              "valid_event_rows": coverage["valid_event_rows"],
+              "validated_events": coverage["validated_events"],
+              "gold_ready": False, "accuracy_claim_allowed": False}
+    validate_public_payload(public)
+    return public
 
 
 def checked_capacity_series() -> list[dict[str, Any]]:
@@ -281,6 +340,7 @@ def collect_data() -> dict[str, Any]:
     model_runs = [checked_model_run(version) for version in ("v1", "v2")]
     completed_model_runs = [run for run in model_runs if run["status"] != "not_run"]
     model_run = completed_model_runs[-1] if completed_model_runs else model_runs[0]
+    holdout_model = checked_holdout_model_run()
     capacity_series = checked_capacity_series()
     counterfactual_series = checked_counterfactual_series()
     manifests = {run["run_id"]: (CONFIG.parent / run["manifest"]).resolve() for run in pinned}
@@ -359,6 +419,7 @@ def collect_data() -> dict[str, Any]:
         "financial_dictionary": financial_dictionary,
         "model_run": model_run,
         "model_runs": completed_model_runs,
+        "holdout_model": holdout_model,
         "evidence": [{"label": "人民银行：2018 资管新规答记者问", "url": event_2018["config"]["events"][0]["evidence_source"]},
                      {"label": "新华社：武汉通告", "url": "https://www.xinhuanet.com/politics/2020-01/23/c_1125495557.htm"},
                      {"label": "上交所：春节休市调整", "url": "http://www.sse.com.cn/disclosure/announcement/general/c/c_20200127_4991582.shtml"},
@@ -473,7 +534,7 @@ def render_report(data: dict[str, Any]) -> str:
         lines.extend(f"- `{item['key']}`：{item['question']}（{item['status']}）" for item in financial["unresolved_semantics"])
     model_run = data.get("model_run")
     if model_run:
-        lines += ["", "## LLM 运行状态", ""]
+        lines += ["", "## LLM 开发样本运行状态", ""]
         if model_run.get("status") == "not_run":
             lines.append("尚未执行 DeepSeek 语义抽取；没有模型输出或准确率结论。")
         else:
@@ -489,6 +550,14 @@ def render_report(data: dict[str, Any]) -> str:
                 normalized = run["normalized"]
                 lines.append(f"| {run['prompt_version']} | {run['raw']['rows']} | {normalized.get('rows', '—')} | {normalized.get('parse_errors', '—')} |")
             lines += ["", "同样本协议开发对照；v1 按补充边界检查后的规则重新校验。此样本已用于开发，不能称为未接触的最终留出测试。"]
+    holdout = data.get("holdout_model")
+    if holdout:
+        lines += ["", "## 2020 下半年留出模型状态", "",
+                  f"固定模型 `{holdout['model_id']}`、提示 `{holdout['prompt_version']}` 已返回 {holdout['items']}/{holdout['items']} 条；"
+                  f"请求失败 {holdout['request_failures']}，结构/证据解析失败 {holdout['parse_errors']}。",
+                  f"有效空事件响应 {holdout['valid_empty_rows']} 条，含事件响应 {holdout['valid_event_rows']} 条，"
+                  f"共 {holdout['validated_events']} 个抽取事件。", "",
+                  "这些是来源与格式核对结果；没有独立双人裁定金标准，不能计算准确率或判定研究性 Agent 接入门槛。模型输出未用于历史回放决策。"]
     lines += ["", "## 研究限制", ""]
     lines.extend(f"- {item}" for item in data["limitations"])
     return "\n".join(lines) + "\n"
@@ -517,6 +586,11 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
             "counterfactual_2020_original_manifest": OUTPUTS / "observed_2020/counterfactual_assumed_impact_v4/counterfactual_manifest.json",
             "counterfactual_2018_rerun_manifest": OUTPUTS / "observed_2018/counterfactual_verified_rerun_v1/counterfactual_manifest.json",
             "counterfactual_2020_rerun_manifest": OUTPUTS / "observed_2020/counterfactual_verified_rerun_v1/counterfactual_manifest.json",
+            "holdout_model_catalog": HOLDOUT_MODEL_CONFIG,
+            "holdout_model_integrity_results": OUTPUTS / "integrity_catalog_semantic_holdout_model_h2_2020_v1/integrity_results.json",
+            "holdout_model_raw_manifest": OUTPUTS / "semantic_holdout_h2_2020_model/model_run_manifest.json",
+            "holdout_model_normalization_manifest": OUTPUTS / "semantic_holdout_h2_2020_normalized/normalization_manifest.json",
+            "holdout_model_diagnostics_manifest": OUTPUTS / "semantic_holdout_h2_2020_diagnostics/diagnostics_manifest.json",
             "semantic_comparison": OUTPUTS / "semantic_review_comparison_pilot_2020/comparison_results.json",
             "financial_quality_report": OUTPUTS / "financial_2020/financial_quality_report.json",
             "financial_dictionary": OUTPUTS / "financial_2020/field_dictionary.json"}.items()}

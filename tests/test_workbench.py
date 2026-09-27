@@ -58,6 +58,11 @@ class WorkbenchPayloadTest(unittest.TestCase):
             "runs": [{"id": "run", "integrity": "passed", "reexecution": "equivalent", "hash_checks": 2,
                       "compared_artifacts": 1}],
             "semantic": {"items": 1, "dual_reviewed": 0, "pending": 1, "conflicts": 0, "status": "no_dual_review"},
+            "holdout_model": {"model_id": "DeepSeek-V4-Flash-0731-W8A8",
+                              "prompt_version": "semantic-prompt-v2", "items": 128,
+                              "request_failures": 0, "parse_errors": 0,
+                              "valid_empty_rows": 80, "valid_event_rows": 48,
+                              "validated_events": 57},
             "evidence": [{"label": "source", "url": "https://example.org/source"}],
             "limitations": ["limit"],
         })
@@ -72,6 +77,8 @@ class WorkbenchPayloadTest(unittest.TestCase):
         self.assertIn("58/58", report)
         self.assertIn("已观察收益上的假设冲击", report)
         self.assertIn("-0.6952", report)
+        self.assertIn("2020 下半年留出模型状态", report)
+        self.assertIn("没有独立双人裁定金标准", report)
         self.assertNotIn("question_text", report)
         self.assertNotIn("wxid_", report)
 

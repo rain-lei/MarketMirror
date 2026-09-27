@@ -108,8 +108,12 @@
     const normalizedSummary=norm.rows===undefined?'尚未标准化':`标准化 ${safe(norm.rows)} 条，解析失败 ${safe(norm.parse_errors)} 条，缺失 ${safe(norm.missing_predictions)} 条`;
     const history=(data.model_runs||[]).filter(r=>r.normalized&&r.normalized.rows!==undefined);
     const comparison=history.length>1?`<p>${history.map(r=>`${safe(r.prompt_version)}：解析失败 ${safe(r.normalized.parse_errors)} 条`).join('；')}。v1 已按新增边界检查重验；此样本用于协议开发。</p>`:'';
-    $("model-run-status").innerHTML=`<strong>LLM 运行审计</strong><p>${safe(mr.model_id||"模型未知")} · ${safe(mr.prompt_version||"提示未知")}：原始 ${safe(raw.rows)}/${safe(mr.scope.requested_rows)} 条，请求失败 ${safe(raw.request_failures)} 条；${normalizedSummary}。</p>${comparison}<p>结构和证据校验不能代表语义准确率，尚需人工金标准。</p>`;
+    $("model-run-status").innerHTML=`<strong>开发样本 LLM 审计</strong><p>${safe(mr.model_id||"模型未知")} · ${safe(mr.prompt_version||"提示未知")}：原始 ${safe(raw.rows)}/${safe(mr.scope.requested_rows)} 条，请求失败 ${safe(raw.request_failures)} 条；${normalizedSummary}。</p>${comparison}<p>结构和证据校验不能代表语义准确率，尚需人工金标准。</p>`;
   }
+  const hm=data.holdout_model;
+  $("holdout-model-status").innerHTML=hm
+    ? `<strong>下半年独立留出 · ${safe(hm.items)}/${safe(hm.items)}</strong><p>固定 ${safe(hm.prompt_version)}：请求失败 ${safe(hm.request_failures)}，解析失败 ${safe(hm.parse_errors)}；有效空事件 ${safe(hm.valid_empty_rows)} 条，含事件 ${safe(hm.valid_event_rows)} 条，共 ${safe(hm.validated_events)} 个抽取事件。</p><p>尚无独立双人裁定金标准；不能计算准确率或允许接入 Agent。</p>`
+    : `<strong>下半年留出尚未审计</strong><p>没有可展示的留出模型结果。</p>`;
   $("evidence-links").innerHTML=data.evidence.map(e=>`<a href="${safe(e.url)}" target="_blank" rel="noopener noreferrer"><span>${safe(e.label)}</span><span>↗</span></a>`).join("");
   $("limitations").innerHTML=data.limitations.map(x=>`<li>${safe(x)}</li>`).join("");
 
