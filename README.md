@@ -18,16 +18,16 @@ MarketMirror 正在重建为**可复现、可核验的金融市场冲击研究�
 
 ## 本地研究工作台
 
-工作台从通过本机核验的产物生成，页面仅包含汇总指标、图表和公开证据链接，不嵌入问答原文、个人路径或完整数据库。Agent 区域另展示经过六项独立重跑核验的资金规模与容量情景摘要；1% 参与上限仍只是未经校准的敏感性参数。
+工作台从通过本机核验的产物生成，页面仅包含汇总指标、图表和公开证据链接，不嵌入问答原文、个人路径或完整数据库。Agent 区域展示经过六项独立重跑核验的资金规模与容量情景摘要，以及两项固定事件在三种假设冲击系数下的配对订单/价格差异；1% 参与上限、事件强度和冲击系数都未经校准。
 
 ```powershell
-python -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_llm_v5
+python -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_llm_v7
 ```
 
 直接打开生成的 `index.html` 可离线查看摘要。要从页面选择固定实验重新执行，在仓库根目录启动仅监听本机的服务，再打开 `http://127.0.0.1:8766/`：
 
 ```powershell
-python -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_llm_v5
+python -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_llm_v7
 ```
 
 页面一次只能重跑固定清单中的一项；页面会显示并校验该运行的固定数据版本和执行版本，每次保存所选配置、版本、运行状态、产物比较和哈希。页面还会展示带来源哈希的财务字段口径字典，把可观察结构和未核实经济含义分开；如果存在 DeepSeek 运行目录，还会显示模型运行完整性、解析状态和评分门槛。页面顶部的“下载摘要报告”链接与图表使用同一份白名单汇总生成 `report.md`，可随运行目录归档。也可运行 `python -m research.workbench.run observed_event`。页面上的事件、股票筛选只改变摘要展示，不会修改实验参数；自定义数据或模型版本仍未接入。生成目录须为新空目录，已有页面可直接使用。

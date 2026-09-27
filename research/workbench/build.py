@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import shutil
 import tempfile
@@ -15,11 +16,12 @@ from ..data_pipeline.provenance import file_sha256
 from ..registry.verify_catalog import audit_run, load_catalog
 from ..semantic.audit_model_run import audit_model_run
 
-VERSION = "research-workbench-v9"
+VERSION = "research-workbench-v10"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 CAPACITY_CONFIG = ROOT / "research/configs/integrity_catalog_capacity_series.json"
 CAPACITY_REEXEC_CONFIG = ROOT / "research/configs/reexecution_catalog_capacity_series.json"
+COUNTERFACTUAL_CONFIG = ROOT / "research/configs/integrity_catalog_observed_counterfactual.json"
 OUTPUTS = ROOT / "research_outputs"
 ASSETS = Path(__file__).resolve().parent / "assets"
 PRIVATE_FIELDS = {"question_text", "reply_text", "user_name", "source_path", "source_file_hash",
@@ -182,6 +184,77 @@ def checked_capacity_series() -> list[dict[str, Any]]:
     return rows
 
 
+def checked_counterfactual_series() -> list[dict[str, Any]]:
+    """Expose paired scenario metrics only when both original and fresh rerun match."""
+    pinned = load_catalog(COUNTERFACTUAL_CONFIG)
+    expected = {"observed_counterfactual_2018", "observed_counterfactual_2020"}
+    if len(pinned) != 2 or {run["run_id"] for run in pinned} != expected:
+        raise ValueError("counterfactual catalog must contain the two fixed events")
+    cache: dict[Path, str] = {}
+    rows = []
+    for run in pinned:
+        audit = audit_run(run, COUNTERFACTUAL_CONFIG.parent, ROOT / "research", OUTPUTS, cache)
+        if audit["status"] != "passed":
+            raise ValueError("counterfactual original run failed pinned integrity checks")
+        original_path = (COUNTERFACTUAL_CONFIG.parent / run["manifest"]).resolve()
+        original = json.loads(original_path.read_text(encoding="utf-8"))
+        rerun_dir = OUTPUTS / ("observed_2018" if run["run_id"].endswith("2018")
+                               else "observed_2020") / "counterfactual_verified_rerun_v1"
+        rerun = json.loads((rerun_dir / "counterfactual_manifest.json").read_text(encoding="utf-8"))
+        artifacts = {"counterfactual_results.json", "counterfactual_report.md"}
+        if (original.get("pipeline_version") != "observed-return-assumed-impact-v1"
+                or rerun.get("pipeline_version") != original["pipeline_version"]
+                or rerun.get("scenario_id") != original["scenario_id"]
+                or rerun.get("inputs") != original["inputs"]
+                or rerun.get("code_sha256") != original["code_sha256"]
+                or set(original["artifacts"]) != artifacts
+                or rerun.get("artifacts") != original["artifacts"]
+                or any(file_sha256(rerun_dir / name) != original["artifacts"][name]["sha256"]
+                       for name in artifacts)):
+            raise ValueError("counterfactual fresh rerun differs from pinned results")
+        result = json.loads((original_path.parent / "counterfactual_results.json").read_text(encoding="utf-8"))
+        if (result.get("scenario_id") != original["scenario_id"]
+                or result.get("data_kind") != "observed_return_counterfactual"
+                or result.get("stock_code") != "000001"
+                or len(result.get("paths", [])) != 6
+                or len(result.get("paired_effects", [])) != 3
+                or result["timing"]["first_signal_cutoff_date"] < result["available_on_date"]):
+            raise ValueError("counterfactual result shape or visibility gate changed")
+        zero = result["paths"][:2]
+        if (any(path["impact_coefficient"] != 0 for path in zero)
+                or any(not math.isclose(path["final_price_index"],
+                                        result["observed_return_only_price_index"], rel_tol=1e-12)
+                       for path in zero)):
+            raise ValueError("counterfactual zero-impact control no longer matches observed returns")
+        period = "2018 H1" if run["run_id"].endswith("2018") else "2020 Q1"
+        for index, pair in enumerate(result["paired_effects"]):
+            baseline, scenario = result["paths"][2 * index:2 * index + 2]
+            if (baseline["scenario_enabled"] or not scenario["scenario_enabled"]
+                    or baseline["impact_coefficient"] != pair["impact_coefficient"]
+                    or scenario["impact_coefficient"] != pair["impact_coefficient"]
+                    or not math.isclose(pair["terminal_price_delta"],
+                                        scenario["final_price_index"] - baseline["final_price_index"],
+                                        abs_tol=1e-9)):
+                raise ValueError("counterfactual paired scenarios are inconsistent")
+            public = {"period": period, "event_id": result["event_id"],
+                      "stock_code": result["stock_code"],
+                      "first_signal_trade_date": result["timing"]["first_signal_trade_date"],
+                      "aum_cny_per_agent": result["aum_cny_per_agent"],
+                      "liquidity_notional_cny": result["liquidity_notional_cny"],
+                      "scenario_signal": result["scenario_signal"],
+                      "impact_coefficient": pair["impact_coefficient"],
+                      "event_window_net_order_delta_cny": pair["event_window_net_order_delta_cny"],
+                      "event_end_price_delta": pair["event_end_price_delta"],
+                      "terminal_price_delta": pair["terminal_price_delta"]}
+            if any(type(value) not in (int, float) or not math.isfinite(value)
+                   for key, value in public.items() if key not in {"period", "event_id", "stock_code",
+                                                                    "first_signal_trade_date"}):
+                raise ValueError("counterfactual public metric is not finite")
+            rows.append(public)
+    validate_public_payload(rows)
+    return rows
+
+
 def collect_data() -> dict[str, Any]:
     pinned = load_catalog(CONFIG)
     cache: dict[Path, str] = {}
@@ -209,6 +282,7 @@ def collect_data() -> dict[str, Any]:
     completed_model_runs = [run for run in model_runs if run["status"] != "not_run"]
     model_run = completed_model_runs[-1] if completed_model_runs else model_runs[0]
     capacity_series = checked_capacity_series()
+    counterfactual_series = checked_counterfactual_series()
     manifests = {run["run_id"]: (CONFIG.parent / run["manifest"]).resolve() for run in pinned}
 
     def artifact(run_id: str, name: str) -> dict[str, Any]:
@@ -278,6 +352,7 @@ def collect_data() -> dict[str, Any]:
                                "max_drawdown": row["max_drawdown"]} for name, row in stress["summary"].items()]},
         "replays": [],
         "capacity_series": capacity_series,
+        "counterfactual_series": counterfactual_series,
         "semantic": {"items": reviewed["pack_items"], "dual_reviewed": reviewed["dual_reviewed_items"],
                      "pending": reviewed["pending_items"], "conflicts": reviewed["conflict_items"],
                      "gold_ready": reviewed["gold_ready"], "status": reviewed["status"]},
@@ -290,6 +365,7 @@ def collect_data() -> dict[str, Any]:
                      {"label": "BaoStock API 文档", "url": "https://www.baostock.com/mainContent?file=pythonAPI.md"}],
         "limitations": ["原始问答公开时点、财务单位与标签定义尚未独立核实。",
                         "三类 Agent 参数是示意值；没有可观察持仓、净订单流或盘口深度作行为与冲击校准。",
+                        "假设冲击情景把模拟冲击叠加在已实现收益上，可能重复计入真实市场运动；不是历史价格复现或预警验证。",
                         "2018 资管新规是去杠杆背景下的一个节点；窗口包含发布前交易日，存在预期和同期冲击。2018 回放未接入当年问答或政策文本。",
                         "文本预测增益区间包含零；语义标注尚无双人完成条目。"],
     }
@@ -358,6 +434,17 @@ def render_report(data: dict[str, Any]) -> str:
                          f"{row['binding_days']}/{row['sessions']} | {row['aggregate_fill_rate']:.2%} | "
                          f"{row['aggressive_uncapped_multiple']:.3f} | {row['aggressive_capped_multiple']:.3f} |")
         lines += ["", "1% 是未经校准的敏感性参数；日总成交额不是盘口可执行深度，期末财富差异不证明策略改善或预测能力。"]
+    if data.get("counterfactual_series"):
+        lines += ["", "## 已观察收益上的假设冲击", "",
+                  "2018 与 2020 各有三种冲击系数及有/无手设事件信号配对；两项固定运行通过来源核验，四份结果/报告与全新目录重跑逐字节一致。信号强度、固定流动性和价格冲击均未经校准，不是 LLM 输出或真实市场预测。", "",
+                  "| 时期 | 事件 | 首次受信号影响收益日 | 冲击系数 | 情景窗口净订单差（亿元） | 情景末日价格指数差 | 全期末价格指数差 |",
+                  "|---|---|---|---:|---:|---:|---:|"]
+        for row in data["counterfactual_series"]:
+            lines.append(f"| {row['period']} | {row['event_id']} | {row['first_signal_trade_date']} | "
+                         f"{row['impact_coefficient']:.3f} | "
+                         f"{row['event_window_net_order_delta_cny']/1e8:+.3f} | "
+                         f"{row['event_end_price_delta']:+.4f} | {row['terminal_price_delta']:+.4f} |")
+        lines += ["", "归一化价格指数不是实际成交价。已实现收益包含真实交易作用，叠加模拟冲击可能重复计入市场运动；这些数值仅说明模型机制与参数敏感性。"]
     lines += ["", "## 运行核验", "", "| 运行 | 完整性 | 重跑 | 哈希检查 | 比较产物 |", "|---|---|---|---:|---:|"]
     for row in data["runs"]:
         lines.append(f"| {row['id']} | {row['integrity']} | {row['reexecution']} | {row['hash_checks']} | {row['compared_artifacts']} |")
@@ -425,6 +512,11 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
             "reexecution_results": OUTPUTS / "reexecution_catalog_2018_2020_v4/reexecution_results.json",
             "capacity_integrity_results": OUTPUTS / "integrity_catalog_capacity_series/integrity_results.json",
             "capacity_reexecution_results": OUTPUTS / "reexecution_catalog_capacity_series/reexecution_results.json",
+            "counterfactual_catalog": COUNTERFACTUAL_CONFIG,
+            "counterfactual_2018_original_manifest": OUTPUTS / "observed_2018/counterfactual_assumed_impact_v4/counterfactual_manifest.json",
+            "counterfactual_2020_original_manifest": OUTPUTS / "observed_2020/counterfactual_assumed_impact_v4/counterfactual_manifest.json",
+            "counterfactual_2018_rerun_manifest": OUTPUTS / "observed_2018/counterfactual_verified_rerun_v1/counterfactual_manifest.json",
+            "counterfactual_2020_rerun_manifest": OUTPUTS / "observed_2020/counterfactual_verified_rerun_v1/counterfactual_manifest.json",
             "semantic_comparison": OUTPUTS / "semantic_review_comparison_pilot_2020/comparison_results.json",
             "financial_quality_report": OUTPUTS / "financial_2020/financial_quality_report.json",
             "financial_dictionary": OUTPUTS / "financial_2020/field_dictionary.json"}.items()}

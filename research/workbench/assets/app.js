@@ -72,6 +72,20 @@
       : "<p class=\"note\">该组合尚无容量情景。</p>";
   }
   $("period-select").addEventListener("change",drawReplay);$("stock-select").addEventListener("change",drawReplay);drawReplay();
+  const counterfactual=data.counterfactual_series||[];
+  const counterfactualEvents=[...new Set(counterfactual.map(row=>row.event_id))];
+  $("counterfactual-select").innerHTML=counterfactualEvents.map(id=>{
+    const row=counterfactual.find(item=>item.event_id===id);
+    return `<option value="${safe(id)}">${safe(row.period)} · ${safe(eventNames[id]||id)}</option>`;
+  }).join("");
+  function drawCounterfactual(){
+    const rows=counterfactual.filter(row=>row.event_id===$("counterfactual-select").value);
+    if(!rows.length){$("counterfactual-assumptions").textContent="尚无通过核验的情景。";$("counterfactual-table").textContent="";return;}
+    const first=rows[0];
+    $("counterfactual-assumptions").textContent=`首次受信号影响的收益日：${first.first_signal_trade_date}；每类 Agent 假设资金 ${(first.aum_cny_per_agent/1e8).toFixed(0)} 亿元；固定假设流动性 ${(first.liquidity_notional_cny/1e8).toFixed(0)} 亿元；手设事件信号 ${Number(first.scenario_signal).toFixed(2)}。两项来源清单与独立重跑已核对。`;
+    $("counterfactual-table").innerHTML=`<table class="data-table"><thead><tr><th>冲击系数</th><th style="text-align:right">情景净订单差</th><th style="text-align:right">情景末日价格指数差</th><th style="text-align:right">全期末价格指数差</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${Number(row.impact_coefficient).toFixed(3)}</td><td class="num">${(row.event_window_net_order_delta_cny/1e8).toFixed(3)} 亿元</td><td class="num">${Number(row.event_end_price_delta).toFixed(4)}</td><td class="num">${Number(row.terminal_price_delta).toFixed(4)}</td></tr>`).join("")}</tbody></table>`;
+  }
+  $("counterfactual-select").addEventListener("change",drawCounterfactual);drawCounterfactual();
   const runLabels={
     unified_dataset:"统一问答数据集",observed_market:"公开行情导入",observed_event:"历史事件研究",
     event_date_diagnostic:"事件日期对照",observed_activity:"成交活动导入",activity_event:"事件成交活动",

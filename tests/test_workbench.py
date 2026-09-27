@@ -49,6 +49,12 @@ class WorkbenchPayloadTest(unittest.TestCase):
                                  "aggregate_fill_rate": 0.05,
                                  "aggressive_uncapped_multiple": 0.95,
                                  "aggressive_capped_multiple": 0.94}],
+            "counterfactual_series": [{"period": "2020 Q1", "event_id": "wuhan_date_only_conservative",
+                                       "stock_code": "000001", "first_signal_trade_date": "2020-02-05",
+                                       "impact_coefficient": 0.03,
+                                       "event_window_net_order_delta_cny": -258000000,
+                                       "event_end_price_delta": -0.6952,
+                                       "terminal_price_delta": -0.0065}],
             "runs": [{"id": "run", "integrity": "passed", "reexecution": "equivalent", "hash_checks": 2,
                       "compared_artifacts": 1}],
             "semantic": {"items": 1, "dual_reviewed": 0, "pending": 1, "conflicts": 0, "status": "no_dual_review"},
@@ -64,6 +70,8 @@ class WorkbenchPayloadTest(unittest.TestCase):
         self.assertIn("150", report)
         self.assertIn("资金规模与容量情景", report)
         self.assertIn("58/58", report)
+        self.assertIn("已观察收益上的假设冲击", report)
+        self.assertIn("-0.6952", report)
         self.assertNotIn("question_text", report)
         self.assertNotIn("wxid_", report)
 

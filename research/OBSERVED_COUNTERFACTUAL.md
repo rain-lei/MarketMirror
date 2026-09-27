@@ -13,7 +13,7 @@
 | 2018 资管新规 | -3.325 亿元 | -0.8510 | -0.0094 |
 | 2020 武汉通告 | -2.580 亿元 | -0.6952 | -0.0065 |
 
-不同时间点的差异方向和幅度不相同，说明不能只看全期末值判断事件响应。完整六路径表、逐日订单/成交/价格/账本以及输入与代码哈希分别在 `research_outputs/observed_2018/counterfactual_assumed_impact_v4/` 和 `research_outputs/observed_2020/counterfactual_assumed_impact_v4/`。两份固定清单经 `integrity_catalog_observed_counterfactual.json` 核验为 `2/2`；再从相同输入在新目录各执行一次，四份结果与报告产物逐字节一致。现有通用重跑目录尚未包含这两项，逐字节比对是本轮单独执行的。
+不同时间点的差异方向和幅度不相同，说明不能只看全期末值判断事件响应。完整六路径表、逐日订单/成交/价格/账本以及输入与代码哈希分别在 `research_outputs/observed_2018/counterfactual_assumed_impact_v4/` 和 `research_outputs/observed_2020/counterfactual_assumed_impact_v4/`。两份固定清单经 `integrity_catalog_observed_counterfactual.json` 核验为 `2/2`；再从相同输入在 `counterfactual_verified_rerun_v1/` 新目录各执行一次，四份结果与报告产物逐字节一致。研究工作台 v7 只在两份原清单和重跑产物均核对通过后展示六条配对摘要，不导出逐日路径。现有通用重跑目录尚未包含这两项，逐字节比对是单独执行的。
 
 使用前须有本机 `research_outputs/` 中的行情、成交活动和事件证据存档。在仓库根目录运行，输出目录须为空：
 
