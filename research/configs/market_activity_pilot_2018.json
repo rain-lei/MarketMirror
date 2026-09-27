@@ -1,0 +1,8 @@
+{
+  "run_id": "observed_activity_pilot_2018",
+  "data_kind": "observed",
+  "download_dir": "../../research_outputs/observed_2018/download",
+  "market_manifest": "../../research_outputs/observed_2018/prepared/market_manifest.json",
+  "evidence_manifest": "../../research_outputs/observed_2018/evidence/evidence_manifest.json",
+  "stock_symbols": ["sz.000001", "sz.000002", "sh.600519"]
+}

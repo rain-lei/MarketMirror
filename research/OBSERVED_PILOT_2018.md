@@ -27,7 +27,23 @@ CAR 为窗口内异常简单收益之和。下表把整个窗口拆成事件前�
 | 000002 | -5.6630% | -6.2021% | -11.8650% |
 | 600519 | -2.0821% | +1.6173% | -0.4649% |
 
-三股整个窗口的等权平均为 -7.2015%，包含发布前收益，不能解释为发布后的政策跌幅。三只股票非代表性抽样，尚未进行 2018 日期对照、独立行情源交叉验证或统计显著性分析。
+三股整个窗口的等权平均为 -7.2015%，包含发布前收益，不能解释为发布后的政策跌幅。三只股票非代表性抽样，尚未进行独立行情源交叉验证或有效统计显著性分析。
+
+## 2018 成交活动与其他日期对照
+
+同一下载版本的原始逐日响应包含成交股数和人民币成交额。逐行核对提供方代码、交易日历、单位与交易状态后，三股各 487 日，共 1,461 条；万科在 2017 年有 5 个停牌日，零成交检查通过。以事件估计期 120 个交易日的成交中位数为基期，2018-05-02 当日成交额倍数如下：
+
+| 股票 | 当日成交量倍数 | 当日成交额倍数 | 事件窗口最高成交额倍数 |
+|---|---:|---:|---:|
+| 000001 | 0.877 | 0.781 | 1.784 |
+| 000002 | 0.830 | 0.730 | 1.543 |
+| 600519 | 1.463 | 1.388 | 1.771 |
+
+成交额是双向总成交，不表示净卖出压力或可执行盘口深度。平安银行和万科的事件日成交额低于此前中位数，不能把收益窗口中的下跌直接解释成政策触发的单向抛售。
+
+在相同市场模型与窗口参数下，把其他完整候选日期的估计期和事件窗口都与实际事件窗口（2018-04-25 至 2018-05-09）隔离。2017-09-01 至 2018-12-31 有事前 150、事后 27 个可比较日期，另有 142 日因隔离区间相交、5 日因窗口或拟合不完整被剔除。实际整个 [-3,+5] 窗口 CAR 的绝对值在事前候选日期中的排名比例为：平安银行 91.3%、万科 89.3%、贵州茅台 6.0%、三股等权均值 100.0%。事后分别为 100.0%、100.0%、3.7%、100.0%。这说明三股均值在所选日期集合里较极端，但候选窗口重叠、股票相关、前后市场环境不同，且事件前 CAR 已明显为负；这些比例**不是 p 值**，不构成政策因果识别或预测验证。
+
+数值明细及输入/代码哈希位于 `research_outputs/observed_2018/activity/`、`activity_event/` 和 `placebo/`。原有 2020 诊断器的报告文案含特定武汉通告说明；2018 使用 `observed_diagnostics.py` 保留其经核验的数值算法、另生成事件中性的报告，并单独记录报告代码哈希。三项运行在单独的 `integrity_catalog_2018_extension.json` 固定清单中通过 44 个文件引用核对；这只是字节完整性，不是独立重跑或统计验证。
 
 ## Agent 回放
 
@@ -50,6 +66,10 @@ python -m research.data_pipeline.archive_evidence research/configs/observed_2018
 python -m research.data_pipeline market research_outputs/observed_2018/download/market_import.json --output-dir research_outputs/observed_2018/prepared
 python -m research.baselines.run_experiments research/configs/observed_pilot_2018.json --output-dir research_outputs/observed_2018/results
 python -m research.simulation.historical_replay research/configs/historical_replay_2018.json --output-dir research_outputs/observed_2018/historical_replay
+python -m research.data_pipeline.market_activity research/configs/market_activity_pilot_2018.json --output-dir research_outputs/observed_2018/activity
+python -m research.baselines.observed_diagnostics activity research/configs/activity_event_pilot_2018.json --output-dir research_outputs/observed_2018/activity_event
+python -m research.baselines.observed_diagnostics placebo research/configs/placebo_pilot_2018.json --output-dir research_outputs/observed_2018/placebo
+python -m research.registry.verify_catalog research/configs/integrity_catalog_2018_extension.json --output-dir research_outputs/integrity_catalog_2018_extension
 ```
 
 以上是首次构建命令；对已固定的产物应使用下面的受控重跑，避免覆盖清单。没有行情时，可先安装 `requirements-market.txt` 并运行：
@@ -67,4 +87,4 @@ python -m research.workbench.run observed_event_2018
 python -m research.workbench.run historical_replay_2018
 ```
 
-工作台可切换 2018 事件、2020 两种对齐和三个 Agent 回放时期。2018 成交额倍数及日期对照尚无产物，会明确显示缺失状态。跨期波动、预期、其他事件和行业暴露还需要进一步研究；当前结果不支持图片中“高度贴合真实投资者决策”的结论。
+工作台可切换 2018 事件、2020 两种对齐和三个 Agent 回放时期；新增 2018 成交与日期诊断已有单独固定完整性目录，尚未合并主目录或工作台。跨期波动、政策预期、其他事件和行业暴露还需要进一步研究；当前结果不支持图片中“高度贴合真实投资者决策”的结论。
