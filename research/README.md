@@ -1,5 +1,7 @@
 # Research data pipeline
 
+当前语义流程采用 [AI 逐条复核与评分](AI_REVIEW_H2_2020.md)，128 条已复核并生成信号。双人审核与裁定步骤已取消；本文旧双人命令仅用于追溯历史流程。
+
 这部分代码构建 MarketMirror 的研究数据层：质量报告、可追溯的问答明细、待核对财务快照，以及按指定截止时刻生成的文本特征。原始 Excel 保持只读，生成的数据保存在 Git 忽略的 `research_outputs/` 中。
 
 ## 生成质量报告
@@ -378,9 +380,9 @@ firecrawl scrape "https://www.baostock.com/mainContent?file=pythonAPI.md" -o .fi
   --output-dir research_outputs/semantic_keyword_baseline_2020
 ```
 
-`semantic/ANNOTATION_GUIDE.md` 定义人工标注、分歧裁定和不能把问题猜测当成事实的规则；`data_contracts/semantic_signal.schema.json` 定义结构化事件。输出包的 `annotation_items.jsonl` 含本地原文和来源哈希，`annotation_template.jsonl` 的 128 个标签目前全部为空。无 LLM 关键词对照提供 113 个**候选话题**，方向一律为 unknown；目前无人工金标准，因此评分器明确输出 `no_reviewed_predictions`，不能报准确率。
+`semantic/ANNOTATION_GUIDE.md` 定义当前 AI 逐条复核和不能把问题猜测当成事实的规则；`data_contracts/semantic_signal.schema.json` 定义结构化事件。输出包的 `annotation_items.jsonl` 含本地原文和来源哈希，`annotation_template.jsonl` 的 128 个标签目前全部为空。无 LLM 关键词对照提供 113 个**候选话题**，方向一律为 unknown；目前无人工金标准，因此评分器明确输出 `no_reviewed_predictions`，不能报准确率。
 
-双人独立审核的空白包与比较器已准备好：
+以下为已停用的双人流程命令，仅供历史复现；当前请使用 [AI 复核记录](AI_REVIEW_H2_2020.md) 中的命令：
 
 ```powershell
 & $py -m research.semantic.review_workflow prepare research_outputs/semantic_annotation_pilot_2020 `
@@ -396,7 +398,7 @@ firecrawl scrape "https://www.baostock.com/mainContent?file=pythonAPI.md" -o .fi
   --output-dir <新的本地金标准目录>
 ```
 
-审核任务包仅暴露当时可见文本、阶段、条目 ID 与哈希，不带结构化股票代码、训练/测试分组或抽样层；原文可能仍透露公司身份。两份独立的离线 HTML 审核页面已从经哈希核验的空白包生成，支持逐条填写、逐字证据定位、JSONL 草稿导入与下载；本地文件位于 Git 忽略目录。空白标签副本及页面不得当作已完成审核。当前将两个空白模板输入比较器，正确得到 `no_dual_review`、0/128 双人完成；程序拒绝从这个结果生成金标准。真实审核、分歧裁定和负责人的质量抽查仍未发生；具体操作与判据见 `semantic/ANNOTATION_GUIDE.md`。
+审核任务包仅暴露当时可见文本、阶段、条目 ID 与哈希，不带结构化股票代码、训练/测试分组或抽样层；原文可能仍透露公司身份。两份独立的离线 HTML 审核页面已从经哈希核验的空白包生成，支持逐条填写、逐字证据定位、JSONL 草稿导入与下载；本地文件位于 Git 忽略目录。空白标签副本及页面不得当作已完成审核。当前将两个空白模板输入比较器，正确得到 `no_dual_review`、0/128 双人完成；程序拒绝从这个结果生成金标准。这段描述对应旧空白包；当前下半年 AI 复核已完成，具体操作与判据见 `semantic/ANNOTATION_GUIDE.md`。
 
 未来接入模型时，将每条原始响应以 JSONL 保存：`item_id`、`source_text_sha256`、`model_id`、`prompt_version`、`raw_response`（原始 JSON 字符串）。模型仅返回 `{"events":[...]}`；提示格式见 `semantic/PROMPT_V1.md`。以下命令保留格式/证据失败并生成标准输出：
 
@@ -472,7 +474,7 @@ v2 使用 `evidence_quotes`，仅由本地程序按逐字、唯一匹配计算�
   --output-dir <新的本地诊断目录>
 ```
 
-证据引用的文本、起止字符索引与来源段必须逐字匹配，源文本哈希不一致会被拒绝。评估只使用 `status=labeled` 的人工审核条目，解析失败按漏检计入，报告标注覆盖和只适用于单事件类型匹配子集的方向/证据指标。v1 原始响应重验为 94/128 条通过，v2 独立运行得到 127/128 条通过；详见 [v2 协议开发对照](SEMANTIC_PROTOCOL_V2.md)。没有独立人工金标准前不得报告准确率。
+证据引用的文本、起止字符索引与来源段必须逐字匹配，源文本哈希不一致会被拒绝。评估只使用 `status=labeled` 的已复核条目，解析失败按漏检计入，报告标注覆盖和只适用于单事件类型匹配子集的方向/证据指标。v1 原始响应重验为 94/128 条通过，v2 独立运行得到 127/128 条通过；详见 [v2 协议开发对照](SEMANTIC_PROTOCOL_V2.md)。没有独立人工金标准前不得报告准确率。
 
 留出比较门槛通过后，才允许把标准化事件转换成 Agent 可消费的文本信号。适配器会核对当前比较器代码哈希、比较结果清单和完整预测覆盖，并输出带来源哈希的 `text_signal`、`uncertainty` 与解析失败标记；输出只具备受控 Agent 消融实验资格，不会自动接入历史价格回放：
 
@@ -480,11 +482,11 @@ v2 使用 `evidence_quotes`，仅由本地程序按逐字、唯一匹配计算�
 & $py -m research.semantic.agent_signal_adapter `
   research_outputs/semantic_holdout_h2_2020 `
   research_outputs/semantic_holdout_h2_2020_normalized/model_predictions.jsonl `
-  research_outputs/semantic_holdout_h2_2020_scored `
+  research_outputs/semantic_h2_2020_ai_scored_v2 `
   --output-dir <新的本地信号目录>
 ```
 
-当前真实下半年留出结果仍没有人工金标准，门槛为未通过，因此上述命令会明确拒绝生成信号；这一步必须等两位审核者和第三位裁定者完成后再运行。
+当前下半年样本已完成 AI 逐条复核及评分，六项接入检查通过，已生成 128 条信号行。上述命令使用当前 AI 参考评分目录；旧金标准评分目录不适用于新流程。
 
 信号生成后，按时点合并器会再次核对适配器清单，并且只把 `available_at` 不晚于回放步骤 `signal_cutoff_date` 的条目聚合到 `text_signal` 和 `text_uncertainty`；未来问答不会进入当前步骤：
 
@@ -493,7 +495,7 @@ v2 使用 `evidence_quotes`，仅由本地程序按逐字、唯一匹配计算�
   <已通过门槛的语义信号目录> 000001 --output <新的合并步骤.json>
 ```
 
-这个合并产物是后续 Agent 消融的输入准备，不会改写已有的 market-only 历史回放，也不能绕过人工金标准门槛。
+这个合并产物是后续 Agent 消融的输入准备，不会改写已有的 market-only 历史回放，仍需通过当前 AI 复核、评分和来源核验。
 
 `simulation/semantic_replay.py` 会在再次核对合并步骤的门槛后，使用和现有 Agent 相同的现金、份额、手续费、风险预算和账本规则运行文本/无文本对照；当前只在合成步骤上测试，尚未对真实 2020 回放执行。
 
@@ -525,13 +527,13 @@ v2 使用 `evidence_quotes`，仅由本地程序按逐字、唯一匹配计算�
 工作台对 18 项固定运行再次校验输入、代码和输出，再从事件、预测、成交活动与 Agent 回放结果中按白名单抽取汇总。原始问答、个人路径和完整数据库不会写进页面；页面提供事件口径、回放时期与股票筛选、18 项运行的 41 份产物名称及比较状态、核验状态和公开证据链接。
 
 ```powershell
-& $py -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_llm_v14
+& $py -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_ai_review_v16
 ```
 
 在浏览器打开生成的 `index.html` 可离线查看摘要；输出目录必须是新空目录。要在页面上重跑固定实验，启动只监听 `127.0.0.1` 的本地服务：
 
 ```powershell
-& $py -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_llm_v14
+& $py -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_ai_review_v16
 ```
 
 打开 `http://127.0.0.1:8766/`，选择清单中的运行并执行。页面会显示并提交该运行的固定数据版本和执行版本，服务端只接受与清单匹配的组合；财务字段口径卡片展示字段统计、来源哈希和未确认项。页面顶部可下载由同一份白名单摘要生成的 `report.md`，用于归档或复核。也可用 `& $py -m research.workbench.run observed_event` 单独重跑。执行入口只接受固定清单内的运行 ID、一次运行一项，不接受网页传入配置路径；每次在被 Git 忽略的 `research_outputs/workbench_runs/<job_id>/` 保存所选配置、版本、主配置与清单哈希、状态、对照报告和产物哈希。页面读取状态时会重新核对关键记录文件。上方事件/股票筛选不改动固定配置；自定义事件、数据或模型版本尚未实现。旧 Vue/FastAPI 静态演示已从当前分支移除，代码可在 Git 历史中找回。

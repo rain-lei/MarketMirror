@@ -14,11 +14,12 @@ from typing import Any
 
 from ..data_pipeline.provenance import file_sha256
 from ..registry.verify_catalog import audit_run, load_catalog
-from ..semantic.agent_signal_adapter import VERSION as AGENT_SIGNAL_ADAPTER_VERSION
+from ..semantic.agent_signal_adapter import VERSION as AGENT_SIGNAL_ADAPTER_VERSION, verify_gate
+from ..semantic.assistant_review import load_review
 from ..semantic.audit_model_run import audit_model_run
 from ..semantic.review_readiness import audit_review_package
 
-VERSION = "research-workbench-v16"
+VERSION = "research-workbench-v17"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 CAPACITY_CONFIG = ROOT / "research/configs/integrity_catalog_capacity_series.json"
@@ -549,19 +550,43 @@ def checked_review_readiness() -> dict[str, Any]:
     return public
 
 
-def checked_agent_signal_gate(review_readiness: dict[str, Any], holdout_model: dict[str, Any]) -> dict[str, Any]:
-    """Publish the current Agent signal eligibility without manufacturing a score."""
-    if review_readiness.get("gold_ready") is not False:
-        raise ValueError("workbench expects the current H2 package to have no gold standard")
-    if review_readiness.get("reviewed_items") != 0 or review_readiness.get("items") != 128:
-        raise ValueError("workbench Agent gate summary no longer matches the blank H2 package")
+def checked_assistant_review() -> dict[str, Any] | None:
+    directory = OUTPUTS / "semantic_h2_2020_assistant_review"
+    if not directory.exists():
+        return None
+    _, manifest = load_review(OUTPUTS / "semantic_holdout_h2_2020", directory)
+    audit = manifest["audit"]
+    result = {"status": manifest["status"], "protocol": manifest["protocol"],
+              "items": audit["pack_items"], "reviewed_items": audit["reviewed_items"],
+              "event_items": audit["event_items"], "events": audit["events"],
+              "event_counts": audit["event_counts"], "gold_ready": False,
+              "independent_reference": False, "reviewer_kind": "ai_assistant"}
+    scoring = OUTPUTS / "semantic_h2_2020_ai_scored_v2"
+    if scoring.exists():
+        gate = verify_gate(scoring, manifest["experiment_id"])
+        scores = json.loads((scoring / "holdout_comparison.json").read_text(encoding="utf-8"))
+        result["scoring"] = {"passed": gate["passed"], "checks": gate["checks"],
+                             "model_f1": scores["model"]["event_detection"]["f1"],
+                             "keyword_f1": scores["keyword"]["event_detection"]["f1"],
+                             "type_macro_f1": scores["model"]["event_type_macro_f1_supported"],
+                             "difference_interval": scores["paired_company_bootstrap"]["percentile_95_interval"]}
+    validate_public_payload(result)
+    return result
+
+
+def checked_agent_signal_gate(review: dict[str, Any] | None, holdout_model: dict[str, Any]) -> dict[str, Any]:
+    """Current protocol uses one AI review, with explicit non-independent reference status."""
     if holdout_model.get("items") != 128 or holdout_model.get("request_failures") != 0:
-        raise ValueError("workbench Agent gate summary no longer matches the frozen model run")
-    result = {"status": "blocked_until_human_gold", "passed": False,
-              "gold_ready": False, "reviewed_items": 0, "required_items": 128,
+        raise ValueError("workbench Agent gate differs from the frozen model run")
+    reviewed = review["reviewed_items"] if review else 0
+    passed = bool(review and reviewed == 128 and review.get("scoring", {}).get("passed") is True)
+    result = {"status": "eligible_under_ai_review" if passed else "awaiting_assistant_review_or_score",
+              "passed": passed, "protocol": "assistant_review_v1", "gold_ready": False,
+              "reviewed_items": reviewed, "required_items": 128,
               "adapter_version": AGENT_SIGNAL_ADAPTER_VERSION,
-              "scope": "受控 Agent 语义信号消融资格；不代表投资者校准、历史因果复现或监管预测。",
-              "reason": "尚无独立双人审核、第三人裁定和留出评分金标准；适配器会拒绝生成真实信号流。"}
+              "scope": "AI 参考标签下的探索性 Agent 消融；尚未校准真实投资者或监管预警。",
+              "reason": ("AI 逐条复核及评分门槛已通过，可生成受控实验信号；双人审核和第三人裁定已取消。"
+                         if passed else "等待 AI 逐条复核和评分；不再要求双人审核。")}
     validate_public_payload(result)
     return result
 
@@ -587,7 +612,7 @@ def collect_data() -> dict[str, Any]:
             or {run["run_id"] for run in reexecution["runs"]} != expected_ids
             or any(run["status"] != "equivalent" for run in reexecution["runs"])):
         raise ValueError("stored audit or reexecution run statuses do not match the pinned catalog")
-    reviewed = checked_semantic_review()
+    assistant_review = checked_assistant_review()
     financial_dictionary = checked_financial_dictionary()
     model_runs = [checked_model_run(version) for version in ("v1", "v2")]
     completed_model_runs = [run for run in model_runs if run["status"] != "not_run"]
@@ -598,8 +623,8 @@ def collect_data() -> dict[str, Any]:
     lagged_impact_series = checked_lagged_impact_series()
     visibility_lag_series = checked_visibility_lag_series()
     independent_quotes = checked_independent_quotes()
-    review_readiness = checked_review_readiness()
-    agent_signal_gate = checked_agent_signal_gate(review_readiness, holdout_model)
+    review_readiness = None  # Archived dual-review packets are no longer a prerequisite.
+    agent_signal_gate = checked_agent_signal_gate(assistant_review, holdout_model)
     if ({row["event_id"] for row in counterfactual_series}
             != {row["event_id"] for row in lagged_impact_series}):
         raise ValueError("fixed and lagged impact events differ; shared filter is unsafe")
@@ -682,9 +707,10 @@ def collect_data() -> dict[str, Any]:
         "independent_quotes": independent_quotes,
         "review_readiness": review_readiness,
         "agent_signal_gate": agent_signal_gate,
-        "semantic": {"items": reviewed["pack_items"], "dual_reviewed": reviewed["dual_reviewed_items"],
-                     "pending": reviewed["pending_items"], "conflicts": reviewed["conflict_items"],
-                     "gold_ready": reviewed["gold_ready"], "status": reviewed["status"]},
+        "assistant_review": assistant_review,
+        "semantic": {"items": 128, "reviewed_items": assistant_review["reviewed_items"] if assistant_review else 0,
+                     "protocol": "assistant_review_v1", "gold_ready": False,
+                     "status": assistant_review["status"] if assistant_review else "awaiting_assistant_review"},
         "financial_dictionary": financial_dictionary,
         "model_run": model_run,
         "model_runs": completed_model_runs,
@@ -698,7 +724,7 @@ def collect_data() -> dict[str, Any]:
                         "三类 Agent 参数是示意值；没有可观察持仓、净订单流或盘口深度作行为与冲击校准。",
                         "假设冲击情景把模拟冲击叠加在已实现收益上，可能重复计入真实市场运动；不是历史价格复现或预警验证。",
                         "2018 资管新规是去杠杆背景下的一个节点；窗口包含发布前交易日，存在预期和同期冲击。2018 回放未接入当年问答或政策文本。",
-                        "文本预测增益区间包含零；语义标注尚无双人完成条目。"],
+                        "文本预测增益区间包含零；语义参考由单一 AI 复核形成，不能视为独立准确率评估。"],
     }
     displayed_events = {(row["event_id"], row["stock_code"]): row for row in summary["events"]}
     if set(displayed_events) != {(row["event_id"], row["stock_code"]) for row in independent_quotes}:
@@ -825,7 +851,14 @@ def render_report(data: dict[str, Any]) -> str:
         lines.append(f"### {row['id']}")
         lines.extend(f"- `{item['name']}`：{item['status']}" for item in row.get("artifacts", []))
         lines.append("")
-    lines += ["## 语义审核状态", "", f"样本 {semantic['items']} 条；双人完成 {semantic['dual_reviewed']} 条；待审 {semantic['pending']} 条；分歧 {semantic['conflicts']} 条；状态 `{semantic['status']}`。", ""]
+    if semantic.get("protocol") == "assistant_review_v1":
+        lines += ["## AI 语义复核状态", "", f"已复核 {semantic['reviewed_items']}/{semantic['items']} 条；双人审核要求已取消。", "单一 AI 参考标签，非独立人工金标准。", ""]
+        ai = data.get("assistant_review") or {}
+        scores = ai.get("scoring")
+        if scores:
+            lines += [f"事件检出 F1（与 AI 参考一致性）：模型 {scores['model_f1']:.4f}；关键词 {scores['keyword_f1']:.4f}；支持类别宏 F1 {scores['type_macro_f1']:.4f}。", ""]
+    else:
+        lines += ["## 语义审核状态", "", f"样本 {semantic['items']} 条；双人完成 {semantic['dual_reviewed']} 条；待审 {semantic['pending']} 条；分歧 {semantic['conflicts']} 条；状态 `{semantic['status']}`。", ""]
     readiness = data.get("review_readiness")
     if readiness:
         lines += ["## 下半年留出人工审核准备", "",
@@ -862,7 +895,7 @@ def render_report(data: dict[str, Any]) -> str:
             normalized = model_run["normalized"]
             lines.append(f"模型 `{model_run.get('model_id')}`；原始响应 {raw['rows']}/{model_run['scope']['requested_rows']} 条，失败 {raw['request_failures']} 条；标准化状态 `{normalized['status']}`；`accuracy_claim_allowed=false`。")
             if "rows" in normalized:
-                lines.append(f"标准化 {normalized['rows']} 条，解析失败 {normalized['parse_errors']} 条，缺失预测 {normalized['missing_predictions']} 条。结构和证据跨度校验不证明语义准确，仍需人工金标准。")
+                lines.append(f"标准化 {normalized['rows']} 条，解析失败 {normalized['parse_errors']} 条，缺失预测 {normalized['missing_predictions']} 条。此处仅作格式审计；下半年样本另按当前复核协议评分。")
         history = data.get("model_runs", [])
         if len(history) > 1:
             lines += ["", "| 提示版本 | 原始响应 | 标准化条数 | 解析失败 |", "|---|---:|---:|---:|"]
@@ -877,7 +910,7 @@ def render_report(data: dict[str, Any]) -> str:
                   f"请求失败 {holdout['request_failures']}，结构/证据解析失败 {holdout['parse_errors']}。",
                   f"有效空事件响应 {holdout['valid_empty_rows']} 条，含事件响应 {holdout['valid_event_rows']} 条，"
                   f"共 {holdout['validated_events']} 个抽取事件。", "",
-                  "这些是来源与格式核对结果；没有独立双人裁定金标准，不能计算准确率或判定研究性 Agent 接入门槛。模型输出未用于历史回放决策。"]
+                  ("已按 AI 参考标签评分，结果属于探索性一致性；模型输出可进入受控消融。" if gate and gate.get("passed") else "这些是来源与格式核对结果；完成当前协议要求的复核和评分后才能进入受控消融。")]
     lines += ["", "## 研究限制", ""]
     lines.extend(f"- {item}" for item in data["limitations"])
     return "\n".join(lines) + "\n"
@@ -919,15 +952,11 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
             "independent_quote_integrity_results": OUTPUTS / "integrity_catalog_independent_quotes_v1/integrity_results.json",
             "independent_quote_original_manifest": OUTPUTS / "independent_eastmoney_2018_2020/check_v2/independent_quote_manifest.json",
             "independent_quote_rerun_manifest": OUTPUTS / "independent_eastmoney_2018_2020/check_verified_rerun_v1/independent_quote_manifest.json",
-            "review_readiness_catalog": REVIEW_READINESS_CONFIG,
-            "review_readiness_integrity_results": OUTPUTS / "integrity_catalog_semantic_review_readiness_h2_2020_v2/integrity_results.json",
-            "review_readiness_manifest": OUTPUTS / "semantic_holdout_h2_2020_readiness_v2/review_readiness_manifest.json",
             "holdout_model_catalog": HOLDOUT_MODEL_CONFIG,
             "holdout_model_integrity_results": OUTPUTS / "integrity_catalog_semantic_holdout_model_h2_2020_v1/integrity_results.json",
             "holdout_model_raw_manifest": OUTPUTS / "semantic_holdout_h2_2020_model/model_run_manifest.json",
             "holdout_model_normalization_manifest": OUTPUTS / "semantic_holdout_h2_2020_normalized/normalization_manifest.json",
             "holdout_model_diagnostics_manifest": OUTPUTS / "semantic_holdout_h2_2020_diagnostics/diagnostics_manifest.json",
-            "semantic_comparison": OUTPUTS / "semantic_review_comparison_pilot_2020/comparison_results.json",
             "agent_signal_adapter": ROOT / "research/semantic/agent_signal_adapter.py",
             "financial_quality_report": OUTPUTS / "financial_2020/financial_quality_report.json",
             "financial_dictionary": OUTPUTS / "financial_2020/field_dictionary.json"}.items()}
@@ -940,6 +969,10 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
                 source_reports[f"semantic_model_{version}_manifest"] = file_sha256(model_manifest)
             if normalization_manifest.exists():
                 source_reports[f"semantic_model_{version}_normalization_manifest"] = file_sha256(normalization_manifest)
+        if data.get("assistant_review"):
+            source_reports["assistant_review"] = file_sha256(OUTPUTS / "semantic_h2_2020_assistant_review/assistant_review_manifest.json")
+            if data["assistant_review"].get("scoring"):
+                source_reports["ai_reference_scoring"] = file_sha256(OUTPUTS / "semantic_h2_2020_ai_scored_v2/comparison_manifest.json")
         manifest = {"pipeline_version": VERSION, "generated_at": datetime.now(timezone.utc).isoformat(),
                     "integrity_catalog_sha256": file_sha256(CONFIG),
                     "source_reports": source_reports,
@@ -949,7 +982,7 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
         for path in staging.iterdir():
             path.replace(output_dir / path.name)
     return {"output_dir": str(output_dir), "run_count": data["overview"]["run_total"],
-            "reviewed_labels": data["semantic"]["dual_reviewed"]}
+            "reviewed_labels": data["semantic"]["reviewed_items"]}
 
 
 def main() -> None:

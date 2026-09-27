@@ -116,7 +116,7 @@
   $("run-list").innerHTML=data.runs.map(r=>`<div class="run-item"><strong>${safe(r.id.replaceAll('_',' '))}</strong><span>${r.integrity==='passed'&&r.reexecution==='equivalent'?'✓ 已重跑':'待核验'}</span></div>`).join("");
   $("run-details").innerHTML=data.runs.map(r=>{const artifacts=r.artifacts||[];return `<details class="evidence-run"><summary><span>${safe(runLabels[r.id]||r.id)}</span><small>${artifacts.length} 份产物 · ${r.hash_checks} 项哈希检查</small></summary><div class="evidence-artifacts">${artifacts.map(item=>`<div><code>${safe(item.name)}</code><span class="artifact-${item.status==='identical'?'ok':'normalized'}">${safe(item.status)}</span></div>`).join("")}</div></details>`;}).join("");
   const s=data.semantic;
-  $("semantic-status").innerHTML=`<strong>${s.dual_reviewed} / ${s.items}</strong><p>双人语义标注完成。${s.pending} 条待审；${s.gold_ready?'已有裁定标签':'尚无人工金标准'}。</p>`;
+  $("semantic-status").innerHTML=`<strong>${safe(s.reviewed_items)} / ${safe(s.items)}</strong><p>${s.reviewed_items===s.items?'AI 逐条复核完成；每条保留判断理由，事件附原文证据。':'AI 逐条复核尚未完成。'}双人审核与第三人裁定要求已取消。</p>`;
   const mr=data.model_run||{status:"not_run"};
   if(mr.status==="not_run"){
     $("model-run-status").innerHTML="<strong>LLM 尚未运行</strong><p>DeepSeek 原始抽取尚未执行；没有模型准确率结论。</p>";
@@ -125,20 +125,20 @@
     const normalizedSummary=norm.rows===undefined?'尚未标准化':`标准化 ${safe(norm.rows)} 条，解析失败 ${safe(norm.parse_errors)} 条，缺失 ${safe(norm.missing_predictions)} 条`;
     const history=(data.model_runs||[]).filter(r=>r.normalized&&r.normalized.rows!==undefined);
     const comparison=history.length>1?`<p>${history.map(r=>`${safe(r.prompt_version)}：解析失败 ${safe(r.normalized.parse_errors)} 条`).join('；')}。v1 已按新增边界检查重验；此样本用于协议开发。</p>`:'';
-    $("model-run-status").innerHTML=`<strong>开发样本 LLM 审计</strong><p>${safe(mr.model_id||"模型未知")} · ${safe(mr.prompt_version||"提示未知")}：原始 ${safe(raw.rows)}/${safe(mr.scope.requested_rows)} 条，请求失败 ${safe(raw.request_failures)} 条；${normalizedSummary}。</p>${comparison}<p>结构和证据校验不能代表语义准确率，尚需人工金标准。</p>`;
+    $("model-run-status").innerHTML=`<strong>开发样本 LLM 审计</strong><p>${safe(mr.model_id||"模型未知")} · ${safe(mr.prompt_version||"提示未知")}：原始 ${safe(raw.rows)}/${safe(mr.scope.requested_rows)} 条，请求失败 ${safe(raw.request_failures)} 条；${normalizedSummary}。</p>${comparison}<p>这是上半年协议开发样本的格式审计；下半年样本另按 AI 参考标签评分。</p>`;
   }
   const hm=data.holdout_model;
   $("holdout-model-status").innerHTML=hm
-    ? `<strong>下半年独立留出 · ${safe(hm.items)}/${safe(hm.items)}</strong><p>固定 ${safe(hm.prompt_version)}：请求失败 ${safe(hm.request_failures)}，解析失败 ${safe(hm.parse_errors)}；有效空事件 ${safe(hm.valid_empty_rows)} 条，含事件 ${safe(hm.valid_event_rows)} 条，共 ${safe(hm.validated_events)} 个抽取事件。</p><p>尚无独立双人裁定金标准；不能计算准确率或允许接入 Agent。</p>`
+    ? `<strong>下半年样本 · ${safe(hm.items)}/${safe(hm.items)}</strong><p>固定 ${safe(hm.prompt_version)}：请求失败 ${safe(hm.request_failures)}，解析失败 ${safe(hm.parse_errors)}；有效空事件 ${safe(hm.valid_empty_rows)} 条，含事件 ${safe(hm.valid_event_rows)} 条，共 ${safe(hm.validated_events)} 个抽取事件。</p><p>复核协议已变更，本批作为探索性开发材料；分数表示与 AI 参考标签的一致性。</p>`
     : `<strong>下半年留出尚未审计</strong><p>没有可展示的留出模型结果。</p>`;
-  const rr=data.review_readiness;
   const gate=data.agent_signal_gate;
   $("agent-signal-gate-status").innerHTML=gate
-    ? `<strong>Agent 语义信号 · ${safe(gate.status)}</strong><p>适配器 ${safe(gate.adapter_version)}；已审 ${safe(gate.reviewed_items)}/${safe(gate.required_items)} 条。</p><p>${safe(gate.reason)}</p>`
+    ? `<strong>Agent 语义信号 · ${gate.passed?'可进入对照实验':'等待复核和评分'}</strong><p>已审 ${safe(gate.reviewed_items)}/${safe(gate.required_items)} 条。</p><p>${safe(gate.reason)}</p>`
     : `<strong>Agent 语义信号门槛尚未核验</strong><p>没有生成真实语义信号流。</p>`;
-  $("review-readiness-status").innerHTML=rr
-    ? `<strong>人工审核包 · ${safe(rr.status)}</strong><p>固定 ${safe(rr.items)} 条，${safe(rr.reviewer_slots)} 个独立审核位；当前已审核 ${safe(rr.reviewed_items)} 条；空白标签 ${safe(rr.blank_label_rows_per_reviewer)} 条/人，离线页面 ${safe(rr.interface_pages)} 个。</p><p>来源绑定、页面脱敏和哈希已通过；尚未产生人工金标准。</p>`
-    : `<strong>人工审核包尚未核验</strong><p>没有可展示的审核交接状态。</p>`;
+  const ar=data.assistant_review, score=ar&&ar.scoring;
+  $("review-readiness-status").innerHTML=ar
+    ? `<strong>AI 复核参考 · ${safe(ar.events)} 个事件</strong><p>${safe(ar.event_items)} 条含事件；原文、逐条理由和证据已核对。</p>${score?`<p>事件检出 F1：模型 ${Number(score.model_f1).toFixed(3)}，关键词 ${Number(score.keyword_f1).toFixed(3)}；类别宏 F1 ${Number(score.type_macro_f1).toFixed(3)}。</p>`:''}<p>单一 AI 复核且曾见模型候选，不属于独立人工准确率测量。</p>`
+    : `<strong>等待 AI 逐条复核</strong><p>本流程不要求双人审核。</p>`;
   $("evidence-links").innerHTML=data.evidence.map(e=>`<a href="${safe(e.url)}" target="_blank" rel="noopener noreferrer"><span>${safe(e.label)}</span><span>↗</span></a>`).join("");
   $("limitations").innerHTML=data.limitations.map(x=>`<li>${safe(x)}</li>`).join("");
 

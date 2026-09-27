@@ -1,4 +1,4 @@
-"""Score a frozen semantic holdout against adjudicated gold and a keyword control."""
+"""Compare fixed predictions to an AI reference (or archived dual-review gold)."""
 
 from __future__ import annotations
 
@@ -14,10 +14,12 @@ from typing import Any
 from ..data_pipeline.provenance import file_sha256
 from .audit_model_run import audit_model_run
 from .review_workflow import validate_adjudication
+from .assistant_review import load_review, POLICY_PATH
 from .signal_validation import binary_counts, evaluate, load_pack, read_jsonl
 
 
 VERSION = "semantic-holdout-comparison-v1"
+AI_VERSION = "semantic-ai-reference-comparison-v1"
 BOOTSTRAP_REPLICATES = 5000
 BOOTSTRAP_SEED = 20260927
 FROZEN_GATEWAY = "http://aigw.dlut.edu.cn/v1"
@@ -82,22 +84,7 @@ def _verified_artifact(directory: Path, manifest_name: str, artifact_name: str,
     return manifest, artifact_path
 
 
-def compare_holdout(pack_dir: Path, comparison_dir: Path, gold_dir: Path,
-                    raw_model_dir: Path, normalized_model_dir: Path,
-                    keyword_dir: Path, output_dir: Path) -> dict[str, Any]:
-    pack_dir, comparison_dir, gold_dir, raw_model_dir, normalized_model_dir, keyword_dir, output_dir = (
-        path.resolve() for path in (pack_dir, comparison_dir, gold_dir, raw_model_dir,
-                                    normalized_model_dir, keyword_dir, output_dir))
-    sources = (pack_dir, comparison_dir, gold_dir, raw_model_dir, normalized_model_dir, keyword_dir)
-    if len(set(sources)) != len(sources) or any(output_dir == path or output_dir in path.parents
-                                               or path in output_dir.parents for path in sources):
-        raise ValueError("all input and output directories must be separate")
-    if output_dir.exists() and any(output_dir.iterdir()):
-        raise ValueError("use a new empty comparison output directory")
-    items, pack_manifest = load_pack(pack_dir)
-    experiment_id = pack_manifest["experiment_id"]
-    config = pack_manifest["config"]
-
+def _legacy_reference(pack_dir, comparison_dir, gold_dir, items, experiment_id):
     comparison_manifest, comparison_path = _verified_artifact(
         comparison_dir, "comparison_manifest.json", "comparison_results.json",
         None, experiment_id)
@@ -121,6 +108,51 @@ def compare_holdout(pack_dir: Path, comparison_dir: Path, gold_dir: Path,
         raise ValueError("gold does not match the completed independent review")
     gold = read_jsonl(gold_path)
     validate_adjudication(items, comparison, gold)
+
+    return gold, (comparison_dir / "comparison_manifest.json", comparison_path,
+                  gold_dir / "gold_manifest.json", gold_path)
+
+
+def compare_holdout(pack_dir: Path, comparison_dir: Path, gold_dir: Path,
+                    raw_model_dir: Path, normalized_model_dir: Path,
+                    keyword_dir: Path, output_dir: Path, *,
+                    ai_review_dir: Path | None = None) -> dict[str, Any]:
+    pack_dir, raw_model_dir, normalized_model_dir, keyword_dir, output_dir = (
+        path.resolve() for path in (pack_dir, raw_model_dir, normalized_model_dir, keyword_dir, output_dir))
+    if ai_review_dir is not None:
+        if comparison_dir is not None or gold_dir is not None:
+            raise ValueError("choose AI review or legacy dual review, not both")
+        ai_review_dir = ai_review_dir.resolve()
+        review_sources = (ai_review_dir,)
+    else:
+        if comparison_dir is None or gold_dir is None:
+            raise ValueError("provide --ai-review-dir for the current review protocol")
+        comparison_dir, gold_dir = comparison_dir.resolve(), gold_dir.resolve()
+        review_sources = (comparison_dir, gold_dir)
+    sources = (pack_dir, *review_sources, raw_model_dir, normalized_model_dir, keyword_dir)
+    if len(set(sources)) != len(sources) or any(output_dir == path or output_dir in path.parents
+                                               or path in output_dir.parents for path in sources):
+        raise ValueError("all input and output directories must be separate")
+    if output_dir.exists() and any(output_dir.iterdir()):
+        raise ValueError("use a new empty comparison output directory")
+    items, pack_manifest = load_pack(pack_dir)
+    experiment_id = pack_manifest["experiment_id"]
+    config = pack_manifest["config"]
+
+    if ai_review_dir is not None:
+        gold, reference = load_review(pack_dir, ai_review_dir)
+        reference_paths = (ai_review_dir / "assistant_review_manifest.json",
+                           ai_review_dir / "reference_labels.jsonl", POLICY_PATH)
+        review_basis = {"protocol": reference["protocol"], "reviewer_kind": "ai_assistant",
+                       "reviewed_items": reference["audit"]["reviewed_items"],
+                       "independent_reference": False, "gold_ready": False,
+                       "model_outputs_previously_seen": True,
+                       "sample_role": reference["sample_role"],
+                       "score_interpretation": reference["score_interpretation"]}
+    else:
+        gold, reference_paths = _legacy_reference(pack_dir, comparison_dir, gold_dir, items, experiment_id)
+        review_basis = {"protocol": "legacy_dual_review", "reviewed_items": len(gold),
+                       "independent_reference": True, "gold_ready": True}
 
     raw_manifest, raw_path = _verified_artifact(
         raw_model_dir, "model_run_manifest.json", "model_raw_outputs.jsonl",
@@ -168,6 +200,9 @@ def compare_holdout(pack_dir: Path, comparison_dir: Path, gold_dir: Path,
 
     model, keyword = read_jsonl(model_path), read_jsonl(keyword_path)
     model_score, keyword_score = evaluate(items, gold, model), evaluate(items, gold, keyword)
+    if ai_review_dir:
+        for score in (model_score, keyword_score):
+            score["metric_limitations"][-1] = "Single AI reference with prior model exposure: agreement scores, not independent accuracy."
     if (model_score["label_audit"]["reviewed_items"] != len(items)
             or model_score["prediction_audit"]["prediction_rows"] != len(items)
             or keyword_score["prediction_audit"]["prediction_rows"] != len(items)
@@ -178,25 +213,30 @@ def compare_holdout(pack_dir: Path, comparison_dir: Path, gold_dir: Path,
     keyword_f1 = keyword_score["event_detection"]["f1"]
     macro_f1 = model_score["event_type_macro_f1_supported"]
     parse_rate = model_score["parse_error_items"] / len(items)
-    gates = {"complete_independent_review": True,
+    thresholds = json.loads(POLICY_PATH.read_text(encoding="utf-8"))["thresholds"]
+    review_check = "complete_assistant_review" if ai_review_dir else "complete_independent_review"
+    gates = {review_check: True,
              "all_model_rows": True,
-             "parse_error_at_most_5_percent": parse_rate <= 0.05,
-             "event_detection_f1_at_least_0_70": model_f1 >= 0.70,
+             "parse_error_at_most_5_percent": parse_rate <= thresholds["max_parse_error_rate"],
+             "event_detection_f1_at_least_0_70": model_f1 >= thresholds["min_event_detection_f1"],
              "event_detection_f1_not_below_keyword": model_f1 >= keyword_f1,
-             "supported_type_macro_f1_at_least_0_60": macro_f1 is not None and macro_f1 >= 0.60}
+             "supported_type_macro_f1_at_least_0_60": macro_f1 is not None and macro_f1 >= thresholds["min_supported_type_macro_f1"]}
     source_paths = (pack_dir / "annotation_manifest.json", pack_dir / "annotation_items.jsonl",
-                    comparison_dir / "comparison_manifest.json", comparison_path,
-                    gold_dir / "gold_manifest.json", gold_path,
+                    *reference_paths,
                     raw_model_dir / "model_run_manifest.json", raw_path,
                     normalized_model_dir / "normalization_manifest.json", model_path,
                     keyword_dir / "keyword_manifest.json", keyword_path)
     source_hashes = {str(path): file_sha256(path) for path in source_paths}
-    result = {"experiment_id": experiment_id, "items": len(items),
+    result = {"pipeline_version": AI_VERSION if ai_review_dir else VERSION,
+              "review_basis": review_basis,
+              "scored_predictions_sha256": file_sha256(model_path),
+              "experiment_id": experiment_id, "items": len(items),
               "model_run_audit": model_audit,
               "model": model_score, "keyword": keyword_score, "paired_company_bootstrap": paired,
               "research_signal_gate": {"checks": gates, "passed": all(gates.values()),
                                        "scope": "Eligibility for a controlled Agent signal ablation only; not real investor calibration, causal historical reproduction, or regulatory forecasting."},
-              "limitations": ["Human reviewer identity and substantive semantic correctness require external oversight.",
+              "limitations": [("Scores measure agreement with a single AI reviewer exposed to model candidates; not independent accuracy."
+                               if ai_review_dir else "Human reviewer identity and substantive semantic correctness require external oversight."),
                               "Topic-stratified selection is not a population prevalence sample.",
                               "The paired interval describes resampling uncertainty for selected companies; it does not repair selection bias."]}
     if any(file_sha256(Path(path)) != digest for path, digest in source_hashes.items()):
@@ -206,12 +246,12 @@ def compare_holdout(pack_dir: Path, comparison_dir: Path, gold_dir: Path,
         staging = Path(temporary)
         report = staging / "holdout_comparison.json"
         report.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        manifest = {"pipeline_version": VERSION, "generated_at": datetime.now(timezone.utc).isoformat(),
+        manifest = {"pipeline_version": result["pipeline_version"], "generated_at": datetime.now(timezone.utc).isoformat(),
                     "pack_experiment_id": experiment_id, "input_sha256": source_hashes,
                     "code_sha256": {name: file_sha256(Path(__file__).with_name(name)) for name in
                                     ("compare_holdout.py", "signal_validation.py", "review_workflow.py",
                                      "audit_model_run.py", "parse_model_outputs.py", "quote_grounding.py",
-                                     "prompt_contract.py")},
+                                     "prompt_contract.py", "assistant_review.py")},
                     "artifacts": {report.name: {"sha256": file_sha256(report)}}}
         (staging / "comparison_manifest.json").write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -223,8 +263,9 @@ def compare_holdout(pack_dir: Path, comparison_dir: Path, gold_dir: Path,
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("pack_dir", type=Path)
-    parser.add_argument("--comparison-dir", type=Path, required=True)
-    parser.add_argument("--gold-dir", type=Path, required=True)
+    parser.add_argument("--comparison-dir", type=Path, help="legacy dual-review comparison")
+    parser.add_argument("--gold-dir", type=Path, help="legacy dual-review gold")
+    parser.add_argument("--ai-review-dir", type=Path, help="current user-selected AI reference")
     parser.add_argument("--raw-model-dir", type=Path, required=True)
     parser.add_argument("--normalized-model-dir", type=Path, required=True)
     parser.add_argument("--keyword-dir", type=Path, required=True)
@@ -232,7 +273,7 @@ def main() -> None:
     args = parser.parse_args()
     result = compare_holdout(args.pack_dir, args.comparison_dir, args.gold_dir,
                              args.raw_model_dir, args.normalized_model_dir,
-                             args.keyword_dir, args.output_dir)
+                             args.keyword_dir, args.output_dir, ai_review_dir=args.ai_review_dir)
     print(json.dumps({"items": result["items"],
                       "model_f1": result["model"]["event_detection"]["f1"],
                       "keyword_f1": result["keyword"]["event_detection"]["f1"],

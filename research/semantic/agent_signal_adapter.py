@@ -2,7 +2,7 @@
 
 This module deliberately stops before historical replay.  It produces a
 provenance-bound signal stream only after ``compare_holdout`` has established
-the pre-registered research gate.  A passing gate means that a controlled
+the active review protocol's research gate.  A passing gate means that a controlled
 Agent ablation is eligible; it does not calibrate investors or market impact.
 """
 
@@ -18,9 +18,11 @@ from typing import Any
 
 from ..data_pipeline.provenance import file_sha256
 from .signal_validation import load_pack, read_jsonl, validate_predictions
+from .assistant_review import load_review
 
 VERSION = "semantic-agent-signal-adapter-v1"
 GATE_PIPELINE = "semantic-holdout-comparison-v1"
+AI_GATE_PIPELINE = "semantic-ai-reference-comparison-v1"
 GATE_SCOPE = ("Eligibility for a controlled Agent signal ablation only; not real investor calibration, "
               "causal historical reproduction, or regulatory forecasting.")
 DIRECTION_SIGN = {"positive": 1.0, "negative": -1.0, "neutral": 0.0, "unknown": 0.0}
@@ -31,7 +33,7 @@ def _verified_comparison(comparison_dir: Path, experiment_id: str) -> tuple[dict
     manifest_path = comparison_dir / "comparison_manifest.json"
     result_path = comparison_dir / "holdout_comparison.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if manifest.get("pipeline_version") != GATE_PIPELINE:
+    if manifest.get("pipeline_version") not in {GATE_PIPELINE, AI_GATE_PIPELINE}:
         raise ValueError("comparison is not a semantic holdout comparison")
     if manifest.get("code_sha256", {}).get("compare_holdout.py") != file_sha256(
             Path(__file__).with_name("compare_holdout.py")):
@@ -46,10 +48,28 @@ def _verified_comparison(comparison_dir: Path, experiment_id: str) -> tuple[dict
     if not isinstance(gate, dict) or gate.get("scope") != GATE_SCOPE:
         raise ValueError("comparison does not carry the registered Agent signal gate")
     if gate.get("passed") is not True:
-        raise ValueError("research signal gate has not passed; human gold review is required")
+        raise ValueError("research signal gate has not passed; complete review and scoring are required")
     checks = gate.get("checks")
     if not isinstance(checks, dict) or not checks or any(value is not True for value in checks.values()):
         raise ValueError("research signal gate contains a failed or malformed check")
+    if manifest["pipeline_version"] == AI_GATE_PIPELINE:
+        basis = result.get("review_basis", {})
+        required = {"complete_assistant_review", "all_model_rows", "parse_error_at_most_5_percent",
+                    "event_detection_f1_at_least_0_70", "event_detection_f1_not_below_keyword",
+                    "supported_type_macro_f1_at_least_0_60"}
+        if (set(checks) != required or basis.get("protocol") != "assistant_review_v1"
+                or basis.get("independent_reference") is not False or basis.get("gold_ready") is not False
+                or basis.get("reviewed_items") != result.get("items")):
+            raise ValueError("AI review gate metadata or required checks are invalid")
+        inputs = manifest.get("input_sha256", {})
+        for path, digest in inputs.items():
+            if file_sha256(Path(path)) != digest:
+                raise ValueError("AI review comparison input has changed")
+        packs = [Path(p).parent for p in inputs if Path(p).name == "annotation_manifest.json"]
+        reviews = [Path(p).parent for p in inputs if Path(p).name == "assistant_review_manifest.json"]
+        if len(packs) != 1 or len(reviews) != 1:
+            raise ValueError("AI gate lacks its pack and review provenance")
+        load_review(packs[0], reviews[0])
     return manifest, result
 
 
@@ -61,7 +81,9 @@ def verify_gate(comparison_dir: Path, experiment_id: str) -> dict[str, Any]:
             "comparison_result_sha256": file_sha256(comparison_dir / "holdout_comparison.json"),
             "passed": True,
             "checks": result["research_signal_gate"]["checks"],
-            "scope": result["research_signal_gate"]["scope"]}
+            "scope": result["research_signal_gate"]["scope"],
+            "review_basis": result.get("review_basis", {"protocol": "legacy_dual_review"}),
+            "scored_predictions_sha256": result.get("scored_predictions_sha256")}
 
 
 def _event_contribution(event: dict[str, Any]) -> float:
@@ -88,6 +110,9 @@ def build_signal_rows(pack_dir: Path, predictions_path: Path,
     """Validate a complete model run and create rows suitable for an Agent observation."""
     items, pack_manifest = load_pack(pack_dir.resolve())
     gate = verify_gate(comparison_dir, pack_manifest["experiment_id"])
+    if (gate["pipeline_version"] == AI_GATE_PIPELINE
+            and gate["scored_predictions_sha256"] != file_sha256(predictions_path)):
+        raise ValueError("Agent predictions differ from the scored AI-reference model run")
     predictions = read_jsonl(predictions_path.resolve())
     audit = validate_predictions(items, predictions)
     if audit["prediction_rows"] != len(items) or audit["missing_predictions"]:
@@ -142,7 +167,7 @@ def run_adapter(pack_dir: Path, predictions_path: Path, comparison_dir: Path,
         report = staging / "agent_signal_report.md"
         report.write_text("# Agent 语义信号适配结果\n\n"
                           f"已生成 {len(rows)} 条带来源哈希的文本信号；解析失败 {audit['parse_error_items']} 条。\n\n"
-                          "该产物只有在留出集独立双审比较门槛通过后才会生成，且仅有资格用于受控 Agent 消融实验；"
+                          f"审核协议：{audit['gate']['review_basis']['protocol']}。该产物在对应复核与评分门槛通过后生成，仅用于受控 Agent 消融实验；"
                           "不表示历史投资者校准、因果复现或监管预测。\n", encoding="utf-8")
         manifest = {"pipeline_version": VERSION, "generated_at": datetime.now(timezone.utc).isoformat(),
                     "input_sha256": source_hashes,

@@ -14,14 +14,19 @@ from research.workbench.serve import create_server, validate_site
 
 
 class WorkbenchPayloadTest(unittest.TestCase):
-    def test_agent_signal_gate_is_blocked_until_human_gold(self):
+    def test_agent_signal_gate_waits_for_ai_review_and_score(self):
         result = checked_agent_signal_gate(
             {"gold_ready": False, "reviewed_items": 0, "items": 128},
             {"items": 128, "request_failures": 0},
         )
         self.assertFalse(result["passed"])
-        self.assertEqual(result["status"], "blocked_until_human_gold")
-        self.assertIn("适配器会拒绝", result["reason"])
+        self.assertEqual(result["status"], "awaiting_assistant_review_or_score")
+        self.assertIn("不再要求双人", result["reason"])
+        result = checked_agent_signal_gate(
+            {"reviewed_items": 128, "scoring": {"passed": True}},
+            {"items": 128, "request_failures": 0})
+        self.assertTrue(result["passed"])
+        self.assertFalse(result["gold_ready"])
 
     def test_summary_only_payload_accepts_public_metrics_and_sources(self):
         validate_public_payload({"events": [{"car": -0.04, "stock_code": "000001"}],
@@ -52,15 +57,14 @@ class WorkbenchPayloadTest(unittest.TestCase):
                                     "car_difference_pp": 0.1,
                                     "event_window_max_absolute_difference_pp": 0.004,
                                     "estimation_basis_exception": False}],
-            "review_readiness": {"status": "ready_for_human_review", "items": 128,
-                                 "reviewer_slots": 2, "reviewed_items": 0,
-                                 "blank_label_rows_per_reviewer": 128,
-                                 "interface_pages": 2, "gold_ready": False},
-            "agent_signal_gate": {"status": "blocked_until_human_gold", "passed": False,
-                                  "gold_ready": False, "reviewed_items": 0, "required_items": 128,
+            "review_readiness": None,
+            "assistant_review": {"scoring": {"model_f1": 0.89, "keyword_f1": 0.51,
+                                               "type_macro_f1": 0.66}},
+            "agent_signal_gate": {"status": "eligible_under_ai_review", "passed": True,
+                                  "gold_ready": False, "reviewed_items": 128, "required_items": 128,
                                   "adapter_version": "semantic-agent-signal-adapter-v1",
                                   "scope": "受控 Agent 语义信号消融资格；不代表投资者校准、历史因果复现或监管预测。",
-                                  "reason": "尚无独立双人审核、第三人裁定和留出评分金标准；适配器会拒绝生成真实信号流。"},
+                                  "reason": "AI 逐条复核及评分通过，可生成受控实验信号。"},
             "activity": [{"event_id": "asset_management_guidance_date_only", "stock_code": "000001",
                           "amount_fold": 0.781}],
             "placebo": {"asset_management_guidance_date_only": {"before": 150, "after": 27}},
@@ -91,7 +95,8 @@ class WorkbenchPayloadTest(unittest.TestCase):
                                       "control_binding_days": 58, "event_binding_days": 58}],
             "runs": [{"id": "run", "integrity": "passed", "reexecution": "equivalent", "hash_checks": 2,
                       "compared_artifacts": 1}],
-            "semantic": {"items": 1, "dual_reviewed": 0, "pending": 1, "conflicts": 0, "status": "no_dual_review"},
+            "semantic": {"items": 128, "reviewed_items": 128, "protocol": "assistant_review_v1",
+                         "status": "assistant_review_complete"},
             "holdout_model": {"model_id": "DeepSeek-V4-Flash-0731-W8A8",
                               "prompt_version": "semantic-prompt-v2", "items": 128,
                               "request_failures": 0, "parse_errors": 0,
@@ -105,10 +110,11 @@ class WorkbenchPayloadTest(unittest.TestCase):
         self.assertIn("2020-01-01", report)
         self.assertIn("第二行情源口径敏感性", report)
         self.assertIn("东方财富不复权 CAR", report)
-        self.assertIn("下半年留出人工审核准备", report)
-        self.assertIn("ready_for_human_review", report)
+        self.assertNotIn("下半年留出人工审核准备", report)
+        self.assertIn("AI 语义复核状态", report)
         self.assertIn("Agent 语义信号接入门槛", report)
-        self.assertIn("blocked_until_human_gold", report)
+        self.assertIn("eligible_under_ai_review", report)
+        self.assertNotIn("blocked_until_human_gold", report)
         self.assertIn("[-3, +5]", report)
         self.assertIn("2018-01-02 至 2018-01-03：2 日", report)
         self.assertIn("问答可见时间敏感性", report)
@@ -122,7 +128,9 @@ class WorkbenchPayloadTest(unittest.TestCase):
         self.assertIn("滞后成交额冲击敏感性", report)
         self.assertIn("+1.9206", report)
         self.assertIn("2020 下半年留出模型状态", report)
-        self.assertIn("没有独立双人裁定金标准", report)
+        self.assertIn("与 AI 参考一致性", report)
+        self.assertIn("非独立人工金标准", report)
+        self.assertIn("0.8900", report)
         self.assertNotIn("question_text", report)
         self.assertNotIn("wxid_", report)
 
