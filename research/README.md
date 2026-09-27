@@ -486,6 +486,15 @@ v2 使用 `evidence_quotes`，仅由本地程序按逐字、唯一匹配计算�
 
 当前真实下半年留出结果仍没有人工金标准，门槛为未通过，因此上述命令会明确拒绝生成信号；这一步必须等两位审核者和第三位裁定者完成后再运行。
 
+信号生成后，按时点合并器会再次核对适配器清单，并且只把 `available_at` 不晚于回放步骤 `signal_cutoff_date` 的条目聚合到 `text_signal` 和 `text_uncertainty`；未来问答不会进入当前步骤：
+
+```powershell
+& $py -m research.simulation.semantic_signal_join <带 trade_date 与 signal_cutoff_date 的步骤.json> `
+  <已通过门槛的语义信号目录> 000001 --output <新的合并步骤.json>
+```
+
+这个合并产物是后续 Agent 消融的输入准备，不会改写已有的 market-only 历史回放，也不能绕过人工金标准门槛。
+
 ## 验证
 
 ```powershell

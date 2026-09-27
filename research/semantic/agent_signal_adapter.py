@@ -59,6 +59,7 @@ def verify_gate(comparison_dir: Path, experiment_id: str) -> dict[str, Any]:
     return {"pipeline_version": manifest["pipeline_version"],
             "comparison_manifest_sha256": file_sha256(comparison_dir / "comparison_manifest.json"),
             "comparison_result_sha256": file_sha256(comparison_dir / "holdout_comparison.json"),
+            "passed": True,
             "checks": result["research_signal_gate"]["checks"],
             "scope": result["research_signal_gate"]["scope"]}
 
