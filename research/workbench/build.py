@@ -15,7 +15,7 @@ from ..data_pipeline.provenance import file_sha256
 from ..registry.verify_catalog import audit_run, load_catalog
 from ..semantic.audit_model_run import audit_model_run
 
-VERSION = "research-workbench-v6"
+VERSION = "research-workbench-v7"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 OUTPUTS = ROOT / "research_outputs"
@@ -122,9 +122,9 @@ def collect_data() -> dict[str, Any]:
     audits = [audit_run(run, CONFIG.parent, ROOT / "research", OUTPUTS, cache) for run in pinned]
     if any(run["status"] != "passed" for run in audits):
         raise ValueError("workbench refuses to display runs with failed pinned integrity checks")
-    integrity = checked_report(OUTPUTS / "integrity_catalog_2018_2020", "integrity_manifest.json",
+    integrity = checked_report(OUTPUTS / "integrity_catalog_2018_2020_v2", "integrity_manifest.json",
                                "integrity_results.json", ROOT / "research/registry/verify_catalog.py")
-    reexecution = checked_report(OUTPUTS / "reexecution_catalog_2018_2020", "reexecution_manifest.json",
+    reexecution = checked_report(OUTPUTS / "reexecution_catalog_2018_2020_v2", "reexecution_manifest.json",
                                  "reexecution_results.json", ROOT / "research/registry/reexecute.py")
     if (integrity["catalog_sha256"] != file_sha256(CONFIG)
             or integrity["passed_runs"] != len(pinned)
@@ -150,12 +150,14 @@ def collect_data() -> dict[str, Any]:
     event = artifact("observed_event", "event_results.json")
     event_2018 = artifact("observed_event_2018", "event_results.json")
     activity = artifact("activity_event", "event_activity.json")
+    activity_2018 = artifact("activity_event_2018", "event_activity.json")
     prediction = artifact("text_prediction", "prediction_results.json")
     stress = artifact("synthetic_stress", "stress_results.json")
     replay_q1 = artifact("historical_replay_q1", "historical_replay.json")
     replay_later = artifact("historical_replay_later", "historical_replay.json")
     replay_2018 = artifact("historical_replay_2018", "historical_replay.json")
     placebo = artifact("event_date_diagnostic", "placebo_results.json")
+    placebo_2018 = artifact("event_date_diagnostic_2018", "placebo_results.json")
     dataset_manifest = json.loads(manifests["unified_dataset"].read_text(encoding="utf-8"))
     run_status = {r["run_id"]: r for r in reexecution["runs"]}
     market_periods = []
@@ -191,12 +193,14 @@ def collect_data() -> dict[str, Any]:
                    for report in (event_2018, event) for row in report["results"]],
         "activity": [{"event_id": row["event_id"], "stock_code": row["stock_code"],
                       "amount_fold": row["event_day_amount_fold"],
-                      "volume_fold": row["event_day_volume_fold"]} for row in activity["runs"]],
-        "placebo": {"event_ids": [row["event_id"] for row in event["config"]["events"]],
-                    "before": placebo["diagnostic"]["excluded_or_retained_dates"].get("before_actual_event", 0),
-                    "after": placebo["diagnostic"]["excluded_or_retained_dates"].get("after_actual_event", 0),
-                    "blackout_start": placebo["diagnostic"]["blackout_start"],
-                    "blackout_end": placebo["diagnostic"]["blackout_end"]},
+                      "volume_fold": row["event_day_volume_fold"]}
+                     for report in (activity_2018, activity) for row in report["runs"]],
+        "placebo": {event_id: {"before": report["diagnostic"]["excluded_or_retained_dates"].get("before_actual_event", 0),
+                              "after": report["diagnostic"]["excluded_or_retained_dates"].get("after_actual_event", 0),
+                              "blackout_start": report["diagnostic"]["blackout_start"],
+                              "blackout_end": report["diagnostic"]["blackout_end"]}
+                    for report in (placebo_2018, placebo)
+                    for event_id in {row["event_id"] for row in report["comparisons"]}},
         "prediction": {"rows": prediction["evaluation"]["test_metrics"]["market_only"]["pooled"]["rows"],
                        "market_mae": prediction["evaluation"]["test_metrics"]["market_only"]["pooled"]["mae"],
                        "text_mae": prediction["evaluation"]["test_metrics"]["market_plus_text"]["pooled"]["mae"],
@@ -259,6 +263,15 @@ def render_report(data: dict[str, Any]) -> str:
         lines += ["", "事件窗口（相对交易日）："]
         windows = {r["event_id"]: (r["window_before"], r["window_after"]) for r in data["events"]}
         lines.extend(f"- {event_id}：[-{before}, +{after}]。" for event_id, (before, after) in windows.items())
+    if data.get("activity") or data.get("placebo"):
+        lines += ["", "## 成交活动与日期对照", "",
+                  "成交倍数以事件估计期的日中位数为基期；日期排名只描述所选候选集合，不是 p 值或因果检验。", "",
+                  "| 事件口径 | 股票 | 事件日成交额倍数 | 事前候选日 | 事后候选日 |",
+                  "|---|---|---:|---:|---:|"]
+        for row in data.get("activity", []):
+            candidate = data.get("placebo", {}).get(row["event_id"], {})
+            lines.append(f"| {row['event_id']} | {row['stock_code']} | {row['amount_fold']:.3f} | "
+                         f"{candidate.get('before', '—')} | {candidate.get('after', '—')} |")
     prediction = data["prediction"]
     lines += ["", "## 文本增量预测", "",
               f"测试预测 {prediction['rows']} 条；纯行情 MAE {prediction['market_mae']:.4%}，行情加文本 MAE {prediction['text_mae']:.4%}。",
@@ -330,8 +343,8 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
         (staging / "data.js").write_text("window.MARKETMIRROR_DATA = " + payload + ";\n", encoding="utf-8")
         (staging / "report.md").write_text(render_report(data), encoding="utf-8")
         source_reports = {name: file_sha256(path) for name, path in {
-            "integrity_results": OUTPUTS / "integrity_catalog_2018_2020/integrity_results.json",
-            "reexecution_results": OUTPUTS / "reexecution_catalog_2018_2020/reexecution_results.json",
+            "integrity_results": OUTPUTS / "integrity_catalog_2018_2020_v2/integrity_results.json",
+            "reexecution_results": OUTPUTS / "reexecution_catalog_2018_2020_v2/reexecution_results.json",
             "semantic_comparison": OUTPUTS / "semantic_review_comparison_pilot_2020/comparison_results.json",
             "financial_quality_report": OUTPUTS / "financial_2020/financial_quality_report.json",
             "financial_dictionary": OUTPUTS / "financial_2020/field_dictionary.json"}.items()}

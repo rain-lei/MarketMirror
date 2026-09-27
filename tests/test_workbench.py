@@ -37,6 +37,9 @@ class WorkbenchPayloadTest(unittest.TestCase):
                         "event_date": "2018-05-02", "car": -0.09, "window_before": 3, "window_after": 5},
                        {"event_id": "event", "stock_code": "000001", "event_date": "2020-01-01",
                         "car": 0.01, "window_before": 3, "window_after": 5}],
+            "activity": [{"event_id": "asset_management_guidance_date_only", "stock_code": "000001",
+                          "amount_fold": 0.781}],
+            "placebo": {"asset_management_guidance_date_only": {"before": 150, "after": 27}},
             "prediction": {"rows": 1, "market_mae": 0.02, "text_mae": 0.01, "paired_difference": -0.01,
                            "interval_95": [-0.02, 0.01]},
             "replays": [{"period": "Q1", "stock_code": "000001", "role": "role", "signal_multiple": 1.0,
@@ -52,6 +55,8 @@ class WorkbenchPayloadTest(unittest.TestCase):
         self.assertIn("2020-01-01", report)
         self.assertIn("[-3, +5]", report)
         self.assertIn("2018-01-02 至 2018-01-03：2 日", report)
+        self.assertIn("0.781", report)
+        self.assertIn("150", report)
         self.assertNotIn("question_text", report)
         self.assertNotIn("wxid_", report)
 

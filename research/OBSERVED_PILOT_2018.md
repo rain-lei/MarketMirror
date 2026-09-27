@@ -43,7 +43,7 @@ CAR 为窗口内异常简单收益之和。下表把整个窗口拆成事件前�
 
 在相同市场模型与窗口参数下，把其他完整候选日期的估计期和事件窗口都与实际事件窗口（2018-04-25 至 2018-05-09）隔离。2017-09-01 至 2018-12-31 有事前 150、事后 27 个可比较日期，另有 142 日因隔离区间相交、5 日因窗口或拟合不完整被剔除。实际整个 [-3,+5] 窗口 CAR 的绝对值在事前候选日期中的排名比例为：平安银行 91.3%、万科 89.3%、贵州茅台 6.0%、三股等权均值 100.0%。事后分别为 100.0%、100.0%、3.7%、100.0%。这说明三股均值在所选日期集合里较极端，但候选窗口重叠、股票相关、前后市场环境不同，且事件前 CAR 已明显为负；这些比例**不是 p 值**，不构成政策因果识别或预测验证。
 
-数值明细及输入/代码哈希位于 `research_outputs/observed_2018/activity/`、`activity_event/` 和 `placebo/`。原有 2020 诊断器的报告文案含特定武汉通告说明；2018 使用 `observed_diagnostics.py` 保留其经核验的数值算法、另生成事件中性的报告，并单独记录报告代码哈希。三项运行在单独的 `integrity_catalog_2018_extension.json` 固定清单中通过 44 个文件引用核对；这只是字节完整性，不是独立重跑或统计验证。
+数值明细及输入/代码哈希位于 `research_outputs/observed_2018/activity/`、`activity_event/` 和 `placebo/`。原有 2020 诊断器的报告文案含特定武汉通告说明；2018 使用 `observed_diagnostics.py` 保留其经核验的数值算法、另生成事件中性的报告，并单独记录报告代码哈希。新增三项已并入主固定清单，18 项共通过 214 个文件引用核对；三项新增运行的 7 份产物从输入独立重跑均逐字节一致。这不证明统计或因果结论。
 
 ## Agent 回放
 
@@ -69,7 +69,8 @@ python -m research.simulation.historical_replay research/configs/historical_repl
 python -m research.data_pipeline.market_activity research/configs/market_activity_pilot_2018.json --output-dir research_outputs/observed_2018/activity
 python -m research.baselines.observed_diagnostics activity research/configs/activity_event_pilot_2018.json --output-dir research_outputs/observed_2018/activity_event
 python -m research.baselines.observed_diagnostics placebo research/configs/placebo_pilot_2018.json --output-dir research_outputs/observed_2018/placebo
-python -m research.registry.verify_catalog research/configs/integrity_catalog_2018_extension.json --output-dir research_outputs/integrity_catalog_2018_extension
+python -m research.registry.verify_catalog research/configs/integrity_catalog_2020.json --output-dir research_outputs/integrity_catalog_2018_2020_v2
+python -m research.registry.reexecute research/configs/reexecution_catalog_2020.json --output-dir research_outputs/reexecution_catalog_2018_2020_v2
 ```
 
 以上是首次构建命令；对已固定的产物应使用下面的受控重跑，避免覆盖清单。没有行情时，可先安装 `requirements-market.txt` 并运行：
@@ -80,11 +81,11 @@ python -m research.data_pipeline.fetch_baostock --stocks sz.000001 sz.000002 sh.
 
 证据缓存还需取得上述人民银行页面和 BaoStock 文档；现有缓存的精确路径见 `configs/observed_2018_evidence.json`。重新下载的网页或行情不保证与固定版本字节一致，不能直接替换既有实验输入。
 
-市场、事件和回放分别登记为 `observed_market_2018`、`observed_event_2018`、`historical_replay_2018`，并已加入固定清单。完整性和独立重跑报告位于 `research_outputs/integrity_catalog_2018_2020/` 与 `research_outputs/reexecution_catalog_2018_2020/`。配置文件名保留 `_2020` 以兼容现有命令，清单已扩展至 15 项。
+市场、事件、回放、成交导入、事件成交和日期对照均已加入主固定清单。完整性和独立重跑报告位于 `research_outputs/integrity_catalog_2018_2020_v2/` 与 `research_outputs/reexecution_catalog_2018_2020_v2/`。配置文件名保留 `_2020` 以兼容现有命令，清单已扩展至 18 项。
 
 ```powershell
 python -m research.workbench.run observed_event_2018
 python -m research.workbench.run historical_replay_2018
 ```
 
-工作台可切换 2018 事件、2020 两种对齐和三个 Agent 回放时期；新增 2018 成交与日期诊断已有单独固定完整性目录，尚未合并主目录或工作台。跨期波动、政策预期、其他事件和行业暴露还需要进一步研究；当前结果不支持图片中“高度贴合真实投资者决策”的结论。
+新版工作台可切换 2018 事件、2020 两种对齐和三个 Agent 回放时期，并展示各自的成交额倍数及日期对照。跨期波动、政策预期、其他事件和行业暴露还需要进一步研究；当前结果不支持图片中“高度贴合真实投资者决策”的结论。

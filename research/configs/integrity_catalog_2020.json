@@ -98,6 +98,26 @@
       "manifest": "../../research_outputs/observed_2018/historical_replay/historical_replay_manifest.json",
       "extra_hashes": {},
       "manifest_sha256": "10de1047d28ad9df969a80ce9eb2461095d233f023be5874d86eeb1cbe6e18ae"
+    },
+    {
+      "run_id": "observed_activity_2018",
+      "manifest": "../../research_outputs/observed_2018/activity/activity_manifest.json",
+      "extra_hashes": {
+        "documentation_sha256": "../../research_outputs/observed_2018/evidence/baostock_api.md"
+      },
+      "manifest_sha256": "5c89da59bc62316fcbc3c281a30f6d590d1ade7b2b393f1461d33fc8dae4a421"
+    },
+    {
+      "run_id": "activity_event_2018",
+      "manifest": "../../research_outputs/observed_2018/activity_event/diagnostic_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "d5fa0fe9e6c582889b1e0fa34ec863b16a43adf8afa0d4f2fef772cac33e4da8"
+    },
+    {
+      "run_id": "event_date_diagnostic_2018",
+      "manifest": "../../research_outputs/observed_2018/placebo/diagnostic_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "6fd72f9592d3a4b5496d9619b4e75d93d4d8eda974d059aa964569bb96d6358e"
     }
   ]
 }

@@ -38,9 +38,10 @@
     $("event-caption").textContent = `等权三股累计异常收益；窗口 [-${rows[0].window_before}, +${rows[0].window_after}]，包括事件前交易日。${eventNames[id] || id}，不能解释为政策发布后的跌幅。`;
     const activity = new Map(data.activity.filter(a=>a.event_id===id).map(a=>[a.stock_code,a]));
     $("event-table").innerHTML=`<table class="data-table"><thead><tr><th>股票</th><th>对齐日</th><th style="text-align:right">CAR</th><th style="text-align:right">成交额倍数</th></tr></thead><tbody>${rows.map(e=>`<tr><td>${safe(codes[e.stock_code]||e.stock_code)}</td><td>${safe(e.event_date)}</td><td class="num ${e.car>=0?'positive':'negative'}">${pct(e.car)}</td><td class="num">${activity.has(e.stock_code)?Number(activity.get(e.stock_code).amount_fold).toFixed(2)+'×':'—'}</td></tr>`).join("")}</tbody></table>`;
-    $("placebo-summary").textContent=data.placebo.event_ids.includes(id)
-      ? `武汉通告窗口 ${data.placebo.blackout_start}—${data.placebo.blackout_end} 被隔离后，事前 ${data.placebo.before} 日、事后 ${data.placebo.after} 日可作描述性日期对照；排名不是 p 值。`
-      : "2018 事件尚未运行日期对照和成交额倍数分析；表中 — 表示没有该结果。政策征求意见在正式发布前已经开始。";
+    const placebo=data.placebo[id];
+    $("placebo-summary").textContent=placebo
+      ? `${eventNames[id]||id}窗口 ${placebo.blackout_start}—${placebo.blackout_end} 被隔离后，事前 ${placebo.before} 日、事后 ${placebo.after} 日可作描述性日期对照；排名不是 p 值。`
+      : "该事件尚无日期对照，表中 — 表示没有成交活动结果。";
   }
   $("event-select").addEventListener("change",drawEvent);drawEvent();
   const p=data.prediction;
@@ -73,7 +74,9 @@
     text_prediction:"文本预测对照",synthetic_stress:"合成 Agent 压力",historical_replay_q1:"历史回放 · 一季度",
     historical_replay_later:"历史回放 · 2020 后三季度",semantic_annotation:"语义抽样包",keyword_baseline:"关键词基线",
     observed_market_2018:"公开行情导入 · 2017–2018",observed_event_2018:"事件研究 · 2018 资管新规",
-    historical_replay_2018:"历史回放 · 2018 上半年"
+    historical_replay_2018:"历史回放 · 2018 上半年",
+    observed_activity_2018:"成交活动导入 · 2018",activity_event_2018:"事件成交活动 · 2018",
+    event_date_diagnostic_2018:"事件日期对照 · 2018"
   };
   $("run-list").innerHTML=data.runs.map(r=>`<div class="run-item"><strong>${safe(r.id.replaceAll('_',' '))}</strong><span>${r.integrity==='passed'&&r.reexecution==='equivalent'?'✓ 已重跑':'待核验'}</span></div>`).join("");
   $("run-details").innerHTML=data.runs.map(r=>{const artifacts=r.artifacts||[];return `<details class="evidence-run"><summary><span>${safe(runLabels[r.id]||r.id)}</span><small>${artifacts.length} 份产物 · ${r.hash_checks} 项哈希检查</small></summary><div class="evidence-artifacts">${artifacts.map(item=>`<div><code>${safe(item.name)}</code><span class="artifact-${item.status==='identical'?'ok':'normalized'}">${safe(item.status)}</span></div>`).join("")}</div></details>`;}).join("");

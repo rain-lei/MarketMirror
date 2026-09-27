@@ -14,6 +14,7 @@ from typing import Any, Callable
 from .verify_catalog import audit_run, load_catalog
 from ..baselines.placebo_dates import run_placebo
 from ..baselines.activity_event_study import run_activity_event
+from ..baselines.observed_diagnostics import run_diagnostic
 from ..baselines.run_experiments import run_experiments
 from ..baselines.run_prediction import run_prediction
 from ..data_pipeline.market_activity import import_activity
@@ -40,12 +41,15 @@ RUNNERS: dict[str, Callable[[Path, Path], Any]] = {
     "observed_market": import_market,
     "observed_market_2018": import_market,
     "observed_activity": import_activity,
+    "observed_activity_2018": import_activity,
     "activity_event": run_activity_event,
+    "activity_event_2018": lambda source, output: run_diagnostic("activity", source, output),
     "synthetic_stress": run_stress,
     "observed_event": run_experiments,
     "observed_event_2018": run_experiments,
     "text_prediction": run_prediction,
     "event_date_diagnostic": run_placebo,
+    "event_date_diagnostic_2018": lambda source, output: run_diagnostic("placebo", source, output),
     "historical_replay_q1": run_replay,
     "historical_replay_later": run_replay,
     "historical_replay_2018": run_replay,
