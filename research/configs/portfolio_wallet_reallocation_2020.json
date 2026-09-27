@@ -1,0 +1,17 @@
+{
+  "run_id": "portfolio_wallet_reallocation_h2_2020",
+  "source_run": "semantic_h2_2020_portfolio_all126_v1",
+  "source_audit": "semantic_h2_2020_portfolio_all126_v1_audit_v2",
+  "source_config": "semantic_portfolio_all126_2020.json",
+  "source_case_id": "shared_institution35",
+  "sample_sessions": [0, 31, 62, 93],
+  "cash_allocations": {
+    "equal": [1, 1, 1],
+    "asset_0_concentrated_80": [8, 1, 1],
+    "asset_1_concentrated_80": [1, 8, 1],
+    "asset_2_concentrated_80": [1, 1, 8],
+    "asset_0_concentrated_98": [98, 1, 1],
+    "asset_1_concentrated_98": [1, 98, 1],
+    "asset_2_concentrated_98": [1, 1, 98]
+  }
+}
