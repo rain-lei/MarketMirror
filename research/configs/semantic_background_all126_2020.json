@@ -1,0 +1,15 @@
+{
+  "run_id": "semantic_h2_2020_finite_background_demand",
+  "feedback_config": "semantic_feedback_all126_2020.json",
+  "core_scenario_id": "endogenous_cohort_seed7",
+  "background_cases": [
+    {"case_id": "no_background", "mode": "none", "participants": 0, "initial_cash": 0, "initial_shares": 0, "target_range_lots": 0, "max_order_lots": 0, "urgency_bps": 0, "seed": 0},
+    {"case_id": "idle_regular", "mode": "idle", "participants": 12, "initial_cash": 50000, "initial_shares": 500, "target_range_lots": 4, "max_order_lots": 4, "urgency_bps": 25, "seed": 7},
+    {"case_id": "active_quote5", "mode": "active", "participants": 12, "initial_cash": 50000, "initial_shares": 500, "target_range_lots": 4, "max_order_lots": 4, "urgency_bps": 5, "seed": 7},
+    {"case_id": "active_quote25", "mode": "active", "participants": 12, "initial_cash": 50000, "initial_shares": 500, "target_range_lots": 4, "max_order_lots": 4, "urgency_bps": 25, "seed": 7},
+    {"case_id": "active_seed19", "mode": "active", "participants": 12, "initial_cash": 50000, "initial_shares": 500, "target_range_lots": 4, "max_order_lots": 4, "urgency_bps": 25, "seed": 19},
+    {"case_id": "active_small_targets", "mode": "active", "participants": 12, "initial_cash": 50000, "initial_shares": 500, "target_range_lots": 2, "max_order_lots": 4, "urgency_bps": 25, "seed": 7},
+    {"case_id": "idle_lowcash", "mode": "idle", "participants": 12, "initial_cash": 25000, "initial_shares": 500, "target_range_lots": 4, "max_order_lots": 4, "urgency_bps": 25, "seed": 7},
+    {"case_id": "active_lowcash", "mode": "active", "participants": 12, "initial_cash": 25000, "initial_shares": 500, "target_range_lots": 4, "max_order_lots": 4, "urgency_bps": 25, "seed": 7}
+  ]
+}

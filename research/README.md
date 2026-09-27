@@ -1,6 +1,8 @@
 # Research data pipeline
 
-新增 [模拟价格反馈、主体画像、订单顺序与库存敏感性](SEMANTIC_FEEDBACK_H2_2020.md)：7 个固定情景、两档报价响应，126 公司共 3,528 条路径、437,472 条日账本及 374,976 条内生观测复核。原撮合基线逐日一致；全部内生无文本路径仍无成交，下一步需补有限背景交易需求。
+新增 [有限背景交易需求与同资源闲置对照](SEMANTIC_BACKGROUND_H2_2020.md)：8 个固定情景、两档策略报价响应，126 公司共 4,032 条路径、499,968 条日账本。资金与库存有限，策略成交和背景间成交分别报告；5 基点无文本策略仍无成交，25 基点开始出现策略—背景成交。参数未校准，下一步推进多资产共享资金和机构组合。
+
+已完成 [模拟价格反馈、主体画像、订单顺序与库存敏感性](SEMANTIC_FEEDBACK_H2_2020.md)：7 个固定情景、两档报价响应，126 公司共 3,528 条路径、437,472 条日账本及 374,976 条内生观测复核。原撮合基线逐日一致；零背景内生无文本路径没有成交。
 
 新增 [有限双边集合竞价与语义信号](SEMANTIC_AUCTION_H2_2020.md)：756 条模型市场路径、93,744 条完整日账本，资金和库存有限、买卖双方实际撮合。四份产物独立重跑一致，账本由成交重建核验；价格和行为参数仍为模型假设。
 
@@ -533,13 +535,13 @@ v2 使用 `evidence_quotes`，仅由本地程序按逐字、唯一匹配计算�
 工作台对 18 项固定运行再次校验输入、代码和输出，再从事件、预测、成交活动与 Agent 回放结果中按白名单抽取汇总。原始问答、个人路径和完整数据库不会写进页面；页面提供事件口径、回放时期与股票筛选、18 项运行的 41 份产物名称及比较状态、核验状态和公开证据链接。
 
 ```powershell
-& $py -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_feedback_v20
+& $py -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_background_v22
 ```
 
 在浏览器打开生成的 `index.html` 可离线查看摘要；输出目录必须是新空目录。要在页面上重跑固定实验，启动只监听 `127.0.0.1` 的本地服务：
 
 ```powershell
-& $py -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_feedback_v20
+& $py -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_background_v22
 ```
 
 打开 `http://127.0.0.1:8766/`，选择清单中的运行并执行。页面会显示并提交该运行的固定数据版本和执行版本，服务端只接受与清单匹配的组合；财务字段口径卡片展示字段统计、来源哈希和未确认项。页面顶部可下载由同一份白名单摘要生成的 `report.md`，用于归档或复核。也可用 `& $py -m research.workbench.run observed_event` 单独重跑。执行入口只接受固定清单内的运行 ID、一次运行一项，不接受网页传入配置路径；每次在被 Git 忽略的 `research_outputs/workbench_runs/<job_id>/` 保存所选配置、版本、主配置与清单哈希、状态、对照报告和产物哈希。页面读取状态时会重新核对关键记录文件。上方事件/股票筛选不改动固定配置；自定义事件、数据或模型版本尚未实现。旧 Vue/FastAPI 静态演示已从当前分支移除，代码可在 Git 历史中找回。

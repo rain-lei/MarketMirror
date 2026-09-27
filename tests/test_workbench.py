@@ -82,6 +82,15 @@ class WorkbenchPayloadTest(unittest.TestCase):
                                   "grouped": [{"scenario_id": "endogenous_cohort_seed7", "quote_response_bps": 200,
                                                "mean_price_difference_multiple": 0.002, "changed_stock_prices": 30,
                                                "text_accepted_fill_fraction": 0.02, "no_text_accepted_fill_fraction": 0.03}]},
+            "semantic_background": {"stocks": 126, "paths": 4032, "ledger_rows": 499968,
+                                    "no_background_parity_paths": 504, "idle_resources_parity_paths": 1008,
+                                    "audit": {"interval_price_checks": 499968, "sampled_full_tick_sessions": 16128,
+                                              "sampled_traded_tick_sweeps": 10000},
+                                    "grouped": [{"case_id": "active_quote25", "quote_response_bps": 200,
+                                                 "mean_price_difference_multiple": 0.001, "no_text_trading_companies": 126,
+                                                 "no_text_strategy_orders": {"accepted_fill_fraction": 0.2},
+                                                 "no_text_volume_by_counterparty": {"strategy_background": 10000,
+                                                                                   "background_background": 90000}}]},
             "agent_signal_gate": {"status": "eligible_under_ai_review", "passed": True,
                                   "gold_ready": False, "reviewed_items": 128, "required_items": 128,
                                   "adapter_version": "semantic-agent-signal-adapter-v1",
@@ -152,6 +161,10 @@ class WorkbenchPayloadTest(unittest.TestCase):
         self.assertIn("2020 下半年留出模型状态", report)
         self.assertIn("与 AI 参考一致性", report)
         self.assertIn("非独立人工金标准", report)
+        self.assertIn("有限背景交易需求", report)
+        self.assertIn("499,968", report)
+        self.assertIn("16128", report)
+        self.assertIn("active_quote25", report)
         self.assertIn("0.8900", report)
         self.assertIn("126 公司真实收益语义回放", report)
         self.assertIn("378 组公司与 Agent 对照", report)

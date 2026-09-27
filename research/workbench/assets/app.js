@@ -43,9 +43,17 @@
     $("semantic-feedback-table").innerHTML=`<table class="data-table"><thead><tr><th>情景</th><th>报价响应</th><th class="num">平均末价差 / 初价</th><th class="num">改变公司</th><th class="num">有文本成交率</th><th class="num">无文本成交率</th></tr></thead><tbody>${feedback.grouped.map(row=>`<tr><td>${safe(scenarioLabels[row.scenario_id]||row.scenario_id)}</td><td>${safe(row.quote_response_bps)} 基点</td><td class="num">${pct(row.mean_price_difference_multiple,4)}</td><td class="num">${safe(row.changed_stock_prices)}</td><td class="num">${pct(row.text_accepted_fill_fraction,2)}</td><td class="num">${pct(row.no_text_accepted_fill_fraction,2)}</td></tr>`).join('')}</tbody></table>`;
     const endogenousIds=new Set(feedback.scenarios.filter(row=>row.feedback_mode==='endogenous').map(row=>row.scenario_id));
     const endogenousRows=feedback.grouped.filter(row=>endogenousIds.has(row.scenario_id));
-    $("semantic-feedback-diagnosis").textContent=endogenousRows.length&&endogenousRows.every(row=>row.no_text_matched_volume===0)?"当前全部内生无文本对照没有成交。主体差异尚未形成充分流动性，市场仍容易停滞；这些价格差不能视为已验证的真实市场冲击。":"不同情景的成交率与价格差应联合判断；主体差异尚未经过真实行为校准。";
+    $("semantic-feedback-diagnosis").textContent=endogenousRows.length&&endogenousRows.every(row=>row.no_text_matched_volume===0)?"本组未加入背景参与者，全部内生无文本对照没有成交。仅主体差异尚未形成充分流动性；新增背景需求实验在下表单独展示。这些价格差不能视为已验证的真实市场冲击。":"不同情景的成交率与价格差应联合判断；主体差异尚未经过真实行为校准。";
   }else{
     $("semantic-feedback-summary").textContent="尚无通过重跑、成交重建和信息时点复核的模拟价格反馈结果。";
+  }
+  const background=data.semantic_background;
+  if(background){
+    const labels={no_background:"零背景对照",idle_regular:"同资源 · 闲置",active_quote5:"活跃 · 主动报价 5 基点",active_quote25:"活跃 · 主动报价 25 基点",active_seed19:"活跃 · 种子 19",active_small_targets:"活跃 · 小库存需求",idle_lowcash:"低现金 · 闲置",active_lowcash:"低现金 · 活跃"};
+    $("semantic-background-summary").textContent=`${background.stocks} 家公司，${background.background_cases.length} 个固定情景，${Number(background.paths).toLocaleString('zh-CN')} 条路径、${Number(background.ledger_rows).toLocaleString('zh-CN')} 条完整日账本。零背景 ${background.no_background_parity_paths} 条路径复现原市场；闲置背景 ${background.idle_resources_parity_paths} 条策略路径不变。四份产物重跑一致；全部账本与需求核验通过，区间选价 ${Number(background.audit.interval_price_checks).toLocaleString('zh-CN')} 次，并抽样逐档扫描 ${Number(background.audit.sampled_traded_tick_sweeps).toLocaleString('zh-CN')} 次有成交竞价。`;
+    $("semantic-background-table").innerHTML=`<table class="data-table"><thead><tr><th>背景需求</th><th>策略报价响应</th><th class="num">平均文本末价差 / 初价</th><th class="num">无文本策略成交率</th><th class="num">无文本策略—背景成交单位</th><th class="num">无文本背景间成交单位</th></tr></thead><tbody>${background.grouped.map(row=>`<tr><td>${safe(labels[row.case_id]||row.case_id)}</td><td>${safe(row.quote_response_bps)} 基点</td><td class="num">${pct(row.mean_price_difference_multiple,4)}</td><td class="num">${pct(row.no_text_strategy_orders.accepted_fill_fraction,2)}</td><td class="num">${Number(row.no_text_volume_by_counterparty.strategy_background).toLocaleString('zh-CN')}</td><td class="num">${Number(row.no_text_volume_by_counterparty.background_background).toLocaleString('zh-CN')}</td></tr>`).join('')}</tbody></table>`;
+  }else{
+    $("semantic-background-summary").textContent="尚无通过重跑、资金库存重建和需求复核的有限背景实验。";
   }
   const metrics = [
     ["问答来源行",data.overview.question_rows.toLocaleString("zh-CN"),"三份本地 Excel"],
