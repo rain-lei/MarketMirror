@@ -85,7 +85,16 @@
     $("counterfactual-assumptions").textContent=`首次受信号影响的收益日：${first.first_signal_trade_date}；每类 Agent 假设资金 ${(first.aum_cny_per_agent/1e8).toFixed(0)} 亿元；固定假设流动性 ${(first.liquidity_notional_cny/1e8).toFixed(0)} 亿元；手设事件信号 ${Number(first.scenario_signal).toFixed(2)}。两项来源清单与独立重跑已核对。`;
     $("counterfactual-table").innerHTML=`<table class="data-table"><thead><tr><th>冲击系数</th><th style="text-align:right">情景净订单差</th><th style="text-align:right">情景末日价格指数差</th><th style="text-align:right">全期末价格指数差</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${Number(row.impact_coefficient).toFixed(3)}</td><td class="num">${(row.event_window_net_order_delta_cny/1e8).toFixed(3)} 亿元</td><td class="num">${Number(row.event_end_price_delta).toFixed(4)}</td><td class="num">${Number(row.terminal_price_delta).toFixed(4)}</td></tr>`).join("")}</tbody></table>`;
   }
-  $("counterfactual-select").addEventListener("change",drawCounterfactual);drawCounterfactual();
+  const laggedImpact=data.lagged_impact_series||[];
+  function drawLaggedImpact(){
+    const rows=laggedImpact.filter(row=>row.event_id===$("counterfactual-select").value);
+    if(!rows.length){$("lagged-impact-summary").textContent="该事件尚无通过核验的滞后成交额敏感性情景。";$("lagged-impact-table").textContent="";return;}
+    const example=rows.filter(row=>row.impact_coefficient===0.03).map(row=>row.terminal_price_delta);
+    const changeSign=example.some(value=>value<0)&&example.some(value=>value>0);
+    $("lagged-impact-summary").textContent=`${rows[0].period} · ${rows.length*2} 条路径 / ${rows.length} 组有无信号配对。冲击系数 0.03 时，全期末指数差从 ${Math.min(...example).toFixed(4)} 到 ${Math.max(...example).toFixed(4)}${changeSign?'，随假设比例变号':''}。两项清单与独立重跑已核对。`;
+    $("lagged-impact-table").innerHTML=`<table class="data-table"><thead><tr><th>容量比例</th><th>冲击分母比例</th><th>冲击系数</th><th style="text-align:right">情景末日指数差</th><th style="text-align:right">全期末指数差</th><th style="text-align:right">触及容量日（无/有信号）</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${pct(row.participation_rate,0)}</td><td>${pct(row.impact_depth_fraction,0)}</td><td>${Number(row.impact_coefficient).toFixed(3)}</td><td class="num">${Number(row.event_end_price_delta).toFixed(4)}</td><td class="num">${Number(row.terminal_price_delta).toFixed(4)}</td><td class="num">${safe(row.control_binding_days)}/${safe(row.event_binding_days)}</td></tr>`).join("")}</tbody></table>`;
+  }
+  $("counterfactual-select").addEventListener("change",()=>{drawCounterfactual();drawLaggedImpact();});drawCounterfactual();drawLaggedImpact();
   const runLabels={
     unified_dataset:"统一问答数据集",observed_market:"公开行情导入",observed_event:"历史事件研究",
     event_date_diagnostic:"事件日期对照",observed_activity:"成交活动导入",activity_event:"事件成交活动",

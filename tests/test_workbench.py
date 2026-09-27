@@ -55,6 +55,12 @@ class WorkbenchPayloadTest(unittest.TestCase):
                                        "event_window_net_order_delta_cny": -258000000,
                                        "event_end_price_delta": -0.6952,
                                        "terminal_price_delta": -0.0065}],
+            "lagged_impact_series": [{"period": "2020 Q1", "event_id": "wuhan_date_only_conservative",
+                                      "participation_rate": 0.05, "impact_depth_fraction": 0.05,
+                                      "impact_coefficient": 0.03,
+                                      "event_end_price_delta": -4.4335,
+                                      "terminal_price_delta": 1.9206,
+                                      "control_binding_days": 58, "event_binding_days": 58}],
             "runs": [{"id": "run", "integrity": "passed", "reexecution": "equivalent", "hash_checks": 2,
                       "compared_artifacts": 1}],
             "semantic": {"items": 1, "dual_reviewed": 0, "pending": 1, "conflicts": 0, "status": "no_dual_review"},
@@ -77,6 +83,8 @@ class WorkbenchPayloadTest(unittest.TestCase):
         self.assertIn("58/58", report)
         self.assertIn("已观察收益上的假设冲击", report)
         self.assertIn("-0.6952", report)
+        self.assertIn("滞后成交额冲击敏感性", report)
+        self.assertIn("+1.9206", report)
         self.assertIn("2020 下半年留出模型状态", report)
         self.assertIn("没有独立双人裁定金标准", report)
         self.assertNotIn("question_text", report)

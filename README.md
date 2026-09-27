@@ -18,16 +18,16 @@ MarketMirror 正在重建为**可复现、可核验的金融市场冲击研究�
 
 ## 本地研究工作台
 
-工作台从通过本机核验的产物生成，页面仅包含汇总指标、图表和公开证据链接，不嵌入问答原文、个人路径或完整数据库。Agent 区域展示经过六项独立重跑核验的资金规模与容量情景摘要，以及两项固定事件在三种假设冲击系数下的配对订单/价格差异；1% 参与上限、事件强度和冲击系数都未经校准。
+工作台从通过本机核验的产物生成，页面仅包含汇总指标、图表和公开证据链接，不嵌入问答原文、个人路径或完整数据库。Agent 区域展示经过六项独立重跑核验的资金规模与容量情景摘要、两项固定流动性冲击情景，以及两项滞后成交额容量/冲击敏感性实验；1%/5% 比例、事件强度和冲击系数都未经校准。
 
 ```powershell
-python -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_llm_v8
+python -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_llm_v9
 ```
 
 直接打开生成的 `index.html` 可离线查看摘要。要从页面选择固定实验重新执行，在仓库根目录启动仅监听本机的服务，再打开 `http://127.0.0.1:8766/`：
 
 ```powershell
-python -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_llm_v8
+python -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_llm_v9
 ```
 
 页面一次只能重跑固定清单中的一项；页面会显示并校验该运行的固定数据版本和执行版本，每次保存所选配置、版本、运行状态、产物比较和哈希。页面还会展示带来源哈希的财务字段口径字典，把可观察结构和未核实经济含义分开；开发样本和下半年留出模型的运行状态分开显示，留出 128/128 格式通过不代表语义准确率。页面顶部的“下载摘要报告”链接与图表使用同一份白名单汇总生成 `report.md`，可随运行目录归档。也可运行 `python -m research.workbench.run observed_event`。页面上的事件、股票筛选只改变摘要展示，不会修改实验参数；自定义数据或模型版本仍未接入。生成目录须为新空目录，已有页面可直接使用。
@@ -42,6 +42,7 @@ python -m research.registry.verify_catalog research/configs/integrity_catalog_20
 python -m research.registry.reexecute research/configs/reexecution_catalog_2020.json --output-dir <新的本地目录>
 python -m research.registry.reexecute research/configs/reexecution_catalog_capacity_series.json --output-dir <另一个新的本地目录>
 python -m research.registry.verify_catalog research/configs/integrity_catalog_observed_counterfactual.json --output-dir <再一个新的本地目录>
+python -m research.registry.verify_catalog research/configs/integrity_catalog_lagged_impact.json --output-dir <另一新的本地目录>
 python -m research.registry.verify_catalog research/configs/integrity_catalog_semantic_holdout_model_h2_2020.json --output-dir <另一新的本地目录>
 ```
 

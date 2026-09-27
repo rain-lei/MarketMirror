@@ -16,12 +16,13 @@ from ..data_pipeline.provenance import file_sha256
 from ..registry.verify_catalog import audit_run, load_catalog
 from ..semantic.audit_model_run import audit_model_run
 
-VERSION = "research-workbench-v11"
+VERSION = "research-workbench-v12"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 CAPACITY_CONFIG = ROOT / "research/configs/integrity_catalog_capacity_series.json"
 CAPACITY_REEXEC_CONFIG = ROOT / "research/configs/reexecution_catalog_capacity_series.json"
 COUNTERFACTUAL_CONFIG = ROOT / "research/configs/integrity_catalog_observed_counterfactual.json"
+LAGGED_IMPACT_CONFIG = ROOT / "research/configs/integrity_catalog_lagged_impact.json"
 HOLDOUT_MODEL_CONFIG = ROOT / "research/configs/integrity_catalog_semantic_holdout_model_h2_2020.json"
 OUTPUTS = ROOT / "research_outputs"
 ASSETS = Path(__file__).resolve().parent / "assets"
@@ -314,6 +315,91 @@ def checked_counterfactual_series() -> list[dict[str, Any]]:
     return rows
 
 
+def checked_lagged_impact_series() -> list[dict[str, Any]]:
+    """Expose all pinned sensitivity pairs only after byte-identical independent reruns."""
+    pinned = load_catalog(LAGGED_IMPACT_CONFIG)
+    expected = {"lagged_impact_2018", "lagged_impact_2020"}
+    if len(pinned) != 2 or {run["run_id"] for run in pinned} != expected:
+        raise ValueError("lagged impact catalog must contain the two fixed events")
+    cache: dict[Path, str] = {}
+    rows = []
+    for run in pinned:
+        if audit_run(run, LAGGED_IMPACT_CONFIG.parent, ROOT / "research", OUTPUTS, cache)["status"] != "passed":
+            raise ValueError("lagged impact original run failed pinned integrity checks")
+        original_path = (LAGGED_IMPACT_CONFIG.parent / run["manifest"]).resolve()
+        original = json.loads(original_path.read_text(encoding="utf-8"))
+        rerun_dir = OUTPUTS / ("observed_2018" if run["run_id"].endswith("2018")
+                               else "observed_2020") / "lagged_impact_verified_rerun_v1"
+        rerun = json.loads((rerun_dir / "lagged_impact_manifest.json").read_text(encoding="utf-8"))
+        artifacts = {"lagged_impact_results.json", "lagged_impact_report.md"}
+        if (original.get("pipeline_version") != "lagged-turnover-assumed-impact-v1"
+                or rerun.get("pipeline_version") != original["pipeline_version"]
+                or rerun.get("scenario_id") != original["scenario_id"]
+                or rerun.get("inputs") != original["inputs"]
+                or rerun.get("code_sha256") != original["code_sha256"]
+                or set(original["artifacts"]) != artifacts
+                or rerun.get("artifacts") != original["artifacts"]
+                or any(file_sha256(rerun_dir / name) != original["artifacts"][name]["sha256"]
+                       for name in artifacts)):
+            raise ValueError("lagged impact fresh rerun differs from pinned results")
+        result = json.loads((original_path.parent / "lagged_impact_results.json").read_text(encoding="utf-8"))
+        paths = result.get("paths", [])
+        pairs = result.get("paired_effects", [])
+        rates = (0.01, 0.05)
+        coefficients = (0.0, 0.01, 0.03)
+        expected_grid = {(rate, depth, coefficient) for rate in rates for depth in rates
+                         for coefficient in coefficients}
+        if (result.get("scenario_id") != original["scenario_id"]
+                or result.get("data_kind") != "observed_return_sensitivity"
+                or result.get("stock_code") != "000001"
+                or result.get("participation_rates") != list(rates)
+                or result.get("impact_depth_fractions") != list(rates)
+                or result.get("impact_coefficients") != list(coefficients)
+                or len(paths) != 24 or len(pairs) != 12
+                or {(pair["participation_rate"], pair["impact_depth_fraction"],
+                     pair["impact_coefficient"]) for pair in pairs} != expected_grid
+                or result["timing"]["first_signal_cutoff_date"] < result["available_on_date"]):
+            raise ValueError("lagged impact result shape or visibility gate changed")
+        period = "2018 H1" if run["run_id"].endswith("2018") else "2020 Q1"
+        for index, pair in enumerate(pairs):
+            baseline, scenario = paths[2 * index:2 * index + 2]
+            parameters = ("participation_rate", "impact_depth_fraction", "impact_coefficient")
+            if (baseline["scenario_enabled"] or not scenario["scenario_enabled"]
+                    or any(baseline[key] != pair[key] or scenario[key] != pair[key]
+                           for key in parameters)
+                    or not math.isclose(pair["terminal_price_delta"],
+                                        scenario["final_price_index"] - baseline["final_price_index"],
+                                        abs_tol=1e-9)
+                    or pair["control_binding_days"] != baseline["binding_days"]
+                    or pair["event_binding_days"] != scenario["binding_days"]):
+                raise ValueError("lagged impact paired scenarios are inconsistent")
+            if pair["impact_coefficient"] == 0 and any(
+                    not math.isclose(path["final_price_index"],
+                                     result["observed_return_only_price_index"],
+                                     rel_tol=1e-12, abs_tol=1e-10)
+                    for path in (baseline, scenario)):
+                raise ValueError("lagged impact zero-impact control differs from observed returns")
+            public = {"period": period, "event_id": result["event_id"],
+                      "stock_code": result["stock_code"],
+                      "first_signal_trade_date": result["timing"]["first_signal_trade_date"],
+                      "aum_cny_per_agent": result["aum_cny_per_agent"],
+                      "participation_rate": pair["participation_rate"],
+                      "impact_depth_fraction": pair["impact_depth_fraction"],
+                      "impact_coefficient": pair["impact_coefficient"],
+                      "event_window_net_order_delta_cny": pair["event_window_net_order_delta_cny"],
+                      "event_end_price_delta": pair["event_end_price_delta"],
+                      "terminal_price_delta": pair["terminal_price_delta"],
+                      "control_binding_days": pair["control_binding_days"],
+                      "event_binding_days": pair["event_binding_days"]}
+            if any(type(value) not in (int, float) or not math.isfinite(value)
+                   for key, value in public.items() if key not in {"period", "event_id", "stock_code",
+                                                                    "first_signal_trade_date"}):
+                raise ValueError("lagged impact public metric is not finite")
+            rows.append(public)
+    validate_public_payload(rows)
+    return rows
+
+
 def collect_data() -> dict[str, Any]:
     pinned = load_catalog(CONFIG)
     cache: dict[Path, str] = {}
@@ -343,6 +429,10 @@ def collect_data() -> dict[str, Any]:
     holdout_model = checked_holdout_model_run()
     capacity_series = checked_capacity_series()
     counterfactual_series = checked_counterfactual_series()
+    lagged_impact_series = checked_lagged_impact_series()
+    if ({row["event_id"] for row in counterfactual_series}
+            != {row["event_id"] for row in lagged_impact_series}):
+        raise ValueError("fixed and lagged impact events differ; shared filter is unsafe")
     manifests = {run["run_id"]: (CONFIG.parent / run["manifest"]).resolve() for run in pinned}
 
     def artifact(run_id: str, name: str) -> dict[str, Any]:
@@ -413,6 +503,7 @@ def collect_data() -> dict[str, Any]:
         "replays": [],
         "capacity_series": capacity_series,
         "counterfactual_series": counterfactual_series,
+        "lagged_impact_series": lagged_impact_series,
         "semantic": {"items": reviewed["pack_items"], "dual_reviewed": reviewed["dual_reviewed_items"],
                      "pending": reviewed["pending_items"], "conflicts": reviewed["conflict_items"],
                      "gold_ready": reviewed["gold_ready"], "status": reviewed["status"]},
@@ -506,6 +597,17 @@ def render_report(data: dict[str, Any]) -> str:
                          f"{row['event_window_net_order_delta_cny']/1e8:+.3f} | "
                          f"{row['event_end_price_delta']:+.4f} | {row['terminal_price_delta']:+.4f} |")
         lines += ["", "归一化价格指数不是实际成交价。已实现收益包含真实交易作用，叠加模拟冲击可能重复计入市场运动；这些数值仅说明模型机制与参数敏感性。"]
+    if data.get("lagged_impact_series"):
+        lines += ["", "## 滞后成交额冲击敏感性", "",
+                  "2018 与 2020 各 24 条路径，按有/无手设信号配成 12 组；原始清单核验及独立重跑的结果、报告逐字节核对通过。容量预算和独立冲击分母分别取 t-2 历史双向总成交额的 1% 或 5%，不是盘口深度估计。", "",
+                  "| 时期 | 容量比例 | 冲击分母比例 | 冲击系数 | 情景末日价格指数差 | 全期末价格指数差 | 触及容量日（无/有信号） |",
+                  "|---|---:|---:|---:|---:|---:|---:|"]
+        for row in data["lagged_impact_series"]:
+            lines.append(f"| {row['period']} | {row['participation_rate']:.0%} | "
+                         f"{row['impact_depth_fraction']:.0%} | {row['impact_coefficient']:.3f} | "
+                         f"{row['event_end_price_delta']:+.4f} | {row['terminal_price_delta']:+.4f} | "
+                         f"{row['control_binding_days']}/{row['event_binding_days']} |")
+        lines += ["", "同一事件的全期末差异可随假设比例变号。Agent 行为、信号、资金规模和冲击关系均未用真实订单校准；已实现收益再叠加冲击还可能重复计数。此表只展示模型对假设的敏感性。"]
     lines += ["", "## 运行核验", "", "| 运行 | 完整性 | 重跑 | 哈希检查 | 比较产物 |", "|---|---|---|---:|---:|"]
     for row in data["runs"]:
         lines.append(f"| {row['id']} | {row['integrity']} | {row['reexecution']} | {row['hash_checks']} | {row['compared_artifacts']} |")
@@ -586,6 +688,11 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
             "counterfactual_2020_original_manifest": OUTPUTS / "observed_2020/counterfactual_assumed_impact_v4/counterfactual_manifest.json",
             "counterfactual_2018_rerun_manifest": OUTPUTS / "observed_2018/counterfactual_verified_rerun_v1/counterfactual_manifest.json",
             "counterfactual_2020_rerun_manifest": OUTPUTS / "observed_2020/counterfactual_verified_rerun_v1/counterfactual_manifest.json",
+            "lagged_impact_catalog": LAGGED_IMPACT_CONFIG,
+            "lagged_impact_2018_original_manifest": OUTPUTS / "observed_2018/lagged_impact_v1/lagged_impact_manifest.json",
+            "lagged_impact_2020_original_manifest": OUTPUTS / "observed_2020/lagged_impact_v1/lagged_impact_manifest.json",
+            "lagged_impact_2018_rerun_manifest": OUTPUTS / "observed_2018/lagged_impact_verified_rerun_v1/lagged_impact_manifest.json",
+            "lagged_impact_2020_rerun_manifest": OUTPUTS / "observed_2020/lagged_impact_verified_rerun_v1/lagged_impact_manifest.json",
             "holdout_model_catalog": HOLDOUT_MODEL_CONFIG,
             "holdout_model_integrity_results": OUTPUTS / "integrity_catalog_semantic_holdout_model_h2_2020_v1/integrity_results.json",
             "holdout_model_raw_manifest": OUTPUTS / "semantic_holdout_h2_2020_model/model_run_manifest.json",

@@ -55,6 +55,7 @@
       <div class="card"><div class="filters"><label class="field-label">时期<select id="period-select"></select></label><label class="field-label">股票<select id="stock-select"></select></label><span class="filter-note">期末财富 / 初始现金；1.000 为现金基准</span></div><div id="replay-table"></div><p class="note">归一化收益指数并非实际成交价。订单假定在参考收盘价全部成交，不改变历史价格；角色参数未用真实投资者交易校准。</p></div>
       <div class="card"><h3>资金规模与容量情景</h3><p class="note">每类 Agent 在每只股票分别假设 10 亿元。事后比例用同日实际总成交额；容量约束只用决策前已知的成交额设 1% 情景上限。六项容量运行已独立重跑。</p><div id="capacity-table"></div><p class="note">1% 不是从盘口估计的可成交深度；财富差异不证明策略改善或监管预测能力。</p></div>
       <div class="card"><div class="card-head"><div><h3>已观察收益上的假设价格冲击</h3><p>同一事件的有/无情景信号配对；三种冲击系数。</p></div><label class="field-label">历史节点<select id="counterfactual-select"></select></label></div><p id="counterfactual-assumptions" class="note"></p><div id="counterfactual-table"></div><p class="note">仅平安银行。事件方向、流动性和冲击系数均为手设；实际收益已包含真实交易运动，叠加冲击可能重复计入。价格指数差不是预测或历史拟合。</p></div>
+      <div class="card"><h3>滞后成交额冲击敏感性</h3><p id="lagged-impact-summary" class="note"></p><div id="lagged-impact-table"></div><p class="note">容量预算和冲击分母分别取决策前 t-2 的历史双向总成交额。1%/5% 比例、线性冲击和事件信号均为手设；总成交额不是可执行盘口深度。末值差异随假设变化，不代表历史价格拟合或监管预警。</p></div>
     </section>
 
     <section class="section" id="provenance">
