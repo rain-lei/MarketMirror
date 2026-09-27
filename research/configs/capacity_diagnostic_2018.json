@@ -1,0 +1,7 @@
+{
+  "run_id": "historical_capacity_2018_h1",
+  "data_kind": "observed_posthoc",
+  "replay_manifest": "../../research_outputs/observed_2018/historical_replay/historical_replay_manifest.json",
+  "activity_manifest": "../../research_outputs/observed_2018/activity/activity_manifest.json",
+  "aum_cny_per_agent": [1000000, 100000000, 1000000000]
+}

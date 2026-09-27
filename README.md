@@ -10,11 +10,11 @@ MarketMirror 正在重建为**可复现、可核验的金融市场冲击研究�
 |---|---|---|
 | 数据层 | 三份 Excel 共 429,597 条问答；全量来源、质量报告和时点导出 | 财务单位、季度含义、标签定义与公开时刻核实 |
 | 市场基线 | 2018/2020 事件窗口、成交活动和日期对照；2020 年 177 条测试预测 | 更广样本、独立行情源和外部预注册验证；新增 2018 诊断待纳入主目录与工作台 |
-| Agent | 三类规则、合成账本、三段真实收益路径回放 | 投资者行为参数、订单流与价格冲击校准 |
+| Agent | 三类规则、合成账本、三段真实收益路径回放；新增基于实际日成交额的假设资金容量诊断 | 投资者行为参数、订单流、盘口与价格冲击校准 |
 | 语义抽取 | 上半年开发样本的 DeepSeek v2 有 127/128 条结构/证据通过；下半年另建 128 条跨公司、跨时间留出包，双人盲审页面和关键词对照已固定 | 留出包仍为 0 条人工标签、0 条模型输出；需独立双人标注、裁定与留出评估 |
 | 可复现性 | 18 项本地运行完整性检查与独立重跑通过 | 原始文件跨机器获取和公开口径复核 |
 
-详细数值、限制和阶段状态见 [研究进度](research/IMPLEMENTATION_STATUS.md)；语义协议开发结果见 [v2 实验说明](research/SEMANTIC_PROTOCOL_V2.md)，独立测试约定见 [下半年留出协议](research/SEMANTIC_HOLDOUT_H2_2020.md)；新增历史节点见 [2018 实验说明](research/OBSERVED_PILOT_2018.md)；研究设计见 [重建方案](RESEARCH_REBUILD_PLAN.md)。
+详细数值、限制和阶段状态见 [研究进度](research/IMPLEMENTATION_STATUS.md)；语义协议开发结果见 [v2 实验说明](research/SEMANTIC_PROTOCOL_V2.md)，独立测试约定见 [下半年留出协议](research/SEMANTIC_HOLDOUT_H2_2020.md)；新增历史节点见 [2018 实验说明](research/OBSERVED_PILOT_2018.md)，回放规模限制见 [容量诊断](research/CAPACITY_DIAGNOSTIC.md)；研究设计见 [重建方案](RESEARCH_REBUILD_PLAN.md)。
 
 ## 本地研究工作台
 
