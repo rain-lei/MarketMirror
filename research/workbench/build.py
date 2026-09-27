@@ -16,13 +16,14 @@ from ..data_pipeline.provenance import file_sha256
 from ..registry.verify_catalog import audit_run, load_catalog
 from ..semantic.audit_model_run import audit_model_run
 
-VERSION = "research-workbench-v12"
+VERSION = "research-workbench-v13"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 CAPACITY_CONFIG = ROOT / "research/configs/integrity_catalog_capacity_series.json"
 CAPACITY_REEXEC_CONFIG = ROOT / "research/configs/reexecution_catalog_capacity_series.json"
 COUNTERFACTUAL_CONFIG = ROOT / "research/configs/integrity_catalog_observed_counterfactual.json"
 LAGGED_IMPACT_CONFIG = ROOT / "research/configs/integrity_catalog_lagged_impact.json"
+VISIBILITY_LAG_CONFIG = ROOT / "research/configs/integrity_catalog_visibility_lag_2020.json"
 HOLDOUT_MODEL_CONFIG = ROOT / "research/configs/integrity_catalog_semantic_holdout_model_h2_2020.json"
 OUTPUTS = ROOT / "research_outputs"
 ASSETS = Path(__file__).resolve().parent / "assets"
@@ -400,6 +401,60 @@ def checked_lagged_impact_series() -> list[dict[str, Any]]:
     return rows
 
 
+def checked_visibility_lag_series() -> list[dict[str, Any]]:
+    """Display the fixed timing diagnostic only after source and rerun checks."""
+    pinned = load_catalog(VISIBILITY_LAG_CONFIG)
+    if len(pinned) != 1 or pinned[0]["run_id"] != "text_publication_delay_sensitivity_2020":
+        raise ValueError("visibility catalog must contain the fixed 2020 diagnostic")
+    if audit_run(pinned[0], VISIBILITY_LAG_CONFIG.parent, ROOT / "research", OUTPUTS, {})["status"] != "passed":
+        raise ValueError("visibility lag run failed pinned integrity checks")
+    integrity = checked_report(OUTPUTS / "integrity_catalog_visibility_lag_2020_v1",
+                               "integrity_manifest.json", "integrity_results.json",
+                               ROOT / "research/registry/verify_catalog.py")
+    if (integrity["catalog_sha256"] != file_sha256(VISIBILITY_LAG_CONFIG)
+            or integrity["passed_runs"] != 1):
+        raise ValueError("stored visibility audit does not match pinned catalog")
+    original_path = (VISIBILITY_LAG_CONFIG.parent / pinned[0]["manifest"]).resolve()
+    original = json.loads(original_path.read_text(encoding="utf-8"))
+    rerun_dir = OUTPUTS / "text_pilot_2020/visibility_lag_verified_rerun_v1"
+    rerun = json.loads((rerun_dir / "visibility_lag_manifest.json").read_text(encoding="utf-8"))
+    artifacts = {"visibility_lag_results.json", "visibility_lag_report.md"}
+    if (original.get("pipeline_version") != "text-visibility-lag-v1"
+            or rerun != original or set(original["artifacts"]) != artifacts
+            or any(file_sha256(rerun_dir / name) != original["artifacts"][name]["sha256"]
+                   for name in artifacts)):
+        raise ValueError("visibility lag independent rerun differs from original")
+    result = json.loads((original_path.parent / "visibility_lag_results.json").read_text(encoding="utf-8"))
+    scenarios = result.get("scenarios", [])
+    if (result.get("pipeline_version") != original["pipeline_version"]
+            or result.get("source_run_id") != "text_prediction"
+            or result.get("delay_unit") != "calendar_days"
+            or result.get("panel_rows") != 678 or result.get("test_rows") != 177
+            or result.get("baseline_reproduced") is not True
+            or result.get("market_only_invariant") is not True
+            or [row["lag_days"] for row in scenarios] != [0, 1, 3, 7]
+            or scenarios[0]["changed_text_feature_rows"] != 0
+            or any(row["test_rows"] != 177
+                   or row["market_test_mae"] != scenarios[0]["market_test_mae"]
+                   or len(row["paired_interval_95"]) != 2
+                   or not row["paired_interval_95"][0] <= 0 <= row["paired_interval_95"][1]
+                   for row in scenarios)):
+        raise ValueError("visibility lag result no longer matches the fixed comparison")
+    public = [{"lag_days": row["lag_days"],
+               "changed_text_feature_rows": row["changed_text_feature_rows"],
+               "market_test_mae": row["market_test_mae"],
+               "text_test_mae": row["text_test_mae"],
+               "paired_mae_difference": row["paired_mae_difference"],
+               "paired_interval_95": row["paired_interval_95"]} for row in scenarios]
+    if any(type(value) not in (int, float) or not math.isfinite(value)
+           for row in public for value in (row["changed_text_feature_rows"], row["market_test_mae"],
+                                           row["text_test_mae"], row["paired_mae_difference"],
+                                           *row["paired_interval_95"])):
+        raise ValueError("visibility lag public metric is not finite")
+    validate_public_payload(public)
+    return public
+
+
 def collect_data() -> dict[str, Any]:
     pinned = load_catalog(CONFIG)
     cache: dict[Path, str] = {}
@@ -430,6 +485,7 @@ def collect_data() -> dict[str, Any]:
     capacity_series = checked_capacity_series()
     counterfactual_series = checked_counterfactual_series()
     lagged_impact_series = checked_lagged_impact_series()
+    visibility_lag_series = checked_visibility_lag_series()
     if ({row["event_id"] for row in counterfactual_series}
             != {row["event_id"] for row in lagged_impact_series}):
         raise ValueError("fixed and lagged impact events differ; shared filter is unsafe")
@@ -443,6 +499,10 @@ def collect_data() -> dict[str, Any]:
     activity = artifact("activity_event", "event_activity.json")
     activity_2018 = artifact("activity_event_2018", "event_activity.json")
     prediction = artifact("text_prediction", "prediction_results.json")
+    base_prediction = prediction["evaluation"]["test_metrics"]
+    if (visibility_lag_series[0]["market_test_mae"] != base_prediction["market_only"]["pooled"]["mae"]
+            or visibility_lag_series[0]["text_test_mae"] != base_prediction["market_plus_text"]["pooled"]["mae"]):
+        raise ValueError("visibility lag zero-delay result differs from displayed baseline")
     stress = artifact("synthetic_stress", "stress_results.json")
     replay_q1 = artifact("historical_replay_q1", "historical_replay.json")
     replay_later = artifact("historical_replay_later", "historical_replay.json")
@@ -504,6 +564,7 @@ def collect_data() -> dict[str, Any]:
         "capacity_series": capacity_series,
         "counterfactual_series": counterfactual_series,
         "lagged_impact_series": lagged_impact_series,
+        "visibility_lag_series": visibility_lag_series,
         "semantic": {"items": reviewed["pack_items"], "dual_reviewed": reviewed["dual_reviewed_items"],
                      "pending": reviewed["pending_items"], "conflicts": reviewed["conflict_items"],
                      "gold_ready": reviewed["gold_ready"], "status": reviewed["status"]},
@@ -571,8 +632,20 @@ def render_report(data: dict[str, Any]) -> str:
     prediction = data["prediction"]
     lines += ["", "## 文本增量预测", "",
               f"测试预测 {prediction['rows']} 条；纯行情 MAE {prediction['market_mae']:.4%}，行情加文本 MAE {prediction['text_mae']:.4%}。",
-              f"配对 MAE 差值（文本 − 行情）{prediction['paired_difference']:.4%}，近似 95% 区间 [{prediction['interval_95'][0]:.4%}, {prediction['interval_95'][1]:.4%}]。", "",
-              "## Agent 规则回放", "",
+              f"配对 MAE 差值（文本 − 行情）{prediction['paired_difference']:.4%}，近似 95% 区间 [{prediction['interval_95'][0]:.4%}, {prediction['interval_95'][1]:.4%}]。"]
+    if data.get("visibility_lag_series"):
+        lines += ["", "### 问答可见时间敏感性", "",
+                  "在同一固定样本上，问答来源时间分别额外后移 0/1/3/7 个自然日。0 日结果复现原实验，纯行情预测在所有情景中一致；延迟是假设，不是已核实的首次公开时刻。原始运行经固定清单核验，两份结果/报告与独立重跑逐字节一致。", "",
+                  "| 额外延迟 | 文本特征改变行 | 行情 MAE | 行情＋文本 MAE | 文本－行情差（百分点） | 近似 95% 区间（百分点） |",
+                  "|---:|---:|---:|---:|---:|---:|"]
+        for row in data["visibility_lag_series"]:
+            low, high = row["paired_interval_95"]
+            lines.append(f"| {row['lag_days']} 日 | {row['changed_text_feature_rows']} | "
+                         f"{100 * row['market_test_mae']:.4f} | {100 * row['text_test_mae']:.4f} | "
+                         f"{100 * row['paired_mae_difference']:+.4f} | "
+                         f"[{100 * low:+.4f}, {100 * high:+.4f}] |")
+        lines += ["", "区间均包含零；来源公开日志缺失，不能据延迟扫描反推真实时刻或证明稳定预测增益。"]
+    lines += ["", "## Agent 规则回放", "",
               "| 时期 | 股票 | 角色 | 市场信号 | 零信号 | 买入持有 | 最大回撤 | 交易 |", "|---|---:|---|---:|---:|---:|---:|---:|"]
     for row in data["replays"]:
         lines.append(f"| {row['period']} | {row['stock_code']} | {role_labels.get(row['role'], row['role'])} | {row['signal_multiple']:.3f} | {row['control_multiple']:.3f} | {row['buyhold_multiple']:.3f} | {row['max_drawdown']:.2%} | {row['trades']} |")
@@ -693,6 +766,10 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
             "lagged_impact_2020_original_manifest": OUTPUTS / "observed_2020/lagged_impact_v1/lagged_impact_manifest.json",
             "lagged_impact_2018_rerun_manifest": OUTPUTS / "observed_2018/lagged_impact_verified_rerun_v1/lagged_impact_manifest.json",
             "lagged_impact_2020_rerun_manifest": OUTPUTS / "observed_2020/lagged_impact_verified_rerun_v1/lagged_impact_manifest.json",
+            "visibility_lag_catalog": VISIBILITY_LAG_CONFIG,
+            "visibility_lag_integrity_results": OUTPUTS / "integrity_catalog_visibility_lag_2020_v1/integrity_results.json",
+            "visibility_lag_original_manifest": OUTPUTS / "text_pilot_2020/visibility_lag_v2/visibility_lag_manifest.json",
+            "visibility_lag_rerun_manifest": OUTPUTS / "text_pilot_2020/visibility_lag_verified_rerun_v1/visibility_lag_manifest.json",
             "holdout_model_catalog": HOLDOUT_MODEL_CONFIG,
             "holdout_model_integrity_results": OUTPUTS / "integrity_catalog_semantic_holdout_model_h2_2020_v1/integrity_results.json",
             "holdout_model_raw_manifest": OUTPUTS / "semantic_holdout_h2_2020_model/model_run_manifest.json",

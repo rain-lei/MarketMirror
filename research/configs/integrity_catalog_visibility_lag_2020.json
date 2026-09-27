@@ -1,0 +1,10 @@
+{
+  "runs": [
+    {
+      "run_id": "text_publication_delay_sensitivity_2020",
+      "manifest": "../../research_outputs/text_pilot_2020/visibility_lag_v2/visibility_lag_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "967bdded7f09697efb09de14e4b328f1bae293fac151dcb94087b6d158b954ef"
+    }
+  ]
+}

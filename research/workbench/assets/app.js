@@ -48,6 +48,10 @@
   const predictionBars=[["纯行情 MAE",p.market_mae,false],["行情 + 文本 MAE",p.text_mae,true]];
   $("prediction-bars").innerHTML=predictionBars.map(([label,value,alt])=>`<div class="bar-row"><div class="bar-row-head"><span>${safe(label)}</span><strong>${pct(value,3)}</strong></div><div class="bar-track"><div class="bar-fill ${alt?'alt':''}" style="width:${Math.min(100,value/.03*100).toFixed(1)}%"></div></div></div>`).join("");
   $("prediction-interval").textContent=`${p.rows} 条测试预测。配对 MAE 差值（文本 − 行情）${pct(p.paired_difference,3)}；近似 95% 区间 [${pct(p.interval_95[0],3)}, ${pct(p.interval_95[1],3)}]，包含零。`;
+  const visibilityLag=data.visibility_lag_series||[];
+  $("visibility-lag-table").innerHTML=visibilityLag.length
+    ? `<table class="data-table"><thead><tr><th>额外延迟</th><th style="text-align:right">文本特征改变行</th><th style="text-align:right">行情 MAE</th><th style="text-align:right">行情＋文本 MAE</th><th style="text-align:right">文本－行情差</th><th>近似 95% 区间</th></tr></thead><tbody>${visibilityLag.map(row=>`<tr><td>${safe(row.lag_days)} 日</td><td class="num">${safe(row.changed_text_feature_rows)}</td><td class="num">${pct(row.market_test_mae,4)}</td><td class="num">${pct(row.text_test_mae,4)}</td><td class="num">${pct(row.paired_mae_difference,4)}</td><td>[${pct(row.paired_interval_95[0],4)}, ${pct(row.paired_interval_95[1],4)}]</td></tr>`).join("")}</tbody></table>`
+    : "<p class=\"note\">尚无通过核验的公开时间敏感性结果。</p>";
   const financial=data.financial_dictionary;
   if(financial){
     const fs=financial.scope;

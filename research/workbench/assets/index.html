@@ -39,6 +39,7 @@
         <article class="card"><h3>测试误差</h3><div id="prediction-bars" class="bar-list"></div><p id="prediction-interval" class="note"></p></article>
         <article class="card contrast"><span class="card-kicker">结论边界</span><h3>文本改善尚未确认</h3><p>误差差值的区间包含零。问答公开时点仍采用来源时间代理，无法从这次小样本结果推断稳定的预测增益。</p><div class="contrast-rule"></div><p class="small">预测目标是下一交易日简单收益；没有使用未经确认的财务快照或公司违规标签。</p></article>
       </div>
+      <article class="card"><h3>问答公开时间假设敏感性</h3><p class="note">对同一三股试验，分别把提问和回复的来源可见时间再后移 0、1、3、7 个自然日。0 日必须复现原实验；纯行情对照保持不变。</p><div id="visibility-lag-table"></div><p class="note">延迟是假设，缺少首次公开日志。表中的区间都包含零；扫描结果不能反推出真实时刻或证明文本有稳定预测增益。</p></article>
     </section>
 
     <section class="section" id="financial-dictionary">

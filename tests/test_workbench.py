@@ -42,6 +42,10 @@ class WorkbenchPayloadTest(unittest.TestCase):
             "placebo": {"asset_management_guidance_date_only": {"before": 150, "after": 27}},
             "prediction": {"rows": 1, "market_mae": 0.02, "text_mae": 0.01, "paired_difference": -0.01,
                            "interval_95": [-0.02, 0.01]},
+            "visibility_lag_series": [{"lag_days": 7, "changed_text_feature_rows": 20,
+                                       "market_test_mae": 0.02, "text_test_mae": 0.0201,
+                                       "paired_mae_difference": 0.0001,
+                                       "paired_interval_95": [-0.0005, 0.0006]}],
             "replays": [{"period": "Q1", "stock_code": "000001", "role": "role", "signal_multiple": 1.0,
                          "control_multiple": 1.0, "buyhold_multiple": 1.0, "max_drawdown": 0.1, "trades": 1}],
             "capacity_series": [{"period": "Q1", "stock_code": "000001", "sessions": 58,
@@ -77,6 +81,8 @@ class WorkbenchPayloadTest(unittest.TestCase):
         self.assertIn("2020-01-01", report)
         self.assertIn("[-3, +5]", report)
         self.assertIn("2018-01-02 至 2018-01-03：2 日", report)
+        self.assertIn("问答可见时间敏感性", report)
+        self.assertIn("+0.0100", report)
         self.assertIn("0.781", report)
         self.assertIn("150", report)
         self.assertIn("资金规模与容量情景", report)

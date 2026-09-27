@@ -1,0 +1,7 @@
+{
+  "run_id": "text_publication_delay_sensitivity_2020",
+  "source_run_id": "text_prediction",
+  "lag_days": [0, 1, 3, 7],
+  "lag_unit": "calendar_days",
+  "interpretation": "Illustrative extra delay after source question/reply availability proxy; not measured publication latency or a tuned hyperparameter."
+}
