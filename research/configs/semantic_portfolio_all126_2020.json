@@ -1,0 +1,13 @@
+{
+  "run_id": "semantic_h2_2020_shared_portfolio",
+  "background_config": "semantic_background_all126_2020.json",
+  "background_case_id": "active_quote25",
+  "basket_size": 3,
+  "quote_response_bps": [200, 500],
+  "cases": [
+    {"case_id": "separated_institution35", "cash_mode": "separated", "institutional_asset_cap": 0.35},
+    {"case_id": "shared_institution35", "cash_mode": "shared", "institutional_asset_cap": 0.35},
+    {"case_id": "shared_institution20", "cash_mode": "shared", "institutional_asset_cap": 0.20},
+    {"case_id": "shared_assetcap100", "cash_mode": "shared", "institutional_asset_cap": 1.0}
+  ]
+}
