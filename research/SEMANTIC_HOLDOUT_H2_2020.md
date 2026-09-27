@@ -8,7 +8,9 @@
 
 抽样前的候选提问行有 163,883 条，按公司或问答身份排除 11,377 条，剩余 152,506 条。选样刻意覆盖较少的话题，不用于估计总体事件发生率；按公司和完整文本排重也不能保证不同公司间不存在语义相似的披露。来源时间是可见时刻的保守代理，尚未独立核对网页发布日志。
 
-配置固定原始 Excel 的 SHA-256 为 `a3a1b0afa2cd13b25a56c89393178d93960cd8867a46a7c469fd567bf82ac812`，提示 `semantic-prompt-v2` 的 SHA-256 为 `cb608b2b36cab16653cc74afcc391e24356655b1661845833242c45e66bb3892`；模型为 `DeepSeek-V4-Flash-0731-W8A8`。本地标注包和关键词对照各有 128 条，两份离线盲审页面已生成。完整性目录 `configs/integrity_catalog_semantic_holdout_h2_2020.json` 对这三项产物核验为 3/3。**目前 0 条人工审定标签、0 条留出模型输出，不存在留出准确率。**
+配置固定原始 Excel 的 SHA-256 为 `a3a1b0afa2cd13b25a56c89393178d93960cd8867a46a7c469fd567bf82ac812`，提示 `semantic-prompt-v2` 的 SHA-256 为 `cb608b2b36cab16653cc74afcc391e24356655b1661845833242c45e66bb3892`；模型为 `DeepSeek-V4-Flash-0731-W8A8`。本地标注包和关键词对照各有 128 条，两份离线盲审页面已生成。完整性目录 `configs/integrity_catalog_semantic_holdout_h2_2020.json` 对标注包、关键词对照、盲审页面和字面重叠审计核验为 4/4。**目前 0 条人工审定标签、0 条留出模型输出，不存在留出准确率。**
+
+在人工标注和留出模型调用前，另用 Unicode NFKC、去标点空白、同来源段落字符三元组 Jaccard 检查开发包与留出包的字面近重复。128 条留出样本各自最近的开发条目中，最高相似度为 0.3637；达到 0.5 的为 0 条。审计结果、条目 ID 和输入/代码哈希留在 `research_outputs/semantic_holdout_h2_2020_overlap/`，不导出问答原文。此诊断不能识别语义改写、共同事实或模型预训练中的信息；也不改变已固定样本。
 
 ## 固定流程
 
@@ -28,7 +30,8 @@ python -m research.semantic.holdout_pack research/configs/semantic_holdout_h2_20
 python -m research.semantic.keyword_baseline research_outputs/semantic_holdout_h2_2020 --output-dir research_outputs/semantic_holdout_h2_2020_keyword
 python -m research.semantic.review_workflow prepare research_outputs/semantic_holdout_h2_2020 --output-dir research_outputs/semantic_holdout_h2_2020_review
 python -m research.semantic.review_interface research_outputs/semantic_holdout_h2_2020 research_outputs/semantic_holdout_h2_2020_review --output-dir research_outputs/semantic_holdout_h2_2020_interface
-python -m research.registry.verify_catalog research/configs/integrity_catalog_semantic_holdout_h2_2020.json --output-dir research_outputs/integrity_catalog_semantic_holdout_h2_2020_v2
+python -m research.semantic.holdout_overlap research_outputs/semantic_annotation_pilot_2020 research_outputs/semantic_holdout_h2_2020 --output-dir research_outputs/semantic_holdout_h2_2020_overlap
+python -m research.registry.verify_catalog research/configs/integrity_catalog_semantic_holdout_h2_2020.json --output-dir research_outputs/integrity_catalog_semantic_holdout_h2_2020_v4
 ```
 
 之后由运行者在本机安全地设置 `MARKETMIRROR_LLM_API_KEY`，不写入命令行、代码、报告或 Git。模型运行、双人裁定和评分均尚未执行；各步需要新输出目录，不能覆盖固定材料。

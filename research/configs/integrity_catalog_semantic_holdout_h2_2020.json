@@ -17,6 +17,12 @@
       "manifest": "../../research_outputs/semantic_holdout_h2_2020_interface/interface_manifest.json",
       "extra_hashes": {},
       "manifest_sha256": "453782bcae2f38260b0a07a11506b4b319b831dcfe19e70f1914655b0e39045c"
+    },
+    {
+      "run_id": "semantic_holdout_overlap_h2_2020",
+      "manifest": "../../research_outputs/semantic_holdout_h2_2020_overlap/overlap_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "29b14bba0465471922a2037dc9b0f65d2310ed13a71fc8ff1cd953aa3180a05f"
     }
   ]
 }
