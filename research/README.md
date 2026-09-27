@@ -385,6 +385,9 @@ firecrawl scrape "https://www.baostock.com/mainContent?file=pythonAPI.md" -o .fi
 ```powershell
 & $py -m research.semantic.review_workflow prepare research_outputs/semantic_annotation_pilot_2020 `
   --output-dir research_outputs/semantic_review_pilot_2020
+& $py -m research.semantic.review_interface research_outputs/semantic_annotation_pilot_2020 `
+  research_outputs/semantic_review_pilot_2020 `
+  --output-dir research_outputs/semantic_review_interface_2020
 & $py -m research.semantic.review_workflow compare research_outputs/semantic_annotation_pilot_2020 `
   --reviewer-a <审核者A完成的标签副本.jsonl> --reviewer-b <审核者B完成的标签副本.jsonl> `
   --output-dir <新的本地比较目录>
@@ -393,7 +396,7 @@ firecrawl scrape "https://www.baostock.com/mainContent?file=pythonAPI.md" -o .fi
   --output-dir <新的本地金标准目录>
 ```
 
-审核任务包仅暴露当时可见文本、阶段、条目 ID 与哈希，不带结构化股票代码、训练/测试分组或抽样层；原文可能仍透露公司身份。空白标签副本不得当作已完成审核。当前将两个空白模板输入比较器，正确得到 `no_dual_review`、0/128 双人完成；程序拒绝从这个结果生成金标准。真实审核、分歧裁定和负责人的质量抽查仍未发生；具体操作与判据见 `semantic/ANNOTATION_GUIDE.md`。
+审核任务包仅暴露当时可见文本、阶段、条目 ID 与哈希，不带结构化股票代码、训练/测试分组或抽样层；原文可能仍透露公司身份。两份独立的离线 HTML 审核页面已从经哈希核验的空白包生成，支持逐条填写、逐字证据定位、JSONL 草稿导入与下载；本地文件位于 Git 忽略目录。空白标签副本及页面不得当作已完成审核。当前将两个空白模板输入比较器，正确得到 `no_dual_review`、0/128 双人完成；程序拒绝从这个结果生成金标准。真实审核、分歧裁定和负责人的质量抽查仍未发生；具体操作与判据见 `semantic/ANNOTATION_GUIDE.md`。
 
 未来接入模型时，将每条原始响应以 JSONL 保存：`item_id`、`source_text_sha256`、`model_id`、`prompt_version`、`raw_response`（原始 JSON 字符串）。模型仅返回 `{"events":[...]}`；提示格式见 `semantic/PROMPT_V1.md`。以下命令保留格式/证据失败并生成标准输出：
 

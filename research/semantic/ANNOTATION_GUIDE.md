@@ -18,6 +18,14 @@
 
 运行 `review_workflow prepare` 会生成 `reviewer_a_tasks.jsonl`、`reviewer_b_tasks.jsonl` 和各自的**空白**标签模板。任务文件只保留条目 ID、源文本哈希、question/reply 阶段及当时可见的文本段；结构化股票代码、训练/测试分组和抽样层被隐藏，但原文本身可能透露公司身份。两份任务顺序不同。每位审核者应单独取得自己的任务文件与标签模板副本，不看另一人的答案，也不看模型输出。复制模板到各自独立的工作文件中填写，不覆盖生成的空白原件。
 
+可以从已经生成并经哈希核对的双人空白包创建两份独立的离线 HTML 页面：
+
+```powershell
+python -m research.semantic.review_interface research_outputs/semantic_annotation_pilot_2020 research_outputs/semantic_review_pilot_2020 --output-dir research_outputs/semantic_review_interface_2020
+```
+
+只把 `reviewer_a.html` 交给审核者 A、`reviewer_b.html` 交给审核者 B。分别在本机浏览器打开页面，填写不同的审核者 ID，逐条决定是否有明确事件；证据引用须从当前可见文本逐字复制。页面自动计算字符位置，下载 JSONL 草稿，不会自动保存或联网；离开页面前应下载，并用同一页面的“导入旧草稿”继续。下载的 JSONL 可直接作为后续 `review_workflow compare` 的两个输入。不要把页面、草稿或原始文本提交到 Git，也不要互换两人的页面与答案。页面会检查字段、条目顺序、来源哈希和逐字唯一证据位置；这仍不能证明审核者身份或语义判断正确。若同一句引用在来源段重复出现，增加引用上下文使其唯一。生成页面不等于已完成人工审核。
+
 完成后使用 `review_workflow compare` 对照两份工作文件。程序验证源文本哈希、证据跨度、每份文件内部的审核者身份及两人身份不同，报告双方均完成条目的事件有无一致率、Cohen κ、完整事件清单一致率，并输出逐条 `disagreements.jsonl` 与 `pending_items.jsonl`。这些统计只覆盖双方均标成 `labeled` 的条目；κ 在没有类别变异时未定义。程序无法从 ID 证明审核者确为真人或真实独立工作，这是实际审核流程的责任。
 
 比较目录还会生成空白 `adjudication_template.jsonl`。**先复制到另一文件再填写**，保留比较目录中的原件供哈希复核。`review_workflow finalize` 只有在全部条目完成双人审核、裁定文件逐条 `labeled`、裁定者 ID 与两位审核者不同、每条分歧有书面说明时才导出 `gold_labels.jsonl`。一致条目也需裁定者显式签署，程序不会自动晋升为金标准。最后仍应由研究负责人抽查事件含义和文本证据；格式门槛不能替代人的判断。

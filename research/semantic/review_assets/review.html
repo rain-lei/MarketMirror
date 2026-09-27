@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+  <title>MarketMirror · 独立语义审核</title>
+  <style>/* REVIEW_STYLE */</style>
+</head>
+<body>
+  <header>
+    <div class="brand">MarketMirror <span>独立语义审核</span></div>
+    <div class="badge" id="slot-name"></div>
+  </header>
+  <main>
+    <aside class="instructions">
+      <h1>只依据当时可见的原文</h1>
+      <p>请独立判断，不查看另一位审核者的答案或模型输出。提问中的猜测不是已确认事实；回复阶段须留意公司是否确认或否认。没有明确事件时选择“已完成、无事件”。</p>
+      <p>引用必须从指定来源逐字复制，并且在该段原文中只出现一次。页面在本地计算字符位置；不会上传文本。请定期下载草稿，离开页面前也要下载。</p>
+      <label class="field"><span>审核者 ID（两位审核者应不同）</span><input id="annotator-id" autocomplete="off" placeholder="例如 reviewer-01"></label>
+      <div class="progress" id="progress"></div>
+      <div class="file-actions">
+        <button id="download" class="primary">下载当前标签 JSONL</button>
+        <label class="import">导入本页面的旧草稿<input id="import-file" type="file" accept=".jsonl,.txt"></label>
+      </div>
+      <p class="small">下载文件仍含审核原文对应的来源标识和人工标签，请仅在本地保存并按研究流程交接。生成的空白模板不会被覆盖。</p>
+    </aside>
+    <section class="workspace">
+      <div class="topline"><span id="position"></span><span id="stage"></span></div>
+      <div id="segments" class="segments"></div>
+      <div class="decision">
+        <label class="field"><span>本条状态</span>
+          <select id="status">
+            <option value="unlabeled">未开始</option>
+            <option value="labeled">已完成（可无事件）</option>
+            <option value="needs_review">待复核（说明原因）</option>
+          </select>
+        </label>
+        <label class="field"><span>备注或待复核原因</span><textarea id="notes" rows="3"></textarea></label>
+      </div>
+      <div class="event-heading"><h2>本条事件</h2><span>方向描述文本含义，不代表未来股价</span></div>
+      <div id="event-list" class="event-list"></div>
+      <fieldset class="event-form">
+        <legend>添加一个事件</legend>
+        <div class="grid">
+          <label class="field"><span>类别</span><select id="event-type">
+            <option value="regulation">监管/政策</option><option value="liquidity">现金流/融资</option>
+            <option value="earnings">经营/业绩</option><option value="governance">治理/披露</option>
+            <option value="other">其他明确事件</option>
+          </select></label>
+          <label class="field"><span>方向</span><select id="direction">
+            <option value="unknown">未知</option><option value="positive">正面</option>
+            <option value="negative">负面</option><option value="neutral">中性</option>
+          </select></label>
+          <label class="field"><span>时间范围</span><select id="horizon">
+            <option value="unknown">未知</option><option value="short">短期</option>
+            <option value="medium">中期</option><option value="long">长期</option>
+          </select></label>
+          <label class="field"><span>强度（0–1，未校准）</span><input id="intensity" type="number" min="0" max="1" step="0.05" value="0.5"></label>
+          <label class="field"><span>不确定性（0–1，未校准）</span><input id="uncertainty" type="number" min="0" max="1" step="0.05" value="0.5"></label>
+          <label class="field"><span>受影响行业（无证据则留空）</span><input id="industries" placeholder="多个行业用逗号分隔"></label>
+        </div>
+        <div class="quote-row">
+          <label class="field"><span>证据来源</span><select id="quote-source"></select></label>
+          <label class="field grow"><span>逐字引用（建议包含足够上下文）</span><textarea id="quote" rows="3"></textarea></label>
+        </div>
+        <div class="form-actions"><button id="add-event">添加事件</button><span id="form-message" role="status"></span></div>
+      </fieldset>
+      <nav class="navigation">
+        <button id="previous">上一条</button><button id="next">下一条</button><button id="next-open">下一条未完成</button>
+      </nav>
+    </section>
+  </main>
+  <script id="review-data" type="application/json">/* REVIEW_DATA */</script>
+  <script>/* REVIEW_CORE */</script>
+  <script>/* REVIEW_APP */</script>
+</body>
+</html>
