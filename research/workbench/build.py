@@ -15,7 +15,7 @@ from ..data_pipeline.provenance import file_sha256
 from ..registry.verify_catalog import audit_run, load_catalog
 from ..semantic.audit_model_run import audit_model_run
 
-VERSION = "research-workbench-v5"
+VERSION = "research-workbench-v6"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 OUTPUTS = ROOT / "research_outputs"
@@ -92,10 +92,12 @@ def checked_financial_dictionary() -> dict[str, Any]:
     return dictionary
 
 
-def checked_model_run() -> dict[str, Any]:
+def checked_model_run(version: str = "v1") -> dict[str, Any]:
     """Expose only metadata from an optional DeepSeek semantic run."""
     pack_dir = OUTPUTS / "semantic_annotation_pilot_2020"
-    raw_dir = OUTPUTS / "semantic_model_deepseek_v1"
+    if version not in {"v1", "v2"}:
+        raise ValueError("unknown workbench model run version")
+    raw_dir = OUTPUTS / f"semantic_model_deepseek_{version}"
     pack_manifest = json.loads((pack_dir / "annotation_manifest.json").read_text(encoding="utf-8"))
     pack_items = int(pack_manifest.get("counts", {}).get("items", 0))
     if not raw_dir.exists():
@@ -104,7 +106,10 @@ def checked_model_run() -> dict[str, Any]:
                 "raw": {"rows": 0, "remaining_rows": pack_items, "request_failures": 0, "status": "not_run"},
                 "normalized": {"status": "not_provided"},
                 "scoring": {"status": "unavailable_without_adjudicated_gold", "accuracy_claim_allowed": False}}
-    normalized_dir = OUTPUTS / "semantic_model_deepseek_v1_normalized"
+    normalized_dir = OUTPUTS / f"semantic_model_deepseek_{version}_normalized"
+    revalidated_dir = OUTPUTS / "semantic_model_deepseek_v1_revalidated"
+    if version == "v1" and revalidated_dir.exists():
+        normalized_dir = revalidated_dir
     result = audit_model_run(pack_dir, raw_dir, normalized_dir if normalized_dir.exists() else None)
     result["status"] = "audited"
     validate_public_payload(result)
@@ -134,7 +139,9 @@ def collect_data() -> dict[str, Any]:
         raise ValueError("stored audit or reexecution run statuses do not match the pinned catalog")
     reviewed = checked_semantic_review()
     financial_dictionary = checked_financial_dictionary()
-    model_run = checked_model_run()
+    model_runs = [checked_model_run(version) for version in ("v1", "v2")]
+    completed_model_runs = [run for run in model_runs if run["status"] != "not_run"]
+    model_run = completed_model_runs[-1] if completed_model_runs else model_runs[0]
     manifests = {run["run_id"]: (CONFIG.parent / run["manifest"]).resolve() for run in pinned}
 
     def artifact(run_id: str, name: str) -> dict[str, Any]:
@@ -204,6 +211,7 @@ def collect_data() -> dict[str, Any]:
                      "gold_ready": reviewed["gold_ready"], "status": reviewed["status"]},
         "financial_dictionary": financial_dictionary,
         "model_run": model_run,
+        "model_runs": completed_model_runs,
         "evidence": [{"label": "人民银行：2018 资管新规答记者问", "url": event_2018["config"]["events"][0]["evidence_source"]},
                      {"label": "新华社：武汉通告", "url": "https://www.xinhuanet.com/politics/2020-01/23/c_1125495557.htm"},
                      {"label": "上交所：春节休市调整", "url": "http://www.sse.com.cn/disclosure/announcement/general/c/c_20200127_4991582.shtml"},
@@ -296,6 +304,13 @@ def render_report(data: dict[str, Any]) -> str:
             lines.append(f"模型 `{model_run.get('model_id')}`；原始响应 {raw['rows']}/{model_run['scope']['requested_rows']} 条，失败 {raw['request_failures']} 条；标准化状态 `{normalized['status']}`；`accuracy_claim_allowed=false`。")
             if "rows" in normalized:
                 lines.append(f"标准化 {normalized['rows']} 条，解析失败 {normalized['parse_errors']} 条，缺失预测 {normalized['missing_predictions']} 条。结构和证据跨度校验不证明语义准确，仍需人工金标准。")
+        history = data.get("model_runs", [])
+        if len(history) > 1:
+            lines += ["", "| 提示版本 | 原始响应 | 标准化条数 | 解析失败 |", "|---|---:|---:|---:|"]
+            for run in history:
+                normalized = run["normalized"]
+                lines.append(f"| {run['prompt_version']} | {run['raw']['rows']} | {normalized.get('rows', '—')} | {normalized.get('parse_errors', '—')} |")
+            lines += ["", "同样本协议开发对照；v1 按补充边界检查后的规则重新校验。此样本已用于开发，不能称为未接触的最终留出测试。"]
     lines += ["", "## 研究限制", ""]
     lines.extend(f"- {item}" for item in data["limitations"])
     return "\n".join(lines) + "\n"
@@ -320,9 +335,15 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
             "semantic_comparison": OUTPUTS / "semantic_review_comparison_pilot_2020/comparison_results.json",
             "financial_quality_report": OUTPUTS / "financial_2020/financial_quality_report.json",
             "financial_dictionary": OUTPUTS / "financial_2020/field_dictionary.json"}.items()}
-        model_manifest = OUTPUTS / "semantic_model_deepseek_v1/model_run_manifest.json"
-        if model_manifest.exists():
-            source_reports["semantic_model_manifest"] = file_sha256(model_manifest)
+        for version in ("v1", "v2"):
+            model_manifest = OUTPUTS / f"semantic_model_deepseek_{version}/model_run_manifest.json"
+            normalized_dir = OUTPUTS / ("semantic_model_deepseek_v1_revalidated" if version == "v1"
+                                        else "semantic_model_deepseek_v2_normalized")
+            normalization_manifest = normalized_dir / "normalization_manifest.json"
+            if model_manifest.exists():
+                source_reports[f"semantic_model_{version}_manifest"] = file_sha256(model_manifest)
+            if normalization_manifest.exists():
+                source_reports[f"semantic_model_{version}_normalization_manifest"] = file_sha256(normalization_manifest)
         manifest = {"pipeline_version": VERSION, "generated_at": datetime.now(timezone.utc).isoformat(),
                     "integrity_catalog_sha256": file_sha256(CONFIG),
                     "source_reports": source_reports,

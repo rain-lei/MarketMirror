@@ -9,10 +9,12 @@ from pathlib import Path
 from typing import Any
 
 from .signal_validation import load_pack, read_jsonl
+from .prompt_contract import prompt_path
+from .parse_model_outputs import normalize_rows
 from ..data_pipeline.provenance import file_sha256
 
 
-VERSION = "semantic-model-audit-v1"
+VERSION = "semantic-model-audit-v2"
 
 
 def _artifact_hash(directory: Path, manifest: dict[str, Any], name: str) -> str:
@@ -46,12 +48,32 @@ def audit_model_run(pack_dir: Path, raw_dir: Path, normalized_dir: Path | None =
         raise ValueError("raw model run input hashes differ from annotation pack")
     raw_rows = read_jsonl(raw_path)
     _check_ids(raw_rows, items, "raw model output")
-    requested = int(raw_manifest.get("requested_rows", 0))
-    completed = int(raw_manifest.get("model_rows", -1))
-    remaining = int(raw_manifest.get("remaining_rows", -1))
-    failures = int(raw_manifest.get("request_failures", -1))
+    version = raw_manifest.get("prompt_version")
+    if declared_inputs.get("prompt") != file_sha256(prompt_path(version)):
+        raise ValueError("raw model run prompt hash differs from versioned prompt")
+    required_raw = {"item_id", "source_text_sha256", "model_id", "prompt_version", "raw_response"}
+    for row in raw_rows:
+        if (set(row) != required_raw or row["source_text_sha256"] != items[row["item_id"]]["source_text_sha256"]
+                or row["model_id"] != raw_manifest.get("model_id") or row["prompt_version"] != version
+                or not isinstance(row["raw_response"], str)):
+            raise ValueError("raw model row provenance differs from annotation pack or run manifest")
+    requested, completed, remaining, failures = (
+        raw_manifest.get(field) for field in ("requested_rows", "model_rows", "remaining_rows", "request_failures"))
+    if (any(type(value) is not int for value in (requested, completed, remaining, failures))
+            or not 0 <= completed <= requested <= len(items) or remaining != requested - completed
+            or not 0 <= failures <= completed):
+        raise ValueError("raw model manifest has inconsistent scope or counts")
     if completed != len(raw_rows):
         raise ValueError("raw model manifest row count differs from JSONL")
+    failed_requests = 0
+    for row in raw_rows:
+        try:
+            response = json.loads(row["raw_response"])
+        except ValueError:
+            continue
+        failed_requests += isinstance(response, dict) and "runner_error" in response
+    if failures != failed_requests:
+        raise ValueError("raw model request failure count differs from responses")
     raw_status = "complete" if completed == requested and remaining == 0 and failures == 0 else "incomplete_or_failed"
     result: dict[str, Any] = {
         "pipeline_version": VERSION,
@@ -86,6 +108,11 @@ def audit_model_run(pack_dir: Path, raw_dir: Path, normalized_dir: Path | None =
         parse_errors = int(normalized_manifest.get("parse_errors", -1))
         if normalized_count != len(prediction_rows):
             raise ValueError("normalization manifest row count differs from JSONL")
+        expected_predictions = normalize_rows(items, raw_rows)
+        if prediction_rows != expected_predictions:
+            raise ValueError("normalized predictions differ from deterministic normalization of raw responses")
+        if parse_errors != sum(row["parse_error"] is not None for row in prediction_rows):
+            raise ValueError("normalization parse error count differs from predictions")
         result["normalized"] = {"rows": normalized_count, "parse_errors": parse_errors,
                                  "missing_predictions": len(items) - normalized_count,
                                  "sha256": prediction_hash,

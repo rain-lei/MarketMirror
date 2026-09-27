@@ -11,23 +11,23 @@ MarketMirror 正在重建为**可复现、可核验的金融市场冲击研究�
 | 数据层 | 三份 Excel 共 429,597 条问答；全量来源、质量报告和时点导出 | 财务单位、季度含义、标签定义与公开时刻核实 |
 | 市场基线 | 2018/2020 事件窗口；2020 成交活动、日期对照及 177 条测试预测 | 更广样本、独立行情源和外部预注册验证 |
 | Agent | 三类规则、合成账本、三段真实收益路径回放 | 投资者行为参数、订单流与价格冲击校准 |
-| 语义抽取 | DeepSeek 128 条真实响应；95 条结构/证据通过、33 条失败；双人审核流程与关键词对照 | 证据定位改进、真实双人标注、金标准、LLM 留出评估 |
+| 语义抽取 | DeepSeek v2 的 128 条真实响应中 127 条结构/证据通过、1 条引用歧义；v1 重验为 94 条通过；双人审核流程与关键词对照 | 真实双人标注、金标准和新的留出样本评估 |
 | 可复现性 | 15 项本地运行完整性检查与独立重跑通过 | 原始文件跨机器获取和公开口径复核 |
 
-详细数值、限制和阶段状态见 [研究进度](research/IMPLEMENTATION_STATUS.md)；新增历史节点见 [2018 实验说明](research/OBSERVED_PILOT_2018.md)；研究设计见 [重建方案](RESEARCH_REBUILD_PLAN.md)。
+详细数值、限制和阶段状态见 [研究进度](research/IMPLEMENTATION_STATUS.md)；语义协议开发结果见 [v2 实验说明](research/SEMANTIC_PROTOCOL_V2.md)；新增历史节点见 [2018 实验说明](research/OBSERVED_PILOT_2018.md)；研究设计见 [重建方案](RESEARCH_REBUILD_PLAN.md)。
 
 ## 本地研究工作台
 
 工作台从通过本机核验的产物生成，页面仅包含汇总指标、图表和公开证据链接，不嵌入问答原文、个人路径或完整数据库。
 
 ```powershell
-python -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_llm
+python -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_llm_v2
 ```
 
 直接打开生成的 `index.html` 可离线查看摘要。要从页面选择固定实验重新执行，在仓库根目录启动仅监听本机的服务，再打开 `http://127.0.0.1:8766/`：
 
 ```powershell
-python -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_llm
+python -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_llm_v2
 ```
 
 页面一次只能重跑固定清单中的一项；页面会显示并校验该运行的固定数据版本和执行版本，每次保存所选配置、版本、运行状态、产物比较和哈希。页面还会展示带来源哈希的财务字段口径字典，把可观察结构和未核实经济含义分开；如果存在 DeepSeek 运行目录，还会显示模型运行完整性、解析状态和评分门槛。页面顶部的“下载摘要报告”链接与图表使用同一份白名单汇总生成 `report.md`，可随运行目录归档。也可运行 `python -m research.workbench.run observed_event`。页面上的事件、股票筛选只改变摘要展示，不会修改实验参数；自定义数据或模型版本仍未接入。生成目录须为新空目录，已有页面可直接使用。

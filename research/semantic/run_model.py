@@ -19,14 +19,14 @@ from pathlib import Path
 from typing import Any
 
 from .signal_validation import load_pack
+from .prompt_contract import DEFAULT_PROMPT_VERSION, PROMPTS, prompt_path
 from ..data_pipeline.provenance import file_sha256
 
 
-VERSION = "semantic-model-runner-v3"
+VERSION = "semantic-model-runner-v4"
 DEFAULT_BASE_URL = "http://aigw.dlut.edu.cn/v1"
 DEFAULT_MODEL = "DeepSeek-V4-Flash-0731-W8A8"
-PROMPT_PATH = Path(__file__).with_name("PROMPT_V1.md")
-PROMPT_VERSION = "semantic-prompt-v1"
+PROMPT_VERSION = DEFAULT_PROMPT_VERSION
 RAW_FIELDS = {"item_id", "source_text_sha256", "model_id", "prompt_version", "raw_response"}
 
 
@@ -112,7 +112,7 @@ def _raw_row(item: dict[str, Any], model: str, prompt_version: str, raw_response
 
 
 def _read_raw_rows(path: Path, items: dict[str, dict[str, Any]], model: str,
-                   contents: str | None = None) -> list[dict[str, Any]]:
+                   contents: str | None = None, prompt_version: str = PROMPT_VERSION) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     seen: set[str] = set()
     if not path.exists():
@@ -128,7 +128,7 @@ def _read_raw_rows(path: Path, items: dict[str, dict[str, Any]], model: str,
             raise ValueError("existing model output has unknown or duplicate item")
         if row["source_text_sha256"] != items[item_id]["source_text_sha256"]:
             raise ValueError("existing model output source hash differs from annotation pack")
-        if row["model_id"] != model or row["prompt_version"] != PROMPT_VERSION:
+        if row["model_id"] != model or row["prompt_version"] != prompt_version:
             raise ValueError("existing model output uses a different model or prompt")
         if not isinstance(row["raw_response"], str):
             raise ValueError("existing model output raw_response must be text")
@@ -147,7 +147,8 @@ def _is_runner_failure(row: dict[str, Any]) -> bool:
 
 def run_model(pack_dir: Path, output_dir: Path, api_key: str, base_url: str = DEFAULT_BASE_URL,
               model: str = DEFAULT_MODEL, limit: int | None = None, timeout: float = 90.0,
-              retries: int = 2, temperature: float = 0.0, resume: bool = False) -> dict[str, Any]:
+              retries: int = 2, temperature: float = 0.0, resume: bool = False,
+              prompt_version: str = PROMPT_VERSION) -> dict[str, Any]:
     pack_dir, output_dir = pack_dir.resolve(), output_dir.resolve()
     items, pack_manifest = load_pack(pack_dir)
     if not api_key.strip():
@@ -158,7 +159,8 @@ def run_model(pack_dir: Path, output_dir: Path, api_key: str, base_url: str = DE
         raise ValueError("limit must be positive")
     if output_dir.exists() and any(output_dir.iterdir()) and not resume:
         raise ValueError("use a new empty model output directory")
-    prompt = PROMPT_PATH.read_text(encoding="utf-8")
+    selected_prompt = prompt_path(prompt_version)
+    prompt = selected_prompt.read_text(encoding="utf-8")
     selected = list(items.values())[:limit] if limit is not None else list(items.values())
     output_dir.mkdir(parents=True, exist_ok=True)
     raw_path = output_dir / "model_raw_outputs.jsonl"
@@ -170,7 +172,7 @@ def run_model(pack_dir: Path, output_dir: Path, api_key: str, base_url: str = DE
             raise ValueError("resume output must contain only model_raw_outputs.jsonl and model_run_manifest.json")
     input_sha256 = {"annotation_manifest": file_sha256(pack_dir / "annotation_manifest.json"),
                     "annotation_items": file_sha256(pack_dir / "annotation_items.jsonl"),
-                    "prompt": file_sha256(PROMPT_PATH)}
+                    "prompt": file_sha256(selected_prompt)}
     rows = []
     selected_ids = {item["item_id"] for item in selected}
     if resume and manifest_path.exists():
@@ -179,7 +181,7 @@ def run_model(pack_dir: Path, output_dir: Path, api_key: str, base_url: str = DE
                 or previous.get("input_sha256") != input_sha256
                 or previous.get("provider_base_url") != normalize_base_url(base_url)
                 or previous.get("model_id") != model
-                or previous.get("prompt_version") != PROMPT_VERSION
+                or previous.get("prompt_version") != prompt_version
                 or previous.get("temperature") != temperature):
             raise ValueError("resume output provenance does not match current request")
         raw_bytes = raw_path.read_bytes()
@@ -193,7 +195,7 @@ def run_model(pack_dir: Path, output_dir: Path, api_key: str, base_url: str = DE
             raise ValueError("resume checkpoint raw output hash mismatch")
         # Bytes appended after the last committed manifest are uncommitted. They
         # are discarded and that item is requested again, including a torn line.
-        rows = _read_raw_rows(raw_path, items, model, committed.decode("utf-8"))
+        rows = _read_raw_rows(raw_path, items, model, committed.decode("utf-8"), prompt_version)
         if len(rows) != previous.get("model_rows"):
             raise ValueError("resume checkpoint row count mismatch")
         if any(row["item_id"] not in selected_ids for row in rows):
@@ -210,10 +212,11 @@ def run_model(pack_dir: Path, output_dir: Path, api_key: str, base_url: str = DE
         manifest = {
             "pipeline_version": VERSION, "generated_at": datetime.now(timezone.utc).isoformat(),
             "provider_base_url": normalize_base_url(base_url), "model_id": model,
-            "prompt_version": PROMPT_VERSION, "temperature": temperature, "resumed": resume,
+            "prompt_version": prompt_version, "temperature": temperature, "resumed": resume,
             "pack_experiment_id": pack_manifest["experiment_id"],
             "input_sha256": input_sha256,
-            "code_sha256": {"run_model.py": file_sha256(Path(__file__))},
+            "code_sha256": {name: file_sha256(Path(__file__).with_name(name)) for name in
+                            ("run_model.py", "prompt_contract.py")},
             "requested_rows": len(selected), "model_rows": len(rows),
             "remaining_rows": len(selected) - len(rows),
             "request_failures": sum(_is_runner_failure(row) for row in rows),
@@ -239,7 +242,7 @@ def run_model(pack_dir: Path, output_dir: Path, api_key: str, base_url: str = DE
                     timeout, retries, temperature)
             except RuntimeError as error:
                 response = _json_text({"runner_error": str(error)})
-            row = _raw_row(item, model, PROMPT_VERSION, response)
+            row = _raw_row(item, model, prompt_version, response)
             rows.append(row)
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
             handle.flush()
@@ -261,6 +264,7 @@ def main() -> None:
     parser.add_argument("--retries", type=int, default=2)
     parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--resume", action="store_true", help="resume an existing output directory")
+    parser.add_argument("--prompt-version", choices=sorted(PROMPTS), default=PROMPT_VERSION)
     args = parser.parse_args()
     key = os.getenv("MARKETMIRROR_LLM_API_KEY", "")
     try:
@@ -273,7 +277,7 @@ def main() -> None:
         if args.pack_dir is None or args.output_dir is None:
             parser.error("pack_dir and --output-dir are required unless --check is used")
         result = run_model(args.pack_dir, args.output_dir, key, args.base_url, args.model,
-                           args.limit, args.timeout, args.retries, args.temperature, args.resume)
+                           args.limit, args.timeout, args.retries, args.temperature, args.resume, args.prompt_version)
         print(json.dumps({key: result[key] for key in ("model_id", "requested_rows", "request_failures")}, ensure_ascii=False))
     except (ValueError, RuntimeError) as error:
         parser.exit(2, f"error: {error}\n")

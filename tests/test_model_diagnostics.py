@@ -1,10 +1,23 @@
 import json
 import unittest
 
-from research.semantic.diagnose_model import diagnose_rows, evidence_locations
+from research.semantic.diagnose_model import diagnose_rows, evidence_locations, error_category
 
 
 class ModelDiagnosticsTest(unittest.TestCase):
+    def test_quote_protocol_diagnoses_unique_ambiguous_and_absent_evidence(self):
+        items = {"1": {"segments": [{"source": "reply", "text": "收入增长aaa"}]}}
+        rows = [{"item_id": "1", "prompt_version": "semantic-prompt-v2", "raw_response": json.dumps({
+            "events": [{"evidence_quotes": [{"source": "reply", "quote": "收入增长"},
+                                             {"source": "reply", "quote": "aa"},
+                                             {"source": "reply", "quote": "编造"}]}]})}]
+        self.assertEqual(evidence_locations(items, rows), {
+            "unique_exact_quote": 1, "ambiguous_quote": 1, "quote_not_present": 1})
+        self.assertEqual(error_category("ValueError: evidence quote is ambiguous in visible source text"),
+                         "evidence_quote_ambiguous")
+        self.assertEqual(error_category("ValueError: evidence offsets extend past visible source text"),
+                         "evidence_offsets_out_of_bounds")
+
     def test_evidence_diagnosis_distinguishes_offset_error_hallucination_and_ambiguity(self):
         items = {"1": {"segments": [{"source": "reply", "text": "收入增长aaa"}]}}
         spans = [{"source": "reply", "start": 0, "end": 4, "quote": "收入增长"},

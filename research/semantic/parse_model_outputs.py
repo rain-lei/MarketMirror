@@ -9,10 +9,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .signal_validation import load_pack, read_jsonl, strict_json_loads, validate_event, validate_predictions
+from .signal_validation import load_pack, read_jsonl, strict_json_loads, validate_predictions
+from .prompt_contract import PROMPTS, QUOTE_PROMPT_VERSION
+from .quote_grounding import ground_event, validate_grounded_event
 from ..data_pipeline.provenance import file_sha256
 
-VERSION = "semantic-model-normalization-v1"
+VERSION = "semantic-model-normalization-v2"
 
 
 def normalize_rows(items: dict[str, dict[str, Any]], raw_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -28,6 +30,8 @@ def normalize_rows(items: dict[str, dict[str, Any]], raw_rows: list[dict[str, An
         for field in ("model_id", "prompt_version"):
             if not isinstance(row[field], str) or not row[field].strip():
                 raise ValueError(f"raw model output requires {field}")
+        if row["prompt_version"] not in PROMPTS:
+            raise ValueError("unsupported raw model prompt version")
         if not isinstance(row["raw_response"], str):
             raise ValueError("raw_response must be an exact string")
         base = {k: row[k] for k in ("item_id", "source_text_sha256", "model_id", "prompt_version")}
@@ -35,9 +39,11 @@ def normalize_rows(items: dict[str, dict[str, Any]], raw_rows: list[dict[str, An
             payload = strict_json_loads(row["raw_response"])
             if not isinstance(payload, dict) or set(payload) != {"events"} or not isinstance(payload["events"], list):
                 raise ValueError("response must be a JSON object with only an events array")
-            for event in payload["events"]:
-                validate_event(event, item)
-            records.append({**base, "events": payload["events"], "parse_error": None})
+            events = ([ground_event(event, item) for event in payload["events"]]
+                      if row["prompt_version"] == QUOTE_PROMPT_VERSION else payload["events"])
+            for event in events:
+                validate_grounded_event(event, item)
+            records.append({**base, "events": events, "parse_error": None})
         except (ValueError, TypeError, KeyError, json.JSONDecodeError) as error:
             records.append({**base, "events": [], "parse_error": f"{type(error).__name__}: {error}"})
     validate_predictions(items, records)
@@ -84,7 +90,10 @@ def normalize_file(pack_dir: Path, raw_path: Path, output_dir: Path) -> dict[str
                     "model_ids": sorted({r["model_id"] for r in normalized}),
                     "prompt_versions": sorted({r["prompt_version"] for r in normalized}),
                     "code_sha256": {name: file_sha256(Path(__file__).with_name(name)) for name in
-                                    ("parse_model_outputs.py", "signal_validation.py")},
+                                    ("parse_model_outputs.py", "signal_validation.py", "quote_grounding.py", "prompt_contract.py")},
+                    "evidence_protocols": {version: ("unique-exact-quote-v1" if version == QUOTE_PROMPT_VERSION
+                                                      else "strict-explicit-offset-v1") for version in
+                                           sorted({r["prompt_version"] for r in normalized})},
                     "artifacts": {"model_predictions.jsonl": {"sha256": file_sha256(staging / "model_predictions.jsonl")}}}
         (staging / "normalization_manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
         for path in staging.iterdir():

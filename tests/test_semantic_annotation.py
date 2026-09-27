@@ -158,7 +158,7 @@ class SemanticAnnotationTest(unittest.TestCase):
     def test_raw_model_output_parsing_records_hallucinated_evidence(self):
         source = item()
         base = {"item_id": source["item_id"], "source_text_sha256": source["source_text_sha256"],
-                "model_id": "fixture-model", "prompt_version": "v1"}
+                "model_id": "fixture-model", "prompt_version": "semantic-prompt-v1"}
         good = {**base, "raw_response": json.dumps({"events": [event()]}, ensure_ascii=False)}
         self.assertIsNone(normalize_rows({source["item_id"]: source}, [good])[0]["parse_error"])
         bad = {**base, "raw_response": "not JSON"}
@@ -207,7 +207,7 @@ class SemanticAnnotationTest(unittest.TestCase):
             raw_path = root / "raw_model.jsonl"
             raw_path.write_text(json.dumps({"item_id": first_item["item_id"],
                                             "source_text_sha256": first_item["source_text_sha256"],
-                                            "model_id": "fixture-model", "prompt_version": "v1",
+                                            "model_id": "fixture-model", "prompt_version": "semantic-prompt-v1",
                                             "raw_response": "{\"events\":[]}"}) + "\n")
             (root / "model_run_manifest.json").write_text(json.dumps({
                 "pack_experiment_id": manifest["experiment_id"],

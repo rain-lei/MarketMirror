@@ -76,6 +76,23 @@ class ModelRunnerTest(unittest.TestCase):
         self.assertEqual(request.full_url, "http://aigw.dlut.edu.cn/v1/models")
         self.assertEqual(request.get_header("Authorization"), "Bearer secret")
 
+    def test_v2_prompt_is_bound_and_cannot_resume_v1_run(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pack, items = self._pack(root)
+            with patch("research.semantic.run_model.load_pack", return_value=(items, {"experiment_id": "exp"})), \
+                 patch("research.semantic.run_model.request_completion", return_value='{"events":[]}') as request:
+                run_model(pack, root / "v1", "secret", limit=1)
+                request.reset_mock()
+                with self.assertRaisesRegex(ValueError, "provenance"):
+                    run_model(pack, root / "v1", "secret", resume=True, prompt_version="semantic-prompt-v2")
+                request.assert_not_called()
+                result = run_model(pack, root / "v2", "secret", limit=1, prompt_version="semantic-prompt-v2")
+                self.assertEqual(result["prompt_version"], "semantic-prompt-v2")
+                self.assertIn("evidence_quotes", request.call_args.args[3][0]["content"])
+                row = json.loads((root / "v2/model_raw_outputs.jsonl").read_text(encoding="utf-8"))
+                self.assertEqual(row["prompt_version"], "semantic-prompt-v2")
+
     def test_runner_archives_source_bound_raw_response_without_api_key(self):
         item = {"item_id": "item-1", "source_text_sha256": "a" * 64,
                 "segments": [{"source": "question", "text": "测试问题"}]}

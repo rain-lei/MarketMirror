@@ -1,5 +1,7 @@
 # DeepSeek 真实语义抽取初测
 
+后续复核说明：本页保留初次运行及旧标准化器的历史计数。补充原文末尾边界检查后，v1 原始响应在新目录重验为 **94 条通过、34 条失败、0 条有效事件**。旧版唯一通过的事件包含超出原文末尾的索引，曾被 Python 切片截断而误判为匹配。原始响应没有改动；现行结果及 v2 协议对照见 [协议改进说明](SEMANTIC_PROTOCOL_V2.md)。
+
 运行日期：2026-09-27。网关为用户指定的 `http://aigw.dlut.edu.cn/v1`，请求模型为 `DeepSeek-V4-Flash-0731-W8A8`，温度为 0，提示版本为 `semantic-prompt-v1`。模型名称来自网关调用配置，没有独立核验远端权重版本；固定温度不保证远端重跑得到相同内容。
 
 ## 样本与运行
@@ -43,7 +45,7 @@
 以下目录均被 Git 忽略，原文及原始模型响应只保存在本地：
 
 - `research_outputs/semantic_model_deepseek_v1/`：原始响应和逐条检查点清单。
-- `research_outputs/semantic_model_deepseek_v1_normalized/`：128 条标准化结果及解析失败、输入/代码哈希。
+- `research_outputs/semantic_model_deepseek_v1_normalized/`：旧标准化器的历史结果；现行审计应使用 `semantic_model_deepseek_v1_revalidated/`。
 - `research_outputs/semantic_model_deepseek_v1_diagnostics/`：脱敏 JSON/Markdown 诊断与清单。
 - `research_outputs/workbench_2018_2020_llm/`：含实际请求及解析计数的研究工作台。
 
@@ -52,10 +54,10 @@
 ```powershell
 python -m research.semantic.audit_model_run research_outputs/semantic_annotation_pilot_2020 `
   research_outputs/semantic_model_deepseek_v1 `
-  --normalized-dir research_outputs/semantic_model_deepseek_v1_normalized
+  --normalized-dir research_outputs/semantic_model_deepseek_v1_revalidated
 
 python -m research.semantic.diagnose_model research_outputs/semantic_annotation_pilot_2020 `
-  research_outputs/semantic_model_deepseek_v1 research_outputs/semantic_model_deepseek_v1_normalized `
+  research_outputs/semantic_model_deepseek_v1 research_outputs/semantic_model_deepseek_v1_revalidated `
   --output-dir <新的诊断目录>
 ```
 

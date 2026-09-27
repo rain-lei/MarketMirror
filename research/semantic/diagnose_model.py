@@ -9,10 +9,11 @@ from pathlib import Path
 from typing import Any
 
 from .audit_model_run import audit_model_run
+from .prompt_contract import QUOTE_PROMPT_VERSION
 from .signal_validation import load_pack, read_jsonl, strict_json_loads, validate_predictions
 from ..data_pipeline.provenance import file_sha256
 
-VERSION = "semantic-model-diagnostics-v1"
+VERSION = "semantic-model-diagnostics-v2"
 
 
 def evidence_locations(items: dict[str, dict[str, Any]], raw_rows: list[dict[str, Any]]) -> dict[str, int]:
@@ -26,8 +27,9 @@ def evidence_locations(items: dict[str, dict[str, Any]], raw_rows: list[dict[str
         if not isinstance(payload, dict) or not isinstance(payload.get("events"), list):
             continue
         sources = {segment["source"]: segment["text"] for segment in items[row["item_id"]]["segments"]}
+        quote_protocol = row.get("prompt_version") == QUOTE_PROMPT_VERSION
         for event in payload["events"]:
-            spans = event.get("evidence_spans") if isinstance(event, dict) else None
+            spans = event.get("evidence_quotes" if quote_protocol else "evidence_spans") if isinstance(event, dict) else None
             if not isinstance(spans, list):
                 continue
             for span in spans:
@@ -49,9 +51,9 @@ def evidence_locations(items: dict[str, dict[str, Any]], raw_rows: list[dict[str
                 if location < 0:
                     counts["quote_not_present"] += 1
                 elif text.find(quote, location + 1) >= 0:
-                    counts["quote_ambiguous_wrong_offsets"] += 1
+                    counts["ambiguous_quote" if quote_protocol else "quote_ambiguous_wrong_offsets"] += 1
                 else:
-                    counts["unique_exact_quote_wrong_offsets"] += 1
+                    counts["unique_exact_quote" if quote_protocol else "unique_exact_quote_wrong_offsets"] += 1
     return dict(sorted(counts.items()))
 
 
@@ -63,8 +65,16 @@ def error_category(error: str | None) -> str | None:
         return "json_syntax"
     if "evidence quote must exactly match" in error:
         return "evidence_text_or_offsets"
+    if "quote is absent" in error:
+        return "evidence_quote_absent"
+    if "quote is ambiguous" in error:
+        return "evidence_quote_ambiguous"
+    if "quote source is not visible" in error:
+        return "evidence_source_not_visible"
     if "evidence source or offsets" in error:
         return "evidence_source_or_offsets"
+    if "offsets extend past visible" in error:
+        return "evidence_offsets_out_of_bounds"
     if "source-grounded evidence" in error or "evidence span fields" in error:
         return "evidence_schema"
     return "response_schema_or_value"
@@ -147,7 +157,7 @@ def diagnose_run(pack_dir: Path, raw_dir: Path, normalized_dir: Path, output_dir
     markdown_path.write_text("\n".join(lines), encoding="utf-8")
     manifest = {"pipeline_version": VERSION, "input_sha256": hashes,
                 "code_sha256": {name: file_sha256(Path(__file__).with_name(name)) for name in
-                                ("diagnose_model.py", "signal_validation.py", "audit_model_run.py")},
+                                ("diagnose_model.py", "signal_validation.py", "audit_model_run.py", "prompt_contract.py")},
                 "artifacts": {path.name: {"sha256": file_sha256(path)} for path in (report_path, markdown_path)}}
     (output_dir / "diagnostics_manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

@@ -419,6 +419,24 @@ $env:MARKETMIRROR_LLM_MODEL = "DeepSeek-V4-Flash-0731-W8A8"
 
 执行器在首次请求前及每次返回后写入检查点。恢复时核对已提交字节的哈希；尚未提交的尾部字节（包括不完整 JSONL 行）会舍弃并重新请求该条目。已提交内容被改变时拒绝恢复。运行清单不保存密钥；远端模型即使固定温度也不保证再次请求逐字节一致。
 
+v2 使用 `evidence_quotes`，仅由本地程序按逐字、唯一匹配计算最终跨度；不会改写、拼接或模糊匹配引用。必须显式选择提示版本及新运行目录，不能用 v2 恢复 v1：
+
+```powershell
+& $py -m research.semantic.run_model research_outputs/semantic_annotation_pilot_2020 `
+  --prompt-version semantic-prompt-v2 --output-dir research_outputs/semantic_model_deepseek_v2
+```
+
+标准化器根据原始记录的提示版本选择协议，最终仍输出 `evidence_spans`，供后续统一特征接口使用。v1 越界索引现在会被拒绝，不靠 Python 切片截断获得通过；v1 原始响应保留，并在 `semantic_model_deepseek_v1_revalidated` 中另行重验。
+
+两版运行必须分别保存原始响应与标准化目录；审计过来源和逐条重算后，可生成不含原文的开发对照：
+
+```powershell
+& $py -m research.semantic.compare_model_runs research_outputs/semantic_annotation_pilot_2020 `
+  research_outputs/semantic_model_deepseek_v1 research_outputs/semantic_model_deepseek_v1_revalidated `
+  research_outputs/semantic_model_deepseek_v2 research_outputs/semantic_model_deepseek_v2_normalized `
+  --output-dir <新的本地对照目录>
+```
+
 ```powershell
 & $py -m research.semantic.parse_model_outputs research_outputs/semantic_annotation_pilot_2020 `
   --raw <本地模型原始输出.jsonl> --output-dir <新的本地标准化目录>
@@ -434,8 +452,8 @@ $env:MARKETMIRROR_LLM_MODEL = "DeepSeek-V4-Flash-0731-W8A8"
 ```powershell
 & $py -m research.semantic.audit_model_run `
   research_outputs/semantic_annotation_pilot_2020 `
-  research_outputs/semantic_model_deepseek_v1 `
-  --normalized-dir <标准化输出目录> `
+  research_outputs/semantic_model_deepseek_v2 `
+  --normalized-dir research_outputs/semantic_model_deepseek_v2_normalized `
   --output <新的模型运行审计.json>
 ```
 
@@ -446,12 +464,12 @@ $env:MARKETMIRROR_LLM_MODEL = "DeepSeek-V4-Flash-0731-W8A8"
 ```powershell
 & $py -m research.semantic.diagnose_model `
   research_outputs/semantic_annotation_pilot_2020 `
-  research_outputs/semantic_model_deepseek_v1 `
-  research_outputs/semantic_model_deepseek_v1_normalized `
-  --output-dir research_outputs/semantic_model_deepseek_v1_diagnostics
+  research_outputs/semantic_model_deepseek_v2 `
+  research_outputs/semantic_model_deepseek_v2_normalized `
+  --output-dir <新的本地诊断目录>
 ```
 
-证据引用的文本、起止字符索引与来源段必须逐字匹配，源文本哈希不一致会被拒绝。评估只使用 `status=labeled` 的人工审核条目，解析失败按漏检计入，报告标注覆盖和只适用于单事件类型匹配子集的方向/证据指标。已完成 DeepSeek 128 条真实抽取，95 条结构/证据通过、33 条失败，主要是字符索引错误，详见 [真实初测说明](SEMANTIC_PILOT_2020.md)；没有独立人工金标准前不得报告准确率。
+证据引用的文本、起止字符索引与来源段必须逐字匹配，源文本哈希不一致会被拒绝。评估只使用 `status=labeled` 的人工审核条目，解析失败按漏检计入，报告标注覆盖和只适用于单事件类型匹配子集的方向/证据指标。v1 原始响应重验为 94/128 条通过，v2 独立运行得到 127/128 条通过；详见 [v2 协议开发对照](SEMANTIC_PROTOCOL_V2.md)。没有独立人工金标准前不得报告准确率。
 
 ## 验证
 
@@ -481,13 +499,13 @@ $env:MARKETMIRROR_LLM_MODEL = "DeepSeek-V4-Flash-0731-W8A8"
 工作台对 15 项固定运行再次校验输入、代码和输出，再从事件、预测、成交活动与 Agent 回放结果中按白名单抽取汇总。原始问答、个人路径和完整数据库不会写进页面；页面提供事件口径、回放时期与股票筛选、15 项运行的 34 份产物名称及比较状态、核验状态和公开证据链接。
 
 ```powershell
-& $py -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_llm
+& $py -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_llm_v2
 ```
 
 在浏览器打开生成的 `index.html` 可离线查看摘要；输出目录必须是新空目录。要在页面上重跑固定实验，启动只监听 `127.0.0.1` 的本地服务：
 
 ```powershell
-& $py -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_llm
+& $py -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_llm_v2
 ```
 
 打开 `http://127.0.0.1:8766/`，选择清单中的运行并执行。页面会显示并提交该运行的固定数据版本和执行版本，服务端只接受与清单匹配的组合；财务字段口径卡片展示字段统计、来源哈希和未确认项。页面顶部可下载由同一份白名单摘要生成的 `report.md`，用于归档或复核。也可用 `& $py -m research.workbench.run observed_event` 单独重跑。执行入口只接受固定清单内的运行 ID、一次运行一项，不接受网页传入配置路径；每次在被 Git 忽略的 `research_outputs/workbench_runs/<job_id>/` 保存所选配置、版本、主配置与清单哈希、状态、对照报告和产物哈希。页面读取状态时会重新核对关键记录文件。上方事件/股票筛选不改动固定配置；自定义事件、数据或模型版本尚未实现。旧 Vue/FastAPI 静态演示已从当前分支移除，代码可在 Git 历史中找回。
