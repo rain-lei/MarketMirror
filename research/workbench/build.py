@@ -20,8 +20,10 @@ from ..semantic.audit_model_run import audit_model_run
 from ..semantic.review_readiness import audit_review_package
 from ..simulation.semantic_historical_replay import load_verified_summary
 from ..simulation.semantic_memory_sensitivity import load_memory_summary
+from ..simulation.semantic_auction_experiment import load_auction_summary
+from ..simulation.audit_auction import load_audit
 
-VERSION = "research-workbench-v19"
+VERSION = "research-workbench-v20"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 CAPACITY_CONFIG = ROOT / "research/configs/integrity_catalog_capacity_series.json"
@@ -636,6 +638,31 @@ def checked_semantic_memory() -> dict[str, Any] | None:
     return result
 
 
+def checked_semantic_auction() -> dict[str, Any] | None:
+    directory = OUTPUTS / "semantic_h2_2020_auction_all126_v1"
+    rerun = OUTPUTS / "semantic_h2_2020_auction_all126_v1_rerun"
+    if not directory.exists():
+        return None
+    summary, repeated = load_auction_summary(directory), load_auction_summary(rerun)
+    if (summary != repeated or summary["stocks"] != 126 or summary["paths"] != 756
+            or summary["ledger_rows"] != 93744 or summary["agents_per_market"] != 12
+            or summary["zero_quote_response_price_invariant"] is not True):
+        raise ValueError("finite auction coverage, control or reexecution differs")
+    manifests = [json.loads((path / "auction_manifest.json").read_text(encoding="utf-8")) for path in (directory, rerun)]
+    if manifests[0]["artifacts"] != manifests[1]["artifacts"]:
+        raise ValueError("auction rerun artifacts are not byte-identical")
+    audits = [load_audit(path, OUTPUTS / (path.name + "_audit")) for path in (directory, rerun)]
+    if any(audit["experiment_id"] != summary["experiment_id"] or audit["paths"] != 756
+           or audit["ledger_rows"] != 93744 for audit in audits):
+        raise ValueError("independent trade audit belongs to another auction or lacks coverage")
+    result = {key: summary[key] for key in ("stocks", "paths", "agents_per_market", "sessions_per_stock", "ledger_rows",
+              "venue", "initial_inventory_per_role", "memory_scenario", "zero_quote_response_price_invariant", "grouped")}
+    result["reexecution"] = "identical"
+    result["audit"] = {key: audits[0][key] for key in ("status", "traded_sessions", "halted_sessions", "dense_tick_sweeps", "checks")}
+    validate_public_payload(result)
+    return result
+
+
 def collect_data() -> dict[str, Any]:
     pinned = load_catalog(CONFIG)
     cache: dict[Path, str] = {}
@@ -672,6 +699,7 @@ def collect_data() -> dict[str, Any]:
     agent_signal_gate = checked_agent_signal_gate(assistant_review, holdout_model)
     semantic_ablation = checked_semantic_ablation()
     semantic_memory = checked_semantic_memory()
+    semantic_auction = checked_semantic_auction()
     if ({row["event_id"] for row in counterfactual_series}
             != {row["event_id"] for row in lagged_impact_series}):
         raise ValueError("fixed and lagged impact events differ; shared filter is unsafe")
@@ -757,6 +785,7 @@ def collect_data() -> dict[str, Any]:
         "assistant_review": assistant_review,
         "semantic_ablation": semantic_ablation,
         "semantic_memory": semantic_memory,
+        "semantic_auction": semantic_auction,
         "semantic": {"items": 128, "reviewed_items": assistant_review["reviewed_items"] if assistant_review else 0,
                      "protocol": "assistant_review_v1", "gold_ready": False,
                      "status": assistant_review["status"] if assistant_review else "awaiting_assistant_review"},
@@ -943,6 +972,18 @@ def render_report(data: dict[str, Any]) -> str:
             lines.append(f"| {row['memory_mode']} | {row['memory_sessions'] or '长期'} | {row['lag_days']} 日 | {row['role']} | "
                          f"{row['mean_difference_multiple']:+.6%} | {row['positive']}/{row['negative']}/{row['unchanged']} | {row['changed_signal_days']} |")
         lines += ["", "全部固定情景均报告，未按结果选择最佳记忆方式。该敏感性分析不估计真实投资者记忆，不证明预测或监管预警能力。", ""]
+    auction = data.get("semantic_auction")
+    if auction:
+        lines += ["## 有限资金与持仓的集合竞价", "",
+                  f"{auction['stocks']} 家公司，每个市场 {auction['agents_per_market']} 个主体；{auction['paths']} 条市场路径、{auction['ledger_rows']:,} 条完整日账本；四份产物独立重跑逐字节一致。",
+                  f"每一天从买卖成交重建现金和库存；{auction['audit']['dense_tick_sweeps']} 次有成交竞价由独立逐档扫描核对最大成交量与选价。",
+                  "模型价格由有限买卖双方的成交形成，没有成交则保持前价；不存在吸收剩余订单的外部账户，实际股票收益没有直接用于推进模拟价格。",
+                  "", "| 报价响应（基点） | 全公司平均末价差/初价 | 末价改变公司 | 有文本成交单位 | 无文本成交单位 |",
+                  "|---:|---:|---:|---:|---:|"]
+        for row in auction["grouped"]:
+            lines.append(f"| {row['quote_response_bps']} | {row['mean_price_difference_multiple']:+.4%} | "
+                         f"{row['changed_stock_prices']} | {row['text_matched_volume']} | {row['no_text_matched_volume']} |")
+        lines += ["", "报价响应、持仓梯度、交易批量、报价档位及价格带均为模型假设。每家公司是单独的归一化资产市场，资金不跨公司共享；尚未验证真实价格、投资者行为或监管预测。", ""]
     lines += ["## 公开证据", ""]
     lines.extend(f"- [{item['label']}]({item['url']})" for item in data["evidence"])
     financial = data.get("financial_dictionary")
@@ -1055,6 +1096,11 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
             for label, directory in (("semantic_memory", "semantic_h2_2020_memory_all126_v1"),
                                      ("semantic_memory_rerun", "semantic_h2_2020_memory_all126_v1_rerun")):
                 source_reports[label] = file_sha256(OUTPUTS / directory / "semantic_memory_manifest.json")
+        if data.get("semantic_auction"):
+            for label, directory in (("semantic_auction", "semantic_h2_2020_auction_all126_v1"),
+                                     ("semantic_auction_rerun", "semantic_h2_2020_auction_all126_v1_rerun")):
+                source_reports[label] = file_sha256(OUTPUTS / directory / "auction_manifest.json")
+                source_reports[label + "_audit"] = file_sha256(OUTPUTS / (directory + "_audit") / "auction_audit_manifest.json")
         manifest = {"pipeline_version": VERSION, "generated_at": datetime.now(timezone.utc).isoformat(),
                     "integrity_catalog_sha256": file_sha256(CONFIG),
                     "source_reports": source_reports,

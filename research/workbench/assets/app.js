@@ -29,6 +29,13 @@
   }else{
     $("semantic-memory-summary").textContent="尚无通过来源核验的文本记忆与延迟敏感性结果。";
   }
+  const auction=data.semantic_auction;
+  if(auction){
+    $("semantic-auction-summary").textContent=`${auction.stocks} 家公司，每个市场 ${auction.agents_per_market} 个主体；${auction.paths} 条路径、${Number(auction.ledger_rows).toLocaleString('zh-CN')} 条完整日账本。四份产物重跑一致；独立重建全部资金与股票流水，并逐档核对 ${auction.audit.dense_tick_sweeps} 次有成交竞价。表中价格差均为有文本减无文本，再除以初始价格。`;
+    $("semantic-auction-table").innerHTML=`<table class="data-table"><thead><tr><th>报价响应</th><th style="text-align:right">平均末价差 / 初价</th><th style="text-align:right">末价改变公司</th><th style="text-align:right">成交单位（有 / 无文本）</th><th style="text-align:right">已接收量成交率（有 / 无文本）</th></tr></thead><tbody>${auction.grouped.map(row=>`<tr><td>${safe(row.quote_response_bps)} 基点</td><td class="num">${pct(row.mean_price_difference_multiple,4)}</td><td class="num">${safe(row.changed_stock_prices)}</td><td class="num">${Number(row.text_matched_volume).toLocaleString('zh-CN')} / ${Number(row.no_text_matched_volume).toLocaleString('zh-CN')}</td><td class="num">${pct(2*row.text_matched_volume/(2*row.text_matched_volume+row.text_unfilled_quantity),2)} / ${pct(2*row.no_text_matched_volume/(2*row.no_text_matched_volume+row.no_text_unfilled_quantity),2)}</td></tr>`).join('')}</tbody></table>`;
+  }else{
+    $("semantic-auction-summary").textContent="尚无通过来源和成交账本核验的有限市场结果。";
+  }
   const metrics = [
     ["问答来源行",data.overview.question_rows.toLocaleString("zh-CN"),"三份本地 Excel"],
     ["来源股票代码",data.overview.stocks.toLocaleString("zh-CN"),"身份仍待核实"],

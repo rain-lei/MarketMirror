@@ -71,6 +71,11 @@ class WorkbenchPayloadTest(unittest.TestCase):
                                              "role": "aggressive", "mean_difference_multiple": -0.00012,
                                              "positive": 20, "negative": 24, "unchanged": 82,
                                              "changed_signal_days": 1900}]},
+            "semantic_auction": {"stocks": 126, "agents_per_market": 12, "paths": 756, "ledger_rows": 93744,
+                                 "audit": {"dense_tick_sweeps": 3917},
+                                 "grouped": [{"quote_response_bps": 200, "mean_price_difference_multiple": 0.00012857,
+                                              "changed_stock_prices": 23, "text_matched_volume": 220000,
+                                              "no_text_matched_volume": 218300}]},
             "agent_signal_gate": {"status": "eligible_under_ai_review", "passed": True,
                                   "gold_ready": False, "reviewed_items": 128, "required_items": 128,
                                   "adapter_version": "semantic-agent-signal-adapter-v1",
@@ -149,6 +154,9 @@ class WorkbenchPayloadTest(unittest.TestCase):
         self.assertIn("7560 组公司与角色对照", report)
         self.assertIn("-0.012000%", report)
         self.assertIn("所有情景的无文本逐日路径不变", report)
+        self.assertIn("有限资金与持仓的集合竞价", report)
+        self.assertIn("93,744 条完整日账本", report)
+        self.assertIn("3917 次有成交竞价", report)
         self.assertNotIn("question_text", report)
         self.assertNotIn("wxid_", report)
 
