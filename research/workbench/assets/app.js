@@ -21,6 +21,14 @@
   }else{
     $("semantic-ablation-summary").textContent="尚无通过来源核验的真实语义回放。";
   }
+  const memory=data.semantic_memory;
+  if(memory){
+    const memoryLabels={cumulative:"累计保留",rolling:"滚动窗口",exponential:"指数衰减"};
+    $("semantic-memory-summary").textContent=`${memory.stocks} 家公司 × ${memory.scenario_count} 种固定设置，共 ${Number(memory.comparison_rows).toLocaleString('zh-CN')} 组公司与角色对照；累计零延迟逐日复现原回放，所有无文本逐日路径不变。每个情景均阻止 ${memory.blocked_execution_days_per_scenario} 个停牌参考日成交；三份产物重跑一致。数值为有文本与无文本的平均末值差 / 初始资金。`;
+    $("semantic-memory-table").innerHTML=`<table class="data-table"><thead><tr><th>记忆方式</th><th>窗口 / 半衰期</th><th>额外延迟</th><th class="num">激进型</th><th class="num">保守型</th><th class="num">机构型</th><th class="num">改变信号公司日</th></tr></thead><tbody>${memory.scenarios.map(scenario=>{const rows=memory.grouped.filter(row=>row.scenario_id===scenario.scenario_id);return `<tr><td>${safe(memoryLabels[scenario.memory_mode])}</td><td>${scenario.memory_sessions===null?'长期':`${safe(scenario.memory_sessions)} 交易日`}</td><td>${safe(scenario.lag_days)} 自然日</td>${['aggressive','conservative','institutional'].map(role=>{const row=rows.find(row=>row.role===role);return `<td class="num">${row?pct(row.mean_difference_multiple,4):'—'}</td>`;}).join('')}<td class="num">${rows.length?safe(rows[0].changed_signal_days):'—'}</td></tr>`;}).join('')}</tbody></table>`;
+  }else{
+    $("semantic-memory-summary").textContent="尚无通过来源核验的文本记忆与延迟敏感性结果。";
+  }
   const metrics = [
     ["问答来源行",data.overview.question_rows.toLocaleString("zh-CN"),"三份本地 Excel"],
     ["来源股票代码",data.overview.stocks.toLocaleString("zh-CN"),"身份仍待核实"],

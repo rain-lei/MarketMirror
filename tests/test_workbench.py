@@ -66,6 +66,11 @@ class WorkbenchPayloadTest(unittest.TestCase):
                                   "blocked_execution_days": 18,
                                   "grouped": [{"category": "no_effect", "role": "aggressive", "stocks": 82,
                                                "mean_difference_multiple": 0.0, "positive": 0, "negative": 0}]},
+            "semantic_memory": {"stocks": 126, "scenario_count": 20, "comparison_rows": 7560,
+                                "grouped": [{"memory_mode": "exponential", "memory_sessions": 5, "lag_days": 7,
+                                             "role": "aggressive", "mean_difference_multiple": -0.00012,
+                                             "positive": 20, "negative": 24, "unchanged": 82,
+                                             "changed_signal_days": 1900}]},
             "agent_signal_gate": {"status": "eligible_under_ai_review", "passed": True,
                                   "gold_ready": False, "reviewed_items": 128, "required_items": 128,
                                   "adapter_version": "semantic-agent-signal-adapter-v1",
@@ -140,6 +145,10 @@ class WorkbenchPayloadTest(unittest.TestCase):
         self.assertIn("126 公司真实收益语义回放", report)
         self.assertIn("378 组公司与 Agent 对照", report)
         self.assertIn("18 个停牌参考日", report)
+        self.assertIn("文本记忆与公开延迟敏感性", report)
+        self.assertIn("7560 组公司与角色对照", report)
+        self.assertIn("-0.012000%", report)
+        self.assertIn("所有情景的无文本逐日路径不变", report)
         self.assertNotIn("question_text", report)
         self.assertNotIn("wxid_", report)
 

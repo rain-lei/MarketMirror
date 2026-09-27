@@ -19,8 +19,9 @@ from ..semantic.assistant_review import load_review
 from ..semantic.audit_model_run import audit_model_run
 from ..semantic.review_readiness import audit_review_package
 from ..simulation.semantic_historical_replay import load_verified_summary
+from ..simulation.semantic_memory_sensitivity import load_memory_summary
 
-VERSION = "research-workbench-v18"
+VERSION = "research-workbench-v19"
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "research/configs/integrity_catalog_2020.json"
 CAPACITY_CONFIG = ROOT / "research/configs/integrity_catalog_capacity_series.json"
@@ -613,6 +614,28 @@ def checked_semantic_ablation() -> dict[str, Any] | None:
     return result
 
 
+def checked_semantic_memory() -> dict[str, Any] | None:
+    directory = OUTPUTS / "semantic_h2_2020_memory_all126_v1"
+    rerun = OUTPUTS / "semantic_h2_2020_memory_all126_v1_rerun"
+    if not directory.exists():
+        return None
+    summary, repeated = load_memory_summary(directory), load_memory_summary(rerun)
+    if (summary != repeated or summary["stocks"] != 126 or summary["scenario_count"] != 20
+            or summary["comparison_rows"] != 7560 or summary["baseline_trajectory_parity"] is not True
+            or summary["no_text_trajectory_invariant"] is not True):
+        raise ValueError("semantic memory coverage, baseline parity or reexecution differs")
+    manifests = [json.loads((path / "semantic_memory_manifest.json").read_text(encoding="utf-8"))
+                 for path in (directory, rerun)]
+    if manifests[0]["artifacts"] != manifests[1]["artifacts"]:
+        raise ValueError("semantic memory rerun artifacts are not byte-identical")
+    result = {key: summary[key] for key in ("stocks", "sessions_per_stock", "scenario_count", "comparison_rows",
+              "blocked_execution_days_per_scenario", "baseline_trajectory_parity", "no_text_trajectory_invariant",
+              "scenarios", "grouped")}
+    result["reexecution"] = "identical"
+    validate_public_payload(result)
+    return result
+
+
 def collect_data() -> dict[str, Any]:
     pinned = load_catalog(CONFIG)
     cache: dict[Path, str] = {}
@@ -648,6 +671,7 @@ def collect_data() -> dict[str, Any]:
     review_readiness = None  # Archived dual-review packets are no longer a prerequisite.
     agent_signal_gate = checked_agent_signal_gate(assistant_review, holdout_model)
     semantic_ablation = checked_semantic_ablation()
+    semantic_memory = checked_semantic_memory()
     if ({row["event_id"] for row in counterfactual_series}
             != {row["event_id"] for row in lagged_impact_series}):
         raise ValueError("fixed and lagged impact events differ; shared filter is unsafe")
@@ -732,6 +756,7 @@ def collect_data() -> dict[str, Any]:
         "agent_signal_gate": agent_signal_gate,
         "assistant_review": assistant_review,
         "semantic_ablation": semantic_ablation,
+        "semantic_memory": semantic_memory,
         "semantic": {"items": 128, "reviewed_items": assistant_review["reviewed_items"] if assistant_review else 0,
                      "protocol": "assistant_review_v1", "gold_ready": False,
                      "status": assistant_review["status"] if assistant_review else "awaiting_assistant_review"},
@@ -906,6 +931,18 @@ def render_report(data: dict[str, Any]) -> str:
             lines.append(f"| {row['category']} | {row['role']} | {row['stocks']} | "
                          f"{row['mean_difference_multiple']:+.4f} | {row['positive']} | {row['negative']} |")
         lines += ["", "价格路径由已观察收益给定。行为参数未校准，文本按累计可见条目均值持续保留；末值差是规则敏感性，未证明文本预测增益。", ""]
+    memory = data.get("semantic_memory")
+    if memory:
+        lines += ["## 文本记忆与公开延迟敏感性", "",
+                  f"固定 {memory['stocks']} 家公司，{memory['scenario_count']} 个情景，{memory['comparison_rows']} 组公司与角色对照；三份产物独立重跑逐字节一致。",
+                  "累计零延迟逐日决策和账本复现原回放。所有情景的无文本逐日路径不变。",
+                  "记忆年龄按交易日计，首个可见交易日年龄为 0；公开延迟按自然日计。滚动窗口平均保留记录；指数衰减除以可见记录数，避免单条事件归一化后不衰减。",
+                  "", "| 记忆 | 窗口 / 半衰期 | 延迟 | 角色 | 全体公司平均末值差/初值 | 正 / 负 / 零 | 改变信号公司日 |",
+                  "|---|---:|---:|---|---:|---|---:|"]
+        for row in memory["grouped"]:
+            lines.append(f"| {row['memory_mode']} | {row['memory_sessions'] or '长期'} | {row['lag_days']} 日 | {row['role']} | "
+                         f"{row['mean_difference_multiple']:+.6%} | {row['positive']}/{row['negative']}/{row['unchanged']} | {row['changed_signal_days']} |")
+        lines += ["", "全部固定情景均报告，未按结果选择最佳记忆方式。该敏感性分析不估计真实投资者记忆，不证明预测或监管预警能力。", ""]
     lines += ["## 公开证据", ""]
     lines.extend(f"- [{item['label']}]({item['url']})" for item in data["evidence"])
     financial = data.get("financial_dictionary")
@@ -1014,6 +1051,10 @@ def build_workbench(output_dir: Path) -> dict[str, Any]:
             for label, directory in (("semantic_ablation", "semantic_h2_2020_ablation_all126_v4"),
                                      ("semantic_ablation_rerun", "semantic_h2_2020_ablation_all126_v4_rerun")):
                 source_reports[label] = file_sha256(OUTPUTS / directory / "semantic_ablation_manifest.json")
+        if data.get("semantic_memory"):
+            for label, directory in (("semantic_memory", "semantic_h2_2020_memory_all126_v1"),
+                                     ("semantic_memory_rerun", "semantic_h2_2020_memory_all126_v1_rerun")):
+                source_reports[label] = file_sha256(OUTPUTS / directory / "semantic_memory_manifest.json")
         manifest = {"pipeline_version": VERSION, "generated_at": datetime.now(timezone.utc).isoformat(),
                     "integrity_catalog_sha256": file_sha256(CONFIG),
                     "source_reports": source_reports,

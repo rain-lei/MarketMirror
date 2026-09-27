@@ -38,7 +38,7 @@
 - `research_outputs/semantic_h2_2020_assistant_review/`：参考标签、报告与来源清单。
 - `research_outputs/semantic_h2_2020_ai_scored_v2/`：评分与输入、代码、结果哈希。
 - `research_outputs/semantic_h2_2020_ai_signals_v5/`：当前 Agent 信号与接入检查；早期版本保留作历史记录。
-- `research_outputs/workbench_2018_2020_semantic_replay_v17/`：当前工作台与脱敏摘要。
+- `research_outputs/workbench_2018_2020_semantic_memory_v18/`：当前工作台与脱敏摘要。
 
 每次运行使用新的空目录，保留已有证据：
 

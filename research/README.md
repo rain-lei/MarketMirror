@@ -1,5 +1,7 @@
 # Research data pipeline
 
+新增 [126 公司文本记忆与公开延迟敏感性](SEMANTIC_MEMORY_H2_2020.md)：20 个固定情景、7,560 组公司与角色对照，结果、摘要和报告已独立重跑一致。所有无文本逐日路径不变，累计零延迟复现原回放；均值随假设变号，尚无稳定文本增益证据。
+
 当前语义流程采用 [AI 逐条复核与评分](AI_REVIEW_H2_2020.md)，128 条已复核并生成信号，已完成 [126 公司同期行情上的语义回放](SEMANTIC_REPLAY_H2_2020.md)。双人审核与裁定步骤已取消；本文旧双人命令仅用于追溯历史流程。
 
 这部分代码构建 MarketMirror 的研究数据层：质量报告、可追溯的问答明细、待核对财务快照，以及按指定截止时刻生成的文本特征。原始 Excel 保持只读，生成的数据保存在 Git 忽略的 `research_outputs/` 中。
@@ -527,13 +529,13 @@ v2 使用 `evidence_quotes`，仅由本地程序按逐字、唯一匹配计算�
 工作台对 18 项固定运行再次校验输入、代码和输出，再从事件、预测、成交活动与 Agent 回放结果中按白名单抽取汇总。原始问答、个人路径和完整数据库不会写进页面；页面提供事件口径、回放时期与股票筛选、18 项运行的 41 份产物名称及比较状态、核验状态和公开证据链接。
 
 ```powershell
-& $py -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_semantic_replay_v17
+& $py -m research.workbench.build --output-dir research_outputs/workbench_2018_2020_semantic_memory_v18
 ```
 
 在浏览器打开生成的 `index.html` 可离线查看摘要；输出目录必须是新空目录。要在页面上重跑固定实验，启动只监听 `127.0.0.1` 的本地服务：
 
 ```powershell
-& $py -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_semantic_replay_v17
+& $py -m research.workbench.serve --site-dir research_outputs/workbench_2018_2020_semantic_memory_v18
 ```
 
 打开 `http://127.0.0.1:8766/`，选择清单中的运行并执行。页面会显示并提交该运行的固定数据版本和执行版本，服务端只接受与清单匹配的组合；财务字段口径卡片展示字段统计、来源哈希和未确认项。页面顶部可下载由同一份白名单摘要生成的 `report.md`，用于归档或复核。也可用 `& $py -m research.workbench.run observed_event` 单独重跑。执行入口只接受固定清单内的运行 ID、一次运行一项，不接受网页传入配置路径；每次在被 Git 忽略的 `research_outputs/workbench_runs/<job_id>/` 保存所选配置、版本、主配置与清单哈希、状态、对照报告和产物哈希。页面读取状态时会重新核对关键记录文件。上方事件/股票筛选不改动固定配置；自定义事件、数据或模型版本尚未实现。旧 Vue/FastAPI 静态演示已从当前分支移除，代码可在 Git 历史中找回。

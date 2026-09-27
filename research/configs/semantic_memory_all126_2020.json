@@ -1,0 +1,127 @@
+{
+  "run_id": "semantic_h2_2020_memory_visibility_sensitivity",
+  "base_config": "semantic_replay_all126_2020.json",
+  "baseline_directory": "../../research_outputs/semantic_h2_2020_ablation_all126_v4",
+  "scenarios": [
+    {
+      "scenario_id": "cumulative_all_lag0",
+      "memory_mode": "cumulative",
+      "memory_sessions": null,
+      "lag_days": 0
+    },
+    {
+      "scenario_id": "cumulative_all_lag1",
+      "memory_mode": "cumulative",
+      "memory_sessions": null,
+      "lag_days": 1
+    },
+    {
+      "scenario_id": "cumulative_all_lag3",
+      "memory_mode": "cumulative",
+      "memory_sessions": null,
+      "lag_days": 3
+    },
+    {
+      "scenario_id": "cumulative_all_lag7",
+      "memory_mode": "cumulative",
+      "memory_sessions": null,
+      "lag_days": 7
+    },
+    {
+      "scenario_id": "rolling_5_lag0",
+      "memory_mode": "rolling",
+      "memory_sessions": 5,
+      "lag_days": 0
+    },
+    {
+      "scenario_id": "rolling_5_lag1",
+      "memory_mode": "rolling",
+      "memory_sessions": 5,
+      "lag_days": 1
+    },
+    {
+      "scenario_id": "rolling_5_lag3",
+      "memory_mode": "rolling",
+      "memory_sessions": 5,
+      "lag_days": 3
+    },
+    {
+      "scenario_id": "rolling_5_lag7",
+      "memory_mode": "rolling",
+      "memory_sessions": 5,
+      "lag_days": 7
+    },
+    {
+      "scenario_id": "rolling_20_lag0",
+      "memory_mode": "rolling",
+      "memory_sessions": 20,
+      "lag_days": 0
+    },
+    {
+      "scenario_id": "rolling_20_lag1",
+      "memory_mode": "rolling",
+      "memory_sessions": 20,
+      "lag_days": 1
+    },
+    {
+      "scenario_id": "rolling_20_lag3",
+      "memory_mode": "rolling",
+      "memory_sessions": 20,
+      "lag_days": 3
+    },
+    {
+      "scenario_id": "rolling_20_lag7",
+      "memory_mode": "rolling",
+      "memory_sessions": 20,
+      "lag_days": 7
+    },
+    {
+      "scenario_id": "exponential_5_lag0",
+      "memory_mode": "exponential",
+      "memory_sessions": 5,
+      "lag_days": 0
+    },
+    {
+      "scenario_id": "exponential_5_lag1",
+      "memory_mode": "exponential",
+      "memory_sessions": 5,
+      "lag_days": 1
+    },
+    {
+      "scenario_id": "exponential_5_lag3",
+      "memory_mode": "exponential",
+      "memory_sessions": 5,
+      "lag_days": 3
+    },
+    {
+      "scenario_id": "exponential_5_lag7",
+      "memory_mode": "exponential",
+      "memory_sessions": 5,
+      "lag_days": 7
+    },
+    {
+      "scenario_id": "exponential_20_lag0",
+      "memory_mode": "exponential",
+      "memory_sessions": 20,
+      "lag_days": 0
+    },
+    {
+      "scenario_id": "exponential_20_lag1",
+      "memory_mode": "exponential",
+      "memory_sessions": 20,
+      "lag_days": 1
+    },
+    {
+      "scenario_id": "exponential_20_lag3",
+      "memory_mode": "exponential",
+      "memory_sessions": 20,
+      "lag_days": 3
+    },
+    {
+      "scenario_id": "exponential_20_lag7",
+      "memory_mode": "exponential",
+      "memory_sessions": 20,
+      "lag_days": 7
+    }
+  ]
+}
