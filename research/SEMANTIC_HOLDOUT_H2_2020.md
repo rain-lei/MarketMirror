@@ -8,7 +8,7 @@
 
 抽样前的候选提问行有 163,883 条，按公司或问答身份排除 11,377 条，剩余 152,506 条。选样刻意覆盖较少的话题，不用于估计总体事件发生率；按公司和完整文本排重也不能保证不同公司间不存在语义相似的披露。来源时间是可见时刻的保守代理，尚未独立核对网页发布日志。
 
-配置固定原始 Excel 的 SHA-256 为 `a3a1b0afa2cd13b25a56c89393178d93960cd8867a46a7c469fd567bf82ac812`，提示 `semantic-prompt-v2` 的 SHA-256 为 `cb608b2b36cab16653cc74afcc391e24356655b1661845833242c45e66bb3892`；模型为 `DeepSeek-V4-Flash-0731-W8A8`。本地标注包和关键词对照各有 128 条，两份离线盲审页面已生成。完整性目录 `configs/integrity_catalog_semantic_holdout_h2_2020.json` 对标注包、关键词对照、盲审页面和字面重叠审计核验为 4/4。**目前 0 条人工审定标签、0 条留出模型输出，不存在留出准确率。**
+配置固定原始 Excel 的 SHA-256 为 `a3a1b0afa2cd13b25a56c89393178d93960cd8867a46a7c469fd567bf82ac812`，提示 `semantic-prompt-v2` 的 SHA-256 为 `cb608b2b36cab16653cc74afcc391e24356655b1661845833242c45e66bb3892`；网关为 `http://aigw.dlut.edu.cn/v1`，模型为 `DeepSeek-V4-Flash-0731-W8A8`。本地标注包和关键词对照各有 128 条，两份离线盲审页面已生成。完整性目录 `configs/integrity_catalog_semantic_holdout_h2_2020.json` 对标注包、关键词对照、盲审页面和字面重叠审计核验为 4/4。**目前 0 条人工审定标签、0 条留出模型输出，不存在留出准确率。**
 
 在人工标注和留出模型调用前，另用 Unicode NFKC、去标点空白、同来源段落字符三元组 Jaccard 检查开发包与留出包的字面近重复。128 条留出样本各自最近的开发条目中，最高相似度为 0.3637；达到 0.5 的为 0 条。审计结果、条目 ID 和输入/代码哈希留在 `research_outputs/semantic_holdout_h2_2020_overlap/`，不导出问答原文。此诊断不能识别语义改写、共同事实或模型预训练中的信息；也不改变已固定样本。
 
@@ -16,7 +16,7 @@
 
 1. 两名审核者分别使用 `research_outputs/semantic_holdout_h2_2020_interface/reviewer_a.html` 和 `reviewer_b.html`，只看当时可见原文，不看模型预测、对方答案或未来收益。各自完成 128 条；比较一致性并保留分歧，由第三人逐项签署裁定。负责人抽查事件含义和逐字证据。标签格式、事件类别、方向含义及裁定要求见 `semantic/ANNOTATION_GUIDE.md`。
 2. 对完整的同一留出包调用固定 v2 提示、固定模型、温度 0，要求 128 条全覆盖；保留每条原始响应、失败和版本哈希。请求失败或结构解析失败计入错误，不能静默删样本。模型结果不供审核者参考。
-3. 在金标准形成后，按 `semantic/signal_validation.py` 的既定评分器比较 v2 与固定关键词基线。主要指标为事件有无的 precision/recall/F1 和各事件类别 F1；报告各类别支持数。辅助指标为类型匹配的单事件条目上的方向准确率与证据精确跨度召回，同时列出该子集的分母。多事件对齐、强度校准和行业评分目前没有有效指标，不作准确性声明。
+3. 在金标准形成后，`semantic/compare_holdout.py` 先核验双人比较、逐项裁定、原始模型响应、确定性标准化和关键词对照的来源与全量覆盖，再按 `semantic/signal_validation.py` 的既定评分器比较 v2 与固定关键词基线。主要指标为事件有无的 precision/recall/F1 和各事件类别 F1；报告各类别支持数。辅助指标为类型匹配的单事件条目上的方向准确率与证据精确跨度召回，同时列出该子集的分母。模型与关键词事件检出 F1 的差值，使用固定种子 `20260927`、5,000 次按公司成组的配对重抽样给出描述性的百分位 95% 区间；区间不能修复话题抽样偏差。多事件对齐、强度校准和行业评分目前没有有效指标，不作准确性声明。
 4. 预设的**研究性接入门槛**：双人全量审核并裁定、模型 128 条全覆盖、解析失败不超过 5%、事件检出 F1 至少 0.70 且不低于关键词基线、支持类别的宏平均 F1 至少 0.60。通过只允许做受控 Agent 信号消融实验，不代表真实交易行为已校准或具有监管预测能力。每项必须同时报告分子、分母和不确定性；样本不足时不强行宣称达标。
 
 若在查看留出结果后更改提示、类别规则或门槛，这个样本立即转为开发样本；新的最终评估必须重新选择未接触、独立的公司与时间范围。
@@ -34,4 +34,12 @@ python -m research.semantic.holdout_overlap research_outputs/semantic_annotation
 python -m research.registry.verify_catalog research/configs/integrity_catalog_semantic_holdout_h2_2020.json --output-dir research_outputs/integrity_catalog_semantic_holdout_h2_2020_v4
 ```
 
-之后由运行者在本机安全地设置 `MARKETMIRROR_LLM_API_KEY`，不写入命令行、代码、报告或 Git。模型运行、双人裁定和评分均尚未执行；各步需要新输出目录，不能覆盖固定材料。
+之后由运行者在本机安全地设置 `MARKETMIRROR_LLM_API_KEY`，不写入命令行、代码、报告或 Git。以下是后续全量模型调用与评分的命令；双人 `compare` 和 `finalize` 须先按标注说明完成，且每一步都使用新输出目录：
+
+```powershell
+python -m research.semantic.run_model research_outputs/semantic_holdout_h2_2020 --output-dir research_outputs/semantic_holdout_h2_2020_model --model DeepSeek-V4-Flash-0731-W8A8 --prompt-version semantic-prompt-v2 --temperature 0
+python -m research.semantic.parse_model_outputs research_outputs/semantic_holdout_h2_2020 --raw research_outputs/semantic_holdout_h2_2020_model/model_raw_outputs.jsonl --output-dir research_outputs/semantic_holdout_h2_2020_normalized
+python -m research.semantic.compare_holdout research_outputs/semantic_holdout_h2_2020 --comparison-dir research_outputs/semantic_holdout_h2_2020_review_comparison --gold-dir research_outputs/semantic_holdout_h2_2020_gold --raw-model-dir research_outputs/semantic_holdout_h2_2020_model --normalized-model-dir research_outputs/semantic_holdout_h2_2020_normalized --keyword-dir research_outputs/semantic_holdout_h2_2020_keyword --output-dir research_outputs/semantic_holdout_h2_2020_scored
+```
+
+模型运行、双人裁定和评分均尚未执行；生成命令不等于取得结果。
