@@ -10,11 +10,11 @@ MarketMirror 正在重建为**可复现、可核验的金融市场冲击研究�
 |---|---|---|
 | 数据层 | 三份 Excel 共 429,597 条问答；全量来源、质量报告和时点导出 | 财务单位、季度含义、标签定义与公开时刻核实 |
 | 市场基线 | 2018/2020 事件窗口、成交活动和日期对照；2020 年 177 条测试预测 | 更广样本、独立行情源和外部预注册验证 |
-| Agent | 三类规则、合成账本、三段真实收益路径回放；新增容量诊断和只用更早成交额的容量约束情景 | 投资者行为参数、订单流、盘口与价格冲击校准 |
+| Agent | 三类规则、合成账本、三段真实收益路径回放；容量约束和 2018/2020 已观察收益路径上的假设冲击情景 | 投资者行为参数、订单流、盘口与价格冲击校准 |
 | 语义抽取 | 上半年开发样本的 DeepSeek v2 有 127/128 条结构/证据通过；下半年另建 128 条跨公司、跨时间留出包，双人盲审页面和关键词对照已固定 | 留出包仍为 0 条人工标签、0 条模型输出；需独立双人标注、裁定与留出评估 |
 | 可复现性 | 主目录 18 项与容量相关 6 项本地完整性检查、独立重跑通过 | 原始文件跨机器获取和公开口径复核 |
 
-详细数值、限制和阶段状态见 [研究进度](research/IMPLEMENTATION_STATUS.md)；语义协议开发结果见 [v2 实验说明](research/SEMANTIC_PROTOCOL_V2.md)，独立测试约定见 [下半年留出协议](research/SEMANTIC_HOLDOUT_H2_2020.md)；新增历史节点见 [2018 实验说明](research/OBSERVED_PILOT_2018.md)，回放规模限制与重算结果见 [容量诊断](research/CAPACITY_DIAGNOSTIC.md)和[容量约束回放](research/PARTICIPATION_REPLAY.md)；研究设计见 [重建方案](RESEARCH_REBUILD_PLAN.md)。
+详细数值、限制和阶段状态见 [研究进度](research/IMPLEMENTATION_STATUS.md)；语义协议开发结果见 [v2 实验说明](research/SEMANTIC_PROTOCOL_V2.md)，独立测试约定见 [下半年留出协议](research/SEMANTIC_HOLDOUT_H2_2020.md)；新增历史节点见 [2018 实验说明](research/OBSERVED_PILOT_2018.md)，回放规模限制与重算结果见 [容量诊断](research/CAPACITY_DIAGNOSTIC.md)和[容量约束回放](research/PARTICIPATION_REPLAY.md)，历史路径与假设价格冲击的桥接实验见 [反事实敏感性](research/OBSERVED_COUNTERFACTUAL.md)；研究设计见 [重建方案](RESEARCH_REBUILD_PLAN.md)。
 
 ## 本地研究工作台
 
@@ -41,8 +41,9 @@ python -m unittest discover -s tests -q
 python -m research.registry.verify_catalog research/configs/integrity_catalog_2020.json --output-dir <新的本地目录>
 python -m research.registry.reexecute research/configs/reexecution_catalog_2020.json --output-dir <新的本地目录>
 python -m research.registry.reexecute research/configs/reexecution_catalog_capacity_series.json --output-dir <另一个新的本地目录>
+python -m research.registry.verify_catalog research/configs/integrity_catalog_observed_counterfactual.json --output-dir <再一个新的本地目录>
 ```
 
-主目录固定清单的 18 项运行在当前机器上已独立重跑；41 份产物中 38 份逐字节一致，两个事件 JSON 仅生成时间不同，统一 SQLite 的逻辑内容一致但物理字节及构建时间元数据不同。容量相关的另 6 项运行也已独立重跑，12 份产物逐字节一致。重跑不能证明原始字段的经济含义、历史信息可见时刻、统计显著性或 Agent 的现实行为拟合。
+主目录固定清单的 18 项运行在当前机器上已独立重跑；41 份产物中 38 份逐字节一致，两个事件 JSON 仅生成时间不同，统一 SQLite 的逻辑内容一致但物理字节及构建时间元数据不同。容量相关的另 6 项运行也已独立重跑，12 份产物逐字节一致。两项历史收益加假设冲击情景另经完整性核验，并在新目录重跑，四份结果/报告逐字节一致。重跑不能证明原始字段的经济含义、历史信息可见时刻、统计显著性或 Agent 的现实行为拟合。
 
 原先的 Vue/FastAPI 静态演示不采用研究数据和验证流程，已从当前分支移除；如需查看可从 Git 历史恢复。新研究系统以 `research/` 为实现入口，不把旧演示的分数或演示账号当成研究能力。

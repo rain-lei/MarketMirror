@@ -1,0 +1,16 @@
+{
+  "runs": [
+    {
+      "run_id": "observed_counterfactual_2018",
+      "manifest": "../../research_outputs/observed_2018/counterfactual_assumed_impact_v4/counterfactual_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "17245e198e6d394fdf793ddb285721418832f89480a78846ca32b33c4b2fb0ef"
+    },
+    {
+      "run_id": "observed_counterfactual_2020",
+      "manifest": "../../research_outputs/observed_2020/counterfactual_assumed_impact_v4/counterfactual_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "727d1b45819ec471d8d0afad508fe88bace42c0f8c4edbcefe23203bdf2fbe84"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "run_id": "wuhan_2020_assumed_impact_sensitivity",
+  "data_kind": "observed_return_counterfactual",
+  "replay_config": "historical_replay_pilot_2020.json",
+  "event_config": "observed_pilot_2020.json",
+  "activity_manifest": "../../research_outputs/observed_2020/activity/activity_manifest.json",
+  "event_id": "wuhan_date_only_conservative",
+  "stock_code": "000001",
+  "aum_cny_per_agent": 1000000000,
+  "liquidity_notional_cny": 1000000000,
+  "impact_coefficients": [0.0, 0.01, 0.03],
+  "max_impact": 0.03,
+  "scenario_signal": -0.8,
+  "scenario_uncertainty": 0.6,
+  "signal_sessions": 3
+}
