@@ -22,6 +22,7 @@ test('one unreadable experiment does not hide healthy records and retry recovers
   assert.equal(context.experiments.length,2);
   assert.equal(context.experiments[context.state.selected].id,'good');
   assert.match(context.experimentLoadError,/bad/);
+  assert.equal(context.experiments.find(e=>e.id==='good').kind,'neutral');
   broken=false;
   await context.hydrateExperiments();
   assert.equal(context.experiments.length,3);
