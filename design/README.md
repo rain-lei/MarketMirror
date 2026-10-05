@@ -41,7 +41,7 @@ python -B -X utf8 -m design.server --port 8770
 
 ## 界面与存储
 
-深色导航、浅色工作区与青绿主操作色；三类策略分别使用赭橙、蓝和紫，并附文字标签。支持实验搜索、新建向导、事实证据卡、逐步决策查看、消息资料复用、深浅主题和窄屏布局。已保存实验从本机服务读取，同一浏览器标签页刷新后恢复最近打开的实验；记录或结果加载异常会明确提示，不会伪装成已完成。
+深色导航、浅色工作区与青绿主操作色；三类策略分别使用赭橙、蓝和紫，并附文字标签。支持实验搜索、新建向导、事实证据卡、逐步决策查看、消息资料复用、深浅主题和窄屏布局。已保存实验从本机服务读取，同一浏览器标签页刷新后恢复最近打开的实验；记录或结果加载异常会明确提示，不会伪装成已完成。单条记录读取失败不影响其他正常记录加载，提示中列出失败编号；重新加载成功后自动清除提示。
 
 主要接口：
 
@@ -60,7 +60,7 @@ python -B -X utf8 -m design.server --port 8770
 
 ```powershell
 python -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server -v
-node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs
+node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_record_loading.cjs
 node --check design/app.js
 ```
 
