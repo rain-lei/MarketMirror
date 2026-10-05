@@ -7,10 +7,10 @@
 在项目根目录执行：
 
 ```powershell
-python -B -X utf8 -m design.server --port 8772
+python -B -X utf8 -m design.server --port 8770
 ```
 
-浏览器打开 `http://127.0.0.1:8772`。服务默认只监听本机；不指定端口时使用 8770。
+浏览器打开 `http://127.0.0.1:8770`。服务默认只监听本机；不指定端口时使用 8770。
 
 ## 文本分析与依据
 
