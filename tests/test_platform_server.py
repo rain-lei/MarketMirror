@@ -39,6 +39,15 @@ class PlatformStoreTest(unittest.TestCase):
                 "published_at": "2026-10-05T09:00", "signal": .6, "uncertainty": .2, "duration": 6,
                 "sessions": 18, "seed": 7, "cash": 1_000_000}
 
+    def test_startup_recovery_skips_corrupt_record(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            directory.joinpath('bad-record').mkdir()
+            directory.joinpath('bad-record', 'experiment.json').write_text('{not-json', encoding='utf-8')
+            store = PlatformStore(directory)
+            store.recover_interrupted()
+            self.assertEqual(store.list()[0]['run_status'], 'corrupt')
+
     def test_list_exposes_corrupt_record_tombstone(self):
         with tempfile.TemporaryDirectory() as tmp:
             directory = Path(tmp)

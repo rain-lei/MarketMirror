@@ -135,7 +135,12 @@ class PlatformStore:
     def recover_interrupted(self):
         """Call only after obtaining the exclusive server workspace lease."""
         for path in self.data_dir.glob('*/experiment.json'):
-            record = load_json(path)
+            try:
+                record = load_json(path)
+            except (OSError, ValueError, TypeError):
+                # A damaged record is surfaced by list(); it must not prevent
+                # the rest of the workspace from recovering on startup.
+                continue
             if record.get('run_status') == 'running':
                 atomic_json(path, {**record, 'run_status': 'interrupted',
                                   'run_finished_at': utc_now(),
