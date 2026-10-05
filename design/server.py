@@ -248,12 +248,24 @@ class PlatformStore:
         result = {**run_market(record), 'generated_at': utc_now(), 'provenance': provenance}
         record = {**record, "run_status": "completed", "last_run_at": result["generated_at"],
                   'run_finished_at': utc_now(), 'run_error': None}
-        atomic_json(self.data_dir / experiment_id / "result.json", result)
-        atomic_json(self.data_dir / experiment_id / "experiment.json", record)
+        # Publish only after the immutable result is safely stored. A failed
+        # record commit leaves the previous successful result selected.
+        result_id = uuid4().hex
+        atomic_json(self.data_dir / experiment_id / 'runs' / (result_id + '.json'), result)
+        record['result_id'] = result_id
+        with self.lock:
+            atomic_json(self.data_dir / experiment_id / "experiment.json", record)
         return result
 
     def result(self, experiment_id: str) -> dict | None:
-        path = experiment_path(self.data_dir, experiment_id) / "result.json"
+        directory = experiment_path(self.data_dir, experiment_id)
+        record = self.get(experiment_id)
+        result_id = record.get('result_id') if record else None
+        if result_id is not None:
+            validate_analysis_id(result_id)
+            return load_json(directory / 'runs' / (result_id + '.json'))
+        # Existing workspaces used a single result.json before versioned runs.
+        path = directory / "result.json"
         return load_json(path) if path.is_file() else None
 
     def export(self, experiment_id: str) -> dict | None:
