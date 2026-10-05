@@ -149,7 +149,11 @@ class PlatformStore:
                 row = load_json(path)
                 rows.append({k: row[k] for k in ("id", "title", "type", "created_at", "status", "run_status") if k in row})
             except (OSError, ValueError, KeyError, TypeError):
-                continue
+                # Keep a visible tombstone so the UI can identify a damaged
+                # record instead of silently shrinking the experiment list.
+                rows.append({"id": path.parent.name, "title": "记录损坏 · 需要恢复",
+                             "type": "未知", "created_at": "", "status": "corrupt",
+                             "run_status": "corrupt"})
         return sorted(rows, key=lambda r: r.get("created_at", ""), reverse=True)
 
     def get(self, experiment_id: str) -> dict | None:
