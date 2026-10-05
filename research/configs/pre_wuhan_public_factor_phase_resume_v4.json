@@ -1,0 +1,12 @@
+{
+  "allow_numerical_change": false,
+  "allow_pdf_processing": false,
+  "file_bindings": {
+    "research_outputs/run_public_factor_checkpoint_jobs_20261002_v3.py": "3c9fbbd556d183dd5aabb143bce6892737771fc1d0a0f04793011292dce8b021",
+    "research_outputs/run_public_factor_checkpoint_resume_20261002_v4.py": "0f53129e975b5d94d6ea463740ab950c75551b524f387944c6992bca0b2fd66a"
+  },
+  "frozen_at_utc": "2026-10-02T07:45:43.448875+00:00",
+  "numeric_execution_sha256": "2dcca8404d7dc7662ad2825285c004242e37f011ebfe4f1a6c5c1d8fa437a5c9",
+  "scope": "Only resume orchestration changes. An existing independent statistics file must pass the unchanged full raw auditor in audit-existing mode; it is never treated as success solely because it exists. Original numeric inputs, 80 conditions, checkpoint bodies, independent audit, byte replay and actual child wait exits remain required. Do not start while any other worker is live.",
+  "version": "public-factor-phase-only-resume-v4"
+}

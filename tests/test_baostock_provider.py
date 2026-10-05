@@ -26,8 +26,9 @@ class FakeResult:
 
 
 class FakeSDK:
-    def __init__(self, error=False):
+    def __init__(self, error=False, ipo_date="2020-01-02", out_date=""):
         self.error, self.logout_calls = error, 0
+        self.ipo_date, self.out_date = ipo_date, out_date
 
     def login(self):
         return FakeResult([], [])
@@ -38,10 +39,16 @@ class FakeSDK:
     def query_trade_dates(self, **kwargs):
         return FakeResult(["calendar_date", "is_trading_day"], [["2020-01-02", "1"], ["2020-01-03", "1"]], "1" if self.error else "0")
 
+    def query_stock_basic(self):
+        return FakeResult(["code", "code_name", "ipoDate", "outDate", "type", "status"],
+                          [["sz.000001", "Test Co", self.ipo_date, self.out_date, "1", "1"]])
+
     def query_history_k_data_plus(self, symbol, fields, **kwargs):
         columns = fields.split(",")
         values = []
         for i, day in enumerate(["2020-01-02", "2020-01-03"]):
+            if day < kwargs.get("start_date", "2020-01-02") or day > kwargs.get("end_date", "2020-01-03"):
+                continue
             # The stock has a discontinuous adjusted-price scale, but the daily
             # reference-close return is well defined: 121 / 110 - 1 = 10%.
             record = {"date": day, "code": symbol, "close": "100" if i == 0 else "121",
@@ -74,8 +81,29 @@ class BaoStockProviderTest(unittest.TestCase):
             self.assertEqual(settings["stock_return_unit"], "percent")
             self.assertNotIn("stock_price_basis", settings)
             self.assertTrue((output / "sz_000001_raw.csv").exists())
+            self.assertTrue((output / "security_basic_raw.csv").exists())
             with self.assertRaisesRegex(ValueError, "fresh empty"):
                 fetch_baostock(["sz.000001"], "sh.000300", "2020-01-02", "2020-01-03", output, sdk)
+
+    def test_history_bounds_follow_listing_and_delisting_dates(self):
+        for ipo_date, out_date, expected_dates in (
+                ("2020-01-03", "", ["2020-01-03"]),
+                ("2020-01-02", "2020-01-02", ["2020-01-02"])):
+            with self.subTest(ipo_date=ipo_date, out_date=out_date), tempfile.TemporaryDirectory() as tmp:
+                output = Path(tmp) / "download"
+                manifest = fetch_baostock(["sz.000001"], "sh.000300", "2020-01-02", "2020-01-03",
+                                          output, FakeSDK(ipo_date=ipo_date, out_date=out_date))
+                quote = manifest["quote_checks"][0]
+                self.assertEqual(quote["ipo_date"], ipo_date)
+                self.assertEqual(quote["query_start_date"], ipo_date)
+                self.assertEqual(quote["query_end_date"], out_date or "2020-01-03")
+                query = next(q for q in manifest["queries"]
+                             if q["function"] == "query_history_k_data_plus" and q["symbol"] == "sz.000001")
+                self.assertEqual(query["start_date"], quote["query_start_date"])
+                self.assertEqual(query["end_date"], quote["query_end_date"])
+                with (output / "sz_000001_raw.csv").open(encoding="utf-8", newline="") as handle:
+                    rows = list(csv.DictReader(handle))
+                self.assertEqual([row["date"] for row in rows], expected_dates)
 
     def test_provider_errors_and_bad_rows_abort_without_publishing(self):
         with tempfile.TemporaryDirectory() as tmp:

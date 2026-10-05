@@ -1,0 +1,111 @@
+{
+  "code_bindings": {
+    "research/simulation/audit_fixed_marginal_risk.py": "70d6cef76cf7b592660f51da9ce9b8e4b5b67617d790c5f8c139b7db179f75fe",
+    "research/simulation/fixed_marginal_risk.py": "360e4e99f047d5dfd260729d1d184f9d0b2602a1d7990591fd90f23f0aabe9a5",
+    "research/simulation/portfolio_fixed_marginal_risk.py": "d6e8c9a8de26877025bf2ce250c4871ed372208057835d39ad81053149d558da",
+    "research_outputs/preflight_fixed_risk_inputs_20261002_v1.py": "329d0f088d37473424ca01fc44fcb6f76d1ad9c759a16160b4e440e1a6a7fe0c",
+    "research_outputs/run_fixed_risk_full_tests_20261002_v1.py": "0378d78d7920715e73c81819ff16b4648d2e4e365862d4b86181e7519e97bb08",
+    "research_outputs/run_fixed_risk_preflight_jobs_20261002_v1.py": "919f304a2b30aa770fd341a4d970538cbbe8b6dbd831304cbf51d068045ea447",
+    "research_outputs\\freeze_fixed_risk_preflight_20261002_v1.py": "a316cb77f6ea0c43286279ab20ea596d556d68e92d91e8fdcd125e5dc27e87ea",
+    "tests/test_fixed_marginal_risk.py": "29e63c3acf2c72d918cee570a9c33ca2a28126fcff571fa4a4500c9d16d93c61"
+  },
+  "frozen_at_utc": "2026-10-02T10:06:27.110667+00:00",
+  "full_market_effect_estimate_claimed": false,
+  "limits": {
+    "mean_return_gap_max": 0.005,
+    "portfolio_volatility_ratio_max": 2.0,
+    "portfolio_volatility_ratio_min": 0.5,
+    "stock_correlation_gap_max": 0.1,
+    "volatility_ratio_max": 2.0,
+    "volatility_ratio_min": 0.5,
+    "zero_return_fraction_gap_max": 0.1
+  },
+  "next_full_market_grid": {
+    "baskets": 41,
+    "conditions": 60,
+    "continuous_paths": 2460,
+    "inventory_anchors": [
+      "initial_inventory",
+      "current_inventory"
+    ],
+    "ledger_days": 105780,
+    "models": [
+      "legacy",
+      "market_independent",
+      "market_shared"
+    ],
+    "not_executed_by_this_preflight": true,
+    "own_feedback_scales": [
+      1.0,
+      0.0
+    ],
+    "seeds": 5
+  },
+  "no_new_parameter_default": true,
+  "parameters": {
+    "history_window": 20,
+    "max_shift_bps": 500,
+    "receipt_probability_bps": 5000,
+    "risk_multiplier": 1.0,
+    "source_risk_normalization": "Source OLS explained-variance fraction partitions the original issuer stdev amplitude; no change to its total pre-cap variance."
+  },
+  "reference_bindings": {
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_0_0.jsonl.gz": "2d8b7f96cf85dba1243af59e55d4244de92968ecf5c141a9f1fb725071bafecb",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_0_12.jsonl.gz": "63ae2c7a1de3b40f55e6d72b36002e4e920d111efe5a2e2b3b90d9a9aff66320",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_0_4.jsonl.gz": "09ac9715dc5bf3b76faae59a0f2805d07be2a1444cf30da610f1ee24cbd54f00",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_0_8.jsonl.gz": "cbcd5e9c469a8b4a21446ffa7cf980af0956ef1c5c36afb90e90770f4da20963",
+    "research_outputs\\pre_wuhan_public_factor_final_verification_20261002_v3.json": "34a548fce59a26d6b0b95193d7db9b65f9825d0761ab2344653630ecd210e1cf",
+    "research_outputs\\pre_wuhan_source_industry_risk_final_verification_20261002_v1.json": "a596b5ceb49a85ab1b4793e689535fc743edb22a65d2c2e38e67c1fc0b05f688"
+  },
+  "reviewer": "assistant",
+  "risk_interpretation": "Let s be original issuer amplitude, q the lagged OLS explained variance fraction, e the unchanged company innovation and z a standardized uniform auxiliary innovation. Both matched cells deliver s*sqrt(1-q)*e + sign(beta)*s*sqrt(q)*z, behind the unchanged original private receipt mask, then apply the same combined cap. Independent cell draws z by stock/date; shared cell shares z by date. They have equal declared one-stock latent/conditionally received pre-cap variance and the same theoretical clipped marginal law, not equal realized finite-path variance or endogenous auction volatility. Legacy single-uniform bridge remains exact. This does not test universally delivered public information, identify missing residual industry factors, fit gains, center finite draws, calibrate investors, release semantic signals or validate a new period.",
+  "scope": {
+    "companies": 123,
+    "independently_rebuilt_budget_rows": 52890,
+    "models": 3,
+    "seeds": 5,
+    "sessions": 43,
+    "smoke_days": 516,
+    "smoke_paths": 12,
+    "source_message_rows": 79335
+  },
+  "seeds": [
+    {
+      "arrival_seed": 7,
+      "background_seed": 7,
+      "information_seed": "marketmirror-issuer-information-coverage-v1",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1",
+      "seed_id": "reference_seed7"
+    },
+    {
+      "arrival_seed": 11,
+      "background_seed": 11,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:11",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:11",
+      "seed_id": "replicate_seed11"
+    },
+    {
+      "arrival_seed": 23,
+      "background_seed": 23,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:23",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:23",
+      "seed_id": "replicate_seed23"
+    },
+    {
+      "arrival_seed": 47,
+      "background_seed": 47,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:47",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:47",
+      "seed_id": "replicate_seed47"
+    },
+    {
+      "arrival_seed": 89,
+      "background_seed": 89,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:89",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:89",
+      "seed_id": "replicate_seed89"
+    }
+  ],
+  "semantic_gate_enabled": false,
+  "version": "fixed-marginal-received-risk-input-audit-v1"
+}

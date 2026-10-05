@@ -1,0 +1,57 @@
+{
+  "run_id": "wuhan_2020_independent_pit_126_no_text_portfolio_v1",
+  "market_replay_config": "wuhan_validation_pit_replay_2020.json",
+  "download_manifest": "../../research_outputs/wuhan_validation_market_download_2020_v1/download_manifest.json",
+  "universe_config": "wuhan_qna_independent_validation_universe_2020.json",
+  "basket_size": 3,
+  "venue": {
+    "price_start_minor": 10000,
+    "lot_size": 100,
+    "tick_minor": 1,
+    "fee_bps": 10,
+    "price_band_bps": 1000,
+    "quote_spread_bps": 10,
+    "quote_response_bps": 200
+  },
+  "feedback_parameters": {
+    "momentum_sessions": 5,
+    "volatility_sessions": 20,
+    "volatility_floor": 0.01
+  },
+  "core": {
+    "scenario_id": "endogenous_cohort_seed7",
+    "feedback_mode": "endogenous",
+    "profile_mode": "fixed_cohort_v1",
+    "order_mode": "hashed",
+    "seed": 7,
+    "inventory": [
+      0,
+      300,
+      800,
+      1600
+    ]
+  },
+  "background": {
+    "case_id": "active_quote25",
+    "mode": "active",
+    "participants": 12,
+    "initial_cash": 50000,
+    "initial_shares": 500,
+    "target_range_lots": 4,
+    "max_order_lots": 4,
+    "urgency_bps": 25,
+    "seed": 7
+  },
+  "cases": [
+    {
+      "case_id": "separated_institution35",
+      "cash_mode": "separated",
+      "institutional_asset_cap": 0.35
+    },
+    {
+      "case_id": "shared_institution35",
+      "cash_mode": "shared",
+      "institutional_asset_cap": 0.35
+    }
+  ]
+}

@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 from research.baselines.run_experiments import run_experiments, load_experiment, visibility_anchor
-from research.data_pipeline.market_data import import_market
+from research.data_pipeline.market_data import import_market, read_config
 from research.data_pipeline.provenance import file_sha256
 from research.examples.generate_market_fixture import generate_fixture
 
@@ -130,6 +130,26 @@ class MarketPipelineTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "unit"):
                 import_market(paths["market_config"], root / "other")
 
+    def test_mixed_adjusted_and_unadjusted_stock_return_basis_must_be_explicit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            paths = generate_fixture(root)
+            settings = json.loads(paths["market_config"].read_text())
+            for prefix in ("stock", "benchmark"):
+                settings.pop(f"{prefix}_price_basis")
+                settings[f"{prefix}_format"] = "returns"
+                settings[f"{prefix}_return_unit"] = "percent"
+                settings[f"{prefix}_return_basis"] = (
+                    "mixed_adjusted_and_unadjusted_price_return" if prefix == "stock"
+                    else "price_index_return")
+            write_json(paths["market_config"], settings)
+            self.assertEqual(read_config(paths["market_config"])["stock_return_basis"],
+                             "mixed_adjusted_and_unadjusted_price_return")
+            report = import_market(paths["market_config"], root / "prepared")
+            self.assertEqual(report["counts"]["market_rows"], 200)
+            self.assertEqual(report["settings"]["stock_return_basis"],
+                             "mixed_adjusted_and_unadjusted_price_return")
+
     def test_visibility_date_only_after_close_weekend_and_timezone(self):
         self.assertEqual(str(visibility_anchor({"event_date": "2020-01-03", "visible_date": "2020-01-03"})[0]), "2020-01-04")
         self.assertEqual(str(visibility_anchor({"event_date": "2020-01-03", "visible_at": "2020-01-03T07:00:00Z"})[0]), "2020-01-04")
@@ -144,6 +164,19 @@ class MarketPipelineTest(unittest.TestCase):
             write_json(paths["experiment_config"], config)
             report = run_experiments(paths["experiment_config"], root / "results")
             self.assertEqual(report["results"][0]["event_date_used"], "2020-03-23")
+
+    def test_official_2018_page_timestamp_matches_conservative_date_anchor(self):
+        config_dir = Path(__file__).parents[1] / "research" / "configs"
+        date_config = load_experiment(config_dir / "observed_pilot_2018.json")
+        timestamp_config = load_experiment(config_dir / "observed_pilot_2018_page_timestamp.json")
+        date_event = date_config["events"][0]
+        timestamp_event = timestamp_config["events"][0]
+        self.assertEqual(timestamp_event["visible_at"], "2018-04-27T18:38:49+08:00")
+        self.assertEqual(date_event["event_date"], timestamp_event["event_date"])
+        self.assertEqual(visibility_anchor(date_event)[0], visibility_anchor(timestamp_event)[0])
+        self.assertEqual(str(visibility_anchor(timestamp_event)[0]), "2018-04-28")
+        self.assertIn("date_only", visibility_anchor(date_event)[1])
+        self.assertIn("timestamp", visibility_anchor(timestamp_event)[1])
 
     def test_failures_are_recorded_without_reducing_an_event_mean(self):
         with tempfile.TemporaryDirectory() as tmp:

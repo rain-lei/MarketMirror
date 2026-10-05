@@ -1,0 +1,18 @@
+{
+  "version": "pre-wuhan-background-news-liquidity-2x2-v1",
+  "reference_archive": "../../research_outputs/pre_wuhan_common_shock_balanced_2019_v1.json",
+  "reference_archive_sha256": "9317133b31cfc80c7e4e9d4144b00319c7fcd46e845f249b7cf3de804c21bbd6",
+  "development_start": "2019-11-01",
+  "development_end": "2019-12-31",
+  "common_amplitude": 0.20,
+  "pulse_sessions": [10, 11, 26, 27],
+  "pulse_polarities": [1, 1, -1, -1],
+  "issuer_seed": "marketmirror-synthetic-exposure-v1",
+  "variants": [
+    {"name": "strategy_only", "valuation_response_bps": 0, "pulse_participation_bps": 10000},
+    {"name": "background_valuation", "valuation_response_bps": 200, "pulse_participation_bps": 10000},
+    {"name": "background_liquidity_fade", "valuation_response_bps": 0, "pulse_participation_bps": 5000},
+    {"name": "background_valuation_and_fade", "valuation_response_bps": 200, "pulse_participation_bps": 5000}
+  ],
+  "interpretation": "Predeclared synthetic stress response grid on consumed development data; no historical event valuation, order flow or predictive gain is inferred from these parameters. Liquidity participation is halved only at nonzero common pulses."
+}

@@ -1,0 +1,117 @@
+{
+  "agent_signal_enabled": false,
+  "dense_audit_sessions": [
+    0,
+    10
+  ],
+  "expected_coverage": {
+    "companies": 123,
+    "conditions": 30,
+    "full_path_records": 52890,
+    "original_full_trace_records": 3526,
+    "paths": 1230,
+    "same_state_scaled_records": 35260,
+    "sessions": 43
+  },
+  "frozen_at_utc": "2026-10-01T14:26:54.831990+00:00",
+  "hypothesis": "Test own-generated-price momentum feeding both strategy beliefs/targets and base quotes. Shared/private information, profile bias, risk/limits, inventories, wallets, fees and causal own-price risk observation remain. Scaling includes both positive and contrarian original loadings.",
+  "inputs": {
+    "research/configs/wuhan_pre_event_pit_portfolio_no_text_2020.json": "097012736f5a1b51d60a5de4af8e304d8619a20bb7c92556dd3872555eae6b1f",
+    "research/simulation/audit_own_price_feedback.py": "3804f6d6f9fd933b47de6d0601f928026a0a88c147a2785c6f5e581ef1d37e6a",
+    "research/simulation/audit_pre_wuhan_allocation_attribution_2019.py": "9b17d10eb4fafe5bbac6cb38a534590a9c457b7762f58838f74eee332e9fbe31",
+    "research/simulation/own_price_feedback.py": "f83934f166142515abcf2ccf74df1b29d3f5028e09fd7e67667035cb42add55d",
+    "research/simulation/own_price_feedback_metrics.py": "082b04a028cb3924d44f99d77bb11636cd72c634f25cd3511811f6a6caccbd00",
+    "research/simulation/portfolio_market.py": "05bda444ab40fda1d0623f80de9b7dd507818250b1291ebe549fb9c108e011fa",
+    "research/simulation/portfolio_own_price_feedback.py": "1484790c99eb22c92ff14aa31aaeddf9f50d8458a0acc8169051f9912dc86a91",
+    "research/simulation/run_pre_wuhan_own_price_feedback_2019.py": "869b2d20712eb2bdf486fdd1f1e362e2322ff537d72527e3f8699a7ecbb2a21f",
+    "research/simulation/verify_pre_wuhan_own_price_feedback_2019.py": "05bda101fc783b3a192f86c7166c675874e5266a48f8a43a4be0fcb6956d3713",
+    "research_outputs/pre_wuhan_allocation_attribution_final_verification_20261001.json": "38fee39835ad6af646135aacc484fd74ee301f95b5570f23388e28b96bcf7361",
+    "research_outputs/pre_wuhan_quantity_controls_2019_v1/ledger.jsonl.gz": "3be5a1113105aed9e119e021a7c3cf0c73aa7a58f78497b301eb98282baea90b",
+    "research_outputs/pre_wuhan_quantity_controls_2019_v1/manifest.json": "e24f2c70e61ae97fa3e6147fa0048c5dd8fe94f7ea1745d635af97825ec50ce2",
+    "research_outputs/pre_wuhan_quantity_controls_2019_v1/results.json": "6d3e32c56e0bea8fa17c69306bafb5f04d062cb37bef9b708654175ad5cee2b7",
+    "tests/test_own_price_feedback.py": "7d913e79c5311a2bf6c727ab0d93e5963e707621c9948c4f64700dc46b905ba4",
+    "tests/test_own_price_feedback_metrics.py": "7019f455eaa984723df022146d8b03494b4efa84f0f50df0be1ead724fddc6ed"
+  },
+  "interpretation": "Consumed 2019 development sample selected retrospectively from later question activity. The prior factual attribution and baseline paths were inspected before freeze. Same-state order contrasts are hypothetical submitted strategies with no accepted/fill or new closing prices; full conditions each advance their own resources and price history. All seed/condition outcomes retained without selecting a winner. No text/semantic/financial/economic release, no trained investor or causal policy/prediction claim. Original t-2 input, t-1 execution reference, t-labelled synthetic clock remains.",
+  "joint_limit_origin": "Mean/pooled volatility/zero tolerances are inherited from the existing development screen. Absolute average-stock-correlation gap 0.1 and portfolio volatility ratio [0.5,2] are explicit engineering hypotheses for this controlled development experiment, not fitted or empirically validated release criteria.",
+  "joint_limits": {
+    "mean_return_gap_max": 0.005,
+    "portfolio_volatility_ratio_max": 2.0,
+    "portfolio_volatility_ratio_min": 0.5,
+    "stock_correlation_gap_max": 0.1,
+    "volatility_ratio_max": 2.0,
+    "volatility_ratio_min": 0.5,
+    "zero_return_fraction_gap_max": 0.1
+  },
+  "seed_scope": "Five internal stochastic bundles change arrival, background target draws, issuer innovations and private receipt draws together across bundles, paired within each bundle. Common/industry paths, profile cohort, original parameters and market sample remain fixed. Four new internal seeds do not constitute independent historical validation.",
+  "seeds": [
+    {
+      "arrival_seed": 7,
+      "background_seed": 7,
+      "information_seed": "marketmirror-issuer-information-coverage-v1",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1",
+      "seed_id": "reference_seed7"
+    },
+    {
+      "arrival_seed": 11,
+      "background_seed": 11,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:11",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:11",
+      "seed_id": "replicate_seed11"
+    },
+    {
+      "arrival_seed": 23,
+      "background_seed": 23,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:23",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:23",
+      "seed_id": "replicate_seed23"
+    },
+    {
+      "arrival_seed": 47,
+      "background_seed": 47,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:47",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:47",
+      "seed_id": "replicate_seed47"
+    },
+    {
+      "arrival_seed": 89,
+      "background_seed": 89,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:89",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:89",
+      "seed_id": "replicate_seed89"
+    }
+  ],
+  "variants": [
+    {
+      "background_anchor": "initial_inventory",
+      "name": "initial_inventory_feedback_full",
+      "scale": 1.0
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "name": "initial_inventory_feedback_half",
+      "scale": 0.5
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "name": "initial_inventory_feedback_off",
+      "scale": 0.0
+    },
+    {
+      "background_anchor": "current_inventory",
+      "name": "current_inventory_feedback_full",
+      "scale": 1.0
+    },
+    {
+      "background_anchor": "current_inventory",
+      "name": "current_inventory_feedback_half",
+      "scale": 0.5
+    },
+    {
+      "background_anchor": "current_inventory",
+      "name": "current_inventory_feedback_off",
+      "scale": 0.0
+    }
+  ],
+  "version": "pre-wuhan-own-price-feedback-five-seed-full-path-v1"
+}

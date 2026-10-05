@@ -1,0 +1,25 @@
+{
+  "agent_signal_enabled": false,
+  "expected_decisions": 84624,
+  "expected_ledger_records": 7052,
+  "expected_positions": 253872,
+  "freeze_scope": "Earlier allocation totals and consumed source ledgers already inspected. Freeze bias/own-price/shared/private stage order before computing their full-panel attribution. Not blind evidence.",
+  "frozen_at_utc": "2026-10-01T13:27:56.607747+00:00",
+  "inputs": {
+    "research_outputs/pre_wuhan_allocation_attribution_2019_v1/manifest.json": "8284b86eff808267b5f135f7f330ccf8b5743e6d2bdd0f1fabb9b3b1d2bc7351",
+    "research_outputs/pre_wuhan_allocation_attribution_2019_v1/positions.jsonl.gz": "95d75f0ad8d8b42703fc88aa46664a03e321a9005f671087da9136df61a0f0d3",
+    "research_outputs/pre_wuhan_allocation_attribution_2019_v1/results.json": "e0a07d3d963290a5b3eb4e7cca622ec5e0f32658aebbb278403cfee1a2a0d39a",
+    "research_outputs/pre_wuhan_allocation_attribution_statistics_2019_v1.json": "5ff0bb2325256f075acb415cc0a40cf1613156ecc576db336a4f56334ed7cfff",
+    "research_outputs/pre_wuhan_quantity_controls_2019_v1/ledger.jsonl.gz": "3be5a1113105aed9e119e021a7c3cf0c73aa7a58f78497b301eb98282baea90b",
+    "research_outputs/pre_wuhan_quantity_controls_2019_v1/manifest.json": "e24f2c70e61ae97fa3e6147fa0048c5dd8fe94f7ea1745d635af97825ec50ce2",
+    "research_outputs/pre_wuhan_quantity_controls_2019_v1/results.json": "6d3e32c56e0bea8fa17c69306bafb5f04d062cb37bef9b708654175ad5cee2b7"
+  },
+  "interpretation": "Fixed ordered exposure bookkeeping: zero-view base, profile bias, own generated-price momentum given bias, shared common/industry shocks given prior, then actually received private synthetic issuer message. All market clamp and nonnegative total-exposure floor retained; total-risk cap belongs to the separately audited subsequent allocation stage. Values telescope to prior factual belief-total-exposure component, not causal sale attribution or path counterfactuals. Own-price momentum is generated simulation history, not newly observed market input. No calibration or economic/Agent release.",
+  "sources": [
+    "profile_bias",
+    "own_price_momentum_given_bias",
+    "shared_shocks_given_prior",
+    "private_issuer_given_prior"
+  ],
+  "version": "pre-wuhan-ordered-belief-exposure-source-attribution-v1"
+}

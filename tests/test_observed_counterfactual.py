@@ -5,6 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from research.baselines.run_experiments import load_experiment as load_event_experiment, visibility_anchor
 from research.simulation.agents import AgentParameters
 from research.simulation.observed_counterfactual import (compare_scenarios, load_config,
                                                          scenario_steps)
@@ -43,6 +44,36 @@ class ObservedCounterfactualTest(unittest.TestCase):
         invalid[1]["signal_cutoff_date"] = invalid[1]["execution_reference_date"]
         with self.assertRaisesRegex(ValueError, "order"):
             scenario_steps(invalid, "2020-01-03", 0.9, 0.1, 2)
+
+    def test_wuhan_date_only_and_effective_time_proxy_have_distinct_agent_signal_days(self):
+        event_config = load_event_experiment(ROOT / "research/configs/observed_pilot_2020.json")
+        events = {event["event_id"]: event for event in event_config["events"]}
+        date_only = events["wuhan_date_only_conservative"]
+        effective_proxy = events["wuhan_effective_time_upper_bound"]
+        timestamp_config = load_event_experiment(ROOT / "research/configs/observed_pilot_2020_xinhua_timestamp.json")
+        page_timestamp = timestamp_config["events"][0]
+        self.assertEqual(str(visibility_anchor(date_only)[0]), "2020-01-24")
+        self.assertEqual(str(visibility_anchor(effective_proxy)[0]), "2020-01-23")
+        self.assertEqual(str(visibility_anchor(page_timestamp)[0]), "2020-01-23")
+        self.assertIn("03:15:55", page_timestamp["visible_at"])
+
+        steps = [
+            {"trade_date": trade, "signal_cutoff_date": cutoff, "execution_reference_date": reference,
+             "observed_return": 0.0, "market_signal": 0.0, "estimated_volatility": 0.02}
+            for trade, cutoff, reference in (
+                ("2020-01-23", "2020-01-21", "2020-01-22"),
+                ("2020-02-03", "2020-01-22", "2020-01-23"),
+                ("2020-02-04", "2020-01-23", "2020-02-03"),
+                ("2020-02-05", "2020-02-03", "2020-02-04"),
+                ("2020-02-06", "2020-02-04", "2020-02-05"),
+            )
+        ]
+        _, date_timing = scenario_steps(steps, str(visibility_anchor(date_only)[0]), -0.8, 0.6, 2)
+        _, proxy_timing = scenario_steps(steps, str(visibility_anchor(effective_proxy)[0]), -0.8, 0.6, 2)
+        _, page_timing = scenario_steps(steps, str(visibility_anchor(page_timestamp)[0]), -0.8, 0.6, 2)
+        self.assertEqual(date_timing["first_signal_trade_date"], "2020-02-05")
+        self.assertEqual(proxy_timing["first_signal_trade_date"], "2020-02-04")
+        self.assertEqual(page_timing["first_signal_trade_date"], "2020-02-04")
 
     def test_zero_impact_and_scenario_ablation(self):
         result = self.compare()

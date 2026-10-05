@@ -1,0 +1,179 @@
+{
+  "version": "investor_statistics_source_contract_2019_2020_v1",
+  "registered_at_utc": "2026-10-04T05:43:47.365500+00:00",
+  "status": "PRIMARY_SOURCE_CONTENT_VERIFIED_NOT_EMPIRICAL_AGENT_CALIBRATION",
+  "bindings": {
+    ".firecrawl/investor_calibration_sse_2020_v1/original.pdf": "ba0667ad2e42187c95b57dd59f609178c5b1a5490eb2fc8365f55800120ead58",
+    ".firecrawl/investor_calibration_sse_2020_v1/extracted.txt": "c4ece55a8b4fc2980ebb36a1e6f33f40d8a1c9c651e8755623467e1e153f24b8",
+    ".firecrawl/investor_calibration_szse_2020_survey_https_primary_20261004_v2.json": "76109925ee56e7f86c3e80791b2b2c58dbe29e21ee4c3be4af7527af83cd3950",
+    "research_outputs/investor_calibration_sse_2020_capture_20261004_v1.json": "6ee8778ad604d5528ebf1798a13a0bf5b13ea57d1fd82901f78d308f6d87c65a",
+    ".firecrawl/investor_calibration_sse_yearly_primary_20261004_v1.json": "f964052b029bc1ae886ee135b81043168af71c72441d142bfde10b19e57f40ef",
+    "research/data_pipeline/investor_statistics_sources.py": "c54b9b520a1ac16e60096b3d9e01fbdac1e2eeebeb1d45306d79e023eb5275aa",
+    "tests/test_investor_statistics_sources.py": "596998c0eefc11d904815bbc1452bd647ca38d52139feacb227c46ca85939694",
+    "research_outputs/prepare_investor_statistics_20261004_v1.py": "43dd90824ea0c3217f5cb490672127e77fe36f2aaf3080f2f1f885f138f1fb8d",
+    "research_outputs/investor_statistics_source_tests_20261004_v1.txt": "5a893a697ad908809b78166cc41af8cd3bb91ab6fec9ddcaacc4ff8b462d1ed3",
+    "research/configs/investor_statistics_visual_review_2019_v1.json": "58f5d4e600bab214b695fabbcd3f2a70ea959f1a5d64e71a690418b5f8fc4860",
+    "research_outputs/investor_statistics_source_snapshot_20261004_v1.json": "04332db4b1a9a9cd59b1f260ea1a6cab9b26eec00b031e7e5185c9f98e446ed2",
+    ".firecrawl/investor_calibration_sse_2020_v1/cover-001.png": "de487719822cf7eeafcb621baec4c24b9a4da3f0f8845badfe84ae93573315b8",
+    ".firecrawl/investor_calibration_sse_2020_v1/notes-008.png": "ecf6ba77d995b4c725d062d46a0f7e95fa10666a336127efaad25792351c14bb",
+    ".firecrawl/investor_calibration_sse_2020_v1/notes-009.png": "b713e4e46475303514c1efe2b13648d5c6c1e4301032831f49023f4c78808195",
+    ".firecrawl/investor_calibration_sse_2020_v1/holdings-576.png": "8b868321bc5ce2807262ae20537ad58310b38004f38ea1c5d8189a53a4d653d7",
+    ".firecrawl/investor_calibration_sse_2020_v1/turnover-578.png": "ee86ddc5c6d616b9d5b2e860697930d2e904be8a0f61b659e3f3fec359af2808"
+  },
+  "source_clocks": {
+    "sse_yearbook_2020_2019_statistics": {
+      "observation_start": "2019-01-01",
+      "observation_end": "2019-12-31",
+      "publisher_date": null,
+      "first_publication_timestamp": null,
+      "original_public_version_verified": false
+    },
+    "szse_2020_survey_release": {
+      "nominal_survey_year": 2020,
+      "fieldwork_start": null,
+      "fieldwork_end": null,
+      "publisher_date": "2021-05-17",
+      "first_publication_timestamp": null,
+      "original_public_version_verified": false
+    }
+  },
+  "availability_by_cutoff": {
+    "sse_yearbook_2020_2019_statistics": {
+      "2019-11-20T09:00:00+08:00": {
+        "strict": {
+          "eligible": false,
+          "reason": "unknown_first_publication_time",
+          "point_in_time_certified": false
+        },
+        "declared_date_proxy": {
+          "eligible": false,
+          "reason": "unknown_first_publication_time",
+          "point_in_time_certified": false
+        }
+      },
+      "2020-01-20T09:00:00+08:00": {
+        "strict": {
+          "eligible": false,
+          "reason": "unknown_first_publication_time",
+          "point_in_time_certified": false
+        },
+        "declared_date_proxy": {
+          "eligible": false,
+          "reason": "unknown_first_publication_time",
+          "point_in_time_certified": false
+        }
+      },
+      "2021-03-31T09:00:00+08:00": {
+        "strict": {
+          "eligible": false,
+          "reason": "unknown_first_publication_time",
+          "point_in_time_certified": false
+        },
+        "declared_date_proxy": {
+          "eligible": false,
+          "reason": "unknown_first_publication_time",
+          "point_in_time_certified": false
+        }
+      },
+      "2022-03-31T09:00:00+08:00": {
+        "strict": {
+          "eligible": false,
+          "reason": "unknown_first_publication_time",
+          "point_in_time_certified": false
+        },
+        "declared_date_proxy": {
+          "eligible": false,
+          "reason": "unknown_first_publication_time",
+          "point_in_time_certified": false
+        }
+      }
+    },
+    "szse_2020_survey_release": {
+      "2019-11-20T09:00:00+08:00": {
+        "strict": {
+          "eligible": false,
+          "reason": "future_publisher_date",
+          "point_in_time_certified": false
+        },
+        "declared_date_proxy": {
+          "eligible": false,
+          "reason": "future_publisher_date",
+          "point_in_time_certified": false
+        }
+      },
+      "2020-01-20T09:00:00+08:00": {
+        "strict": {
+          "eligible": false,
+          "reason": "future_publisher_date",
+          "point_in_time_certified": false
+        },
+        "declared_date_proxy": {
+          "eligible": false,
+          "reason": "future_publisher_date",
+          "point_in_time_certified": false
+        }
+      },
+      "2021-03-31T09:00:00+08:00": {
+        "strict": {
+          "eligible": false,
+          "reason": "future_publisher_date",
+          "point_in_time_certified": false
+        },
+        "declared_date_proxy": {
+          "eligible": false,
+          "reason": "future_publisher_date",
+          "point_in_time_certified": false
+        }
+      },
+      "2022-03-31T09:00:00+08:00": {
+        "strict": {
+          "eligible": false,
+          "reason": "unknown_intraday_publication_time",
+          "point_in_time_certified": false
+        },
+        "declared_date_proxy": {
+          "eligible": true,
+          "reason": "declared_publisher_date_proxy_only",
+          "point_in_time_certified": false
+        }
+      }
+    }
+  },
+  "source_urls": {
+    "sse_yearbook_catalog": "https://www.sse.com.cn/aboutus/publication/yearly/",
+    "sse_yearbook_original_pdf": "https://www.sse.com.cn/aboutus/publication/yearly/documents/c/10061074/files/4ea3a8b53f144e69879a56b3bc4569c9.pdf",
+    "szse_survey": "https://www.szse.cn/aboutus/trends/news/t20210517_585948.html"
+  },
+  "full_source_scope": {
+    "holdings_rows": 11,
+    "industry_holdings_rows": 18,
+    "table_numeric_fields": 152,
+    "survey_fields": 8,
+    "survey_valid_questionnaires": 27667
+  },
+  "cohort_market_prefix_inventory_only": {
+    "sse_prefix": 40,
+    "szse_prefix": 83,
+    "all": 123,
+    "per_security_holdings_coverage_verified": false
+  },
+  "notes": {
+    "matched_turnover_counting": "single_sided",
+    "investor_buy_plus_sell_counting": "double_sided",
+    "holding_percentages_are_not_trading_or_cash_percentages": true,
+    "holding_account_size_bins_are_not_risk_preference_labels": true,
+    "general_corporations_are_not_professional_institutions": true,
+    "investment_funds_are_a_subgroup_not_an_additional_total": true,
+    "reported_zero_does_not_certify_zero_accounts": true,
+    "investor_profit_loss_notes_exclude_transfer_fees_and_commissions": true,
+    "unrestricted_A_share_note_needs_table_specific_population_reconciliation": true
+  },
+  "role_parameters_calibrated": false,
+  "point_in_time_feed_certified": false,
+  "cash_and_inventory_scale_identified": false,
+  "agent_type_shares_identified": false,
+  "transport_2022_numerical_protocol_changed": false,
+  "transport_2022_protocol_sha256": "ecd2920b4d95dd7ae60aa2b429276f544a9b9e28388dbed49767f8cbb256db9e",
+  "model_adapter_enabled": false,
+  "goal_complete": false
+}

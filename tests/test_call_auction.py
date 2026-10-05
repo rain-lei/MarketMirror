@@ -3,6 +3,9 @@ import random
 import unittest
 
 from research.simulation.call_auction import AuctionAccount, CallAuction, LimitOrder
+from research.simulation.audit_background import reconstruct_day
+from research.simulation.audit_background import interval_price
+from research.simulation.audit_auction import audit_day
 
 
 def order(owner, side, quantity, price=1000, sequence=0):
@@ -27,6 +30,58 @@ class CallAuctionTest(unittest.TestCase):
         self.assertEqual(venue.fee_pool_minor, 10)
         self.assertEqual(result["cash_total_minor"] + result["fee_pool_minor"], 10100)
         self.assertEqual(sum(row["shares"] for row in result["accounts"].values()), 10)
+
+    def test_order_pressure_tie_break_reprices_and_independent_audits_agree(self):
+        settings = {"price_start_minor": 1000, "lot_size": 1, "tick_minor": 1,
+                    "fee_bps": 0, "price_band_bps": 2000}
+        accounts = {"buyer": AuctionAccount(20000, 0, 0),
+                    "seller": AuctionAccount(0, 10, 10)}
+        orders = [order("buyer", "buy", 10, 1100), order("seller", "sell", 5, 900, 1)]
+        baseline = CallAuction(accounts, 1000, 1, 1, 0, 2000).clear(0, orders)
+        pressure = CallAuction(accounts, 1000, 1, 1, 0, 2000,
+                               "accepted_order_pressure").clear(0, orders)
+        self.assertEqual((baseline["price_after_minor"], pressure["price_after_minor"]), (1000, 1100))
+        self.assertEqual(pressure["matched_volume"], 5)
+        previous = {"accounts": {name: vars(account) for name, account in accounts.items()},
+                    "price_minor": 1000, "fee_pool_minor": 0,
+                    "initial_cash_minor": 20000, "initial_shares": 10}
+        record = {"trade_date": "2020-02-12", "signal_cutoff_date": "2020-02-10",
+                  "execution_reference_date": "2020-02-11", "auction": pressure}
+        reconstructed = reconstruct_day(record, previous, settings, 0, "accepted_order_pressure")
+        self.assertEqual(reconstructed,
+                         audit_day(record, previous, settings, 0, "accepted_order_pressure"))
+        with self.assertRaisesRegex(ValueError, "clearing"):
+            reconstruct_day(record, previous, settings, 0)
+
+    def test_order_pressure_sign_and_zero_pressure_fallback(self):
+        accounts = {"buyer": AuctionAccount(20000, 0, 0),
+                    "seller": AuctionAccount(0, 10, 10)}
+        sell_pressure = CallAuction(accounts, 1000, 1, 1, 0, 2000,
+                                    "accepted_order_pressure").clear(
+            0, [order("buyer", "buy", 5, 1100), order("seller", "sell", 10, 900, 1)])
+        neutral = CallAuction(accounts, 1000, 1, 1, 0, 2000,
+                              "accepted_order_pressure").clear(
+            0, [order("buyer", "buy", 5, 1100), order("seller", "sell", 5, 900, 1)])
+        self.assertEqual(sell_pressure["price_after_minor"], 900)
+        self.assertEqual(neutral["price_after_minor"], 1000)
+
+    def test_sse_midpoint_tie_break_rounds_half_up_and_audits_independently(self):
+        settings = {"price_start_minor": 1000, "lot_size": 1, "tick_minor": 1,
+                    "fee_bps": 0, "price_band_bps": 2000}
+        accounts = {"buyer": AuctionAccount(20000, 0, 0),
+                    "seller": AuctionAccount(0, 10, 10)}
+        venue = CallAuction(accounts, 1000, 1, 1, 0, 2000, "sse_midpoint")
+        result = venue.clear(0, [order("buyer", "buy", 10, 1000),
+                                 order("seller", "sell", 5, 901, 1)])
+        self.assertEqual((result["price_after_minor"], result["matched_volume"]), (951, 5))
+        previous = {"accounts": {name: vars(account) for name, account in accounts.items()},
+                    "price_minor": 1000, "fee_pool_minor": 0,
+                    "initial_cash_minor": 20000, "initial_shares": 10}
+        record = {"trade_date": "2020-02-12", "signal_cutoff_date": "2020-02-10",
+                  "execution_reference_date": "2020-02-11", "auction": result}
+        self.assertEqual(interval_price(result, settings, "sse_midpoint"), (951, 5, 5))
+        self.assertEqual(reconstruct_day(record, previous, settings, 0, "sse_midpoint"),
+                         audit_day(record, previous, settings, 0, "sse_midpoint"))
 
     def test_cash_reservation_includes_limit_price_fee_and_inventory_caps(self):
         venue = self.venue({"buyer": AuctionAccount(2202, 0, 0), "seller": AuctionAccount(0, 10, 2)})
@@ -117,6 +172,27 @@ class CallAuctionTest(unittest.TestCase):
             self.assertEqual(result["price_after_minor"], expected[0] if expected[1] else 10)
             for trade in result["trades"]:
                 self.assertNotEqual(trade["buyer"], trade["seller"])
+
+    def test_pressure_candidate_search_matches_dense_ticks(self):
+        rng = random.Random(20260929)
+        for _ in range(200):
+            accounts = {"buy0": AuctionAccount(100000, 0, 0), "buy1": AuctionAccount(100000, 0, 0),
+                        "sell0": AuctionAccount(0, 100, 100), "sell1": AuctionAccount(0, 100, 100)}
+            orders = [order(owner, "buy" if owner.startswith("buy") else "sell", rng.randint(1, 15),
+                            rng.randint(5, 15), i) for i, owner in enumerate(accounts)]
+            pressure = sum(row.quantity * (1 if row.side == "buy" else -1) for row in orders)
+            scores = []
+            for price in range(5, 16):
+                demand = sum(row.quantity for row in orders if row.side == "buy" and row.limit_price_minor >= price)
+                supply = sum(row.quantity for row in orders if row.side == "sell" and row.limit_price_minor <= price)
+                scores.append((price, min(demand, supply), demand - supply))
+            expected = min(scores, key=lambda row: (
+                -row[1], abs(row[2]), -row[0] if pressure > 0 else row[0]) if pressure else
+                (-row[1], abs(row[2]), abs(row[0] - 10), row[0]))
+            venue = CallAuction(accounts, 10, 1, 1, 0, 5000, "accepted_order_pressure")
+            result = venue.clear(0, orders)
+            self.assertEqual(result["matched_volume"], expected[1])
+            self.assertEqual(result["price_after_minor"], expected[0] if expected[1] else 10)
 
 
 if __name__ == "__main__":

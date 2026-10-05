@@ -1,0 +1,17 @@
+{
+  "agent_signal_enabled": false,
+  "audit_path": "research_outputs/issuer_half_balance_sheet_audit_2019_v2.json",
+  "candidates_path": "research_outputs/issuer_half_balance_sheet_candidates_2019_v3.json",
+  "expected_companies": 123,
+  "frozen_at_utc": "2026-10-01T11:50:48.474238+00:00",
+  "inputs": {
+    "research_outputs/issuer_half_balance_sheet_audit_2019_v2.json": "d83c9194a033b761aa5ba2d2e5092c89e6d382fedf7d3efdaecc8e98ef7822d5",
+    "research_outputs/issuer_half_balance_sheet_candidates_2019_v3.json": "33974a19cf224d6da569db085ef2c737223bcd118ca12ad00e5196e89ec9739e",
+    "research_outputs/issuer_half_financing_states_2019_v1.json": "aa13fd8d76787b3fe7e2ded7d63168b2310f8deaf4e864b563924a60823420ba",
+    "research_outputs/issuer_half_restricted_asset_states_2019_v1.json": "0cd230c9da3bc1098efbfa6749a5ef8463bfc7a5b76c3c25f8036d432fec2c11"
+  },
+  "interpretation": "Independent state arithmetic/association audit without production financing imports. Current money/debt/assets are checked against earlier independently re-read physical balance cells, restriction relationships against already audited source rows and printed currency evidence. Checks retained missingness, upstream QC, nonfinancial/financial exclusions, dates/scope/source hash, Decimal ratios, and absence of unsupported free cash/complete debt/economic signals. A passing contract certifies correct adoption/retention, not that every source is resolved or prediction improves.",
+  "restricted_states_path": "research_outputs/issuer_half_restricted_asset_states_2019_v1.json",
+  "states_path": "research_outputs/issuer_half_financing_states_2019_v1.json",
+  "version": "half-year-independent-financing-state-contract-audit-v1"
+}

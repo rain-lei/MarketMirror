@@ -1,0 +1,113 @@
+import json
+import tempfile
+import unittest
+from unittest.mock import patch
+from pathlib import Path
+
+from design.server import PlatformStore, RunInProgress, atomic_json, create_server, preview_run, validate_experiment
+
+
+class PlatformStoreTest(unittest.TestCase):
+    def test_exclusive_server_and_restart_recovery(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            store = PlatformStore(directory)
+            record = store.create(self.payload())
+            path = directory / record['id'] / 'experiment.json'
+            first = create_server(directory, 0)
+            try:
+                atomic_json(path, {**record, 'run_status': 'running', 'run_attempts': 1})
+                with self.assertRaises(RuntimeError):
+                    create_server(directory, 0)
+                self.assertEqual(store.get(record['id'])['run_status'], 'running')
+            finally:
+                first.server_close()
+            restarted = create_server(directory, 0)
+            try:
+                recovered = store.get(record['id'])
+                self.assertEqual(recovered['run_status'], 'interrupted')
+                self.assertEqual(recovered['run_attempts'], 1)
+                self.assertEqual(recovered['strategy_parameters_sha256'], record['strategy_parameters_sha256'])
+                self.assertEqual(recovered['run_error']['type'], 'ServiceInterrupted')
+                self.assertTrue(store.run(record['id'])['audit']['passed'])
+                self.assertEqual(store.get(record['id'])['run_attempts'], 2)
+            finally:
+                restarted.server_close()
+
+    def payload(self):
+        return {"title": "测试实验", "source": "这是一段足够长的政策消息，用于验证本地平台输入和保存流程。", "type": "政策消息",
+                "published_at": "2026-10-05T09:00", "signal": .6, "uncertainty": .2, "duration": 6,
+                "sessions": 18, "seed": 7, "cash": 1_000_000}
+
+    def test_validate_and_persist(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = PlatformStore(Path(tmp)); record = store.create(self.payload())
+            self.assertEqual(store.list()[0]["title"], "测试实验")
+            result = store.run(record["id"])
+            self.assertEqual(result["mode"], "synthetic_market")
+            self.assertTrue(result['audit']['passed'])
+            self.assertEqual(len(result['paths']['with_message']['summary']['role_wealth_multiple']), 3)
+            self.assertEqual(store.get(record["id"])["run_status"], "completed")
+
+    def test_validation_rejects_private_or_unknown_fields(self):
+        with self.assertRaises(ValueError): validate_experiment({**self.payload(), "unknown": 1})
+        with self.assertRaises(ValueError): validate_experiment({**self.payload(), "signal": 3})
+        with self.assertRaises(ValueError): validate_experiment({**self.payload(), "source": "太短"})
+
+    def test_failed_run_is_recorded_and_retry_preserves_configuration(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = PlatformStore(Path(tmp))
+            record = store.create(self.payload())
+            def fail(_record):
+                self.assertEqual(store.get(record['id'])['run_status'], 'running')
+                with self.assertRaises(RunInProgress):
+                    store.run(record['id'])
+                self.assertEqual(store.get(record['id'])['run_attempts'], 1)
+                self.assertTrue(store.strategies()['parameters'])
+                raise RuntimeError('internal detail should not be persisted')
+            with patch('design.server.run_market', side_effect=fail), self.assertRaises(RuntimeError):
+                store.run(record['id'])
+            failed = store.get(record['id'])
+            self.assertEqual(failed['run_status'], 'failed')
+            self.assertEqual(failed['run_attempts'], 1)
+            self.assertNotIn('internal detail', json.dumps(failed))
+            self.assertIsNone(store.result(record['id']))
+            result = store.run(record['id'])
+            retried = store.get(record['id'])
+            self.assertEqual(retried['run_attempts'], 2)
+            self.assertEqual(retried['run_status'], 'completed')
+            self.assertIsNone(retried['run_error'])
+            self.assertEqual(retried['strategy_parameters_sha256'], record['strategy_parameters_sha256'])
+            with patch('design.server.run_market', side_effect=RuntimeError('failed')), self.assertRaises(RuntimeError):
+                store.run(record['id'])
+            self.assertEqual(store.get(record['id'])['run_status'], 'failed')
+            self.assertEqual(store.result(record['id']), result)
+
+    def test_preview_is_explicitly_not_scientific(self):
+        result = preview_run(validate_experiment(self.payload()))
+        self.assertEqual(result["mode"], "platform_preview")
+        self.assertTrue(result["limitations"])
+        self.assertEqual([r["name"] for r in result["roles"]], ["激进型", "保守型", "机构型"])
+
+    def test_invalid_parameters_are_not_silently_coerced(self):
+        invalid = {"seed": [7.8, True, "7", None], "sessions": [18.5, False],
+                   "duration": [6.5], "signal": [float("nan"), float("inf"), True],
+                   "cash": [float("inf"), None], "type": [[]],
+                   "published_at": ["notTaDate", "2026-02-30T09:00"]}
+        for field, values in invalid.items():
+            for value in values:
+                with self.subTest(field=field, value=value), self.assertRaises(ValueError):
+                    validate_experiment({**self.payload(), field: value})
+
+    def test_history_survives_store_restart(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = PlatformStore(Path(tmp))
+            record = store.create(self.payload())
+            result = store.run(record["id"])
+            reopened = PlatformStore(Path(tmp))
+            self.assertEqual(reopened.get(record["id"])["seed"], 7)
+            self.assertEqual(reopened.result(record["id"]), result)
+            self.assertEqual(reopened.list()[0]["run_status"], "completed")
+
+
+if __name__ == "__main__": unittest.main()

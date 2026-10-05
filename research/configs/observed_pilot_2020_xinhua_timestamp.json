@@ -1,0 +1,23 @@
+{
+  "run_id": "wuhan_2020_three_stock_xinhua_publication_timestamp_sensitivity",
+  "market_manifest": "../../research_outputs/observed_2020/prepared/market_manifest.json",
+  "data_kind": "observed",
+  "evidence_manifest": "../../research_outputs/observed_2020/evidence/wuhan_timestamp_evidence_manifest.json",
+  "stock_codes": ["000001", "000002", "600519"],
+  "windows": {
+    "estimation_window": 120,
+    "pre_event_gap": 5,
+    "window_before": 3,
+    "window_after": 5
+  },
+  "events": [
+    {
+      "event_id": "wuhan_xinhua_publication_timestamp",
+      "event_date": "2020-01-23",
+      "visible_at": "2020-01-23T03:15:55+08:00",
+      "event_type": "epidemic_policy_verified_source_publication_time",
+      "evidence_source": "https://www.xinhuanet.com/politics/2020-01/23/c_1125495557.htm",
+      "description": "新华社保存的通告全文页面显示发布于03:15:55；原页面没有写时区，本配置按中国本地时间UTC+08解释，因此早于A股开盘。武汉市生态环境局的后续回顾称市级指挥部约于凌晨2时发布。此可见时间用于同一通告的新增敏感性口径，不证明全网首次公开时间，也不得与日期口径视为独立事件。"
+    }
+  ]
+}

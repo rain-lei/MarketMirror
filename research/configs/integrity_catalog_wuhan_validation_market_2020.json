@@ -1,0 +1,28 @@
+{
+  "runs": [
+    {
+      "run_id": "wuhan_validation_market_prepared",
+      "manifest": "../../research_outputs/wuhan_validation_market_prepared_2020_v1/market_manifest.json",
+      "manifest_sha256": "a22601bff969f004e4e57b8e476458e5fa370687bec3db0e25da14f28143effb",
+      "extra_hashes": {}
+    },
+    {
+      "run_id": "wuhan_validation_event_study",
+      "manifest": "../../research_outputs/wuhan_validation_pit_event_study_2020_v1/experiment_manifest.json",
+      "manifest_sha256": "6602f51b7472d9309ae27c62affdfd51d180f46cfa21f6ba334da8707f54dd33",
+      "extra_hashes": {}
+    },
+    {
+      "run_id": "wuhan_validation_no_text_replay",
+      "manifest": "../../research_outputs/wuhan_validation_pit_historical_replay_2020_v1/historical_replay_manifest.json",
+      "manifest_sha256": "fe1e61193fc3999e8755c361228943a507ac05c6f6022fe3c4120e5d9ee92f9b",
+      "extra_hashes": {}
+    },
+    {
+      "run_id": "wuhan_validation_no_text_portfolio",
+      "manifest": "../../research_outputs/wuhan_validation_pit_portfolio_no_text_2020_v1/portfolio_no_text_manifest.json",
+      "manifest_sha256": "a01faa6b5338ad9be7ac0b12d471f82a2044f7e989ad491c6026388b06e0bbb1",
+      "extra_hashes": {}
+    }
+  ]
+}

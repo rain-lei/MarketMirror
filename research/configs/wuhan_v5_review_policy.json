@@ -1,0 +1,18 @@
+{
+  "protocol": "wuhan-fifth-company-source-first-review-v5",
+  "sample_role": "fifth_disjoint_company_evaluation",
+  "reviewer_kind": "single_ai_assistant",
+  "review_before_model_outputs": true,
+  "model_outputs_previously_seen": false,
+  "human_gold_ready": false,
+  "frozen_prompt_sha256": "603acc681aad89c9bec8a3bf11eff49bba868c2386877258b78c30113dda5a82",
+  "review_rule": "Read every complete pre-event question and company reply before any fifth-cohort model output. Use only company-confirmed facts and the frozen v5 prompt ontology; keep conditional and incomplete states. Reject question-only rumors, routine shareholder counts, static capabilities and old disclosures without current progress. Each event must have a unique exact quote from the reply and each item its own substantive rationale. Do not use future prices, unseen disclosures or fifth-cohort model outputs.",
+  "event_types": ["regulation", "liquidity", "earnings", "governance", "other"],
+  "thresholds": {
+    "max_parse_error_rate": 0.05,
+    "min_event_detection_f1": 0.7,
+    "min_supported_type_macro_f1": 0.6,
+    "must_not_underperform_keyword": true
+  },
+  "score_interpretation": "Agreement with a single AI source-first review on a fifth disjoint company sample, not human-ground-truth accuracy or market predictive validity."
+}

@@ -4,7 +4,9 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from research.data_pipeline.provenance import file_sha256
 from research.semantic.audit_model_run import audit_model_run
+from research.semantic.prompt_contract import prompt_path
 from research.semantic.run_model import list_models, run_model
 
 
@@ -92,6 +94,43 @@ class ModelRunnerTest(unittest.TestCase):
                 self.assertIn("evidence_quotes", request.call_args.args[3][0]["content"])
                 row = json.loads((root / "v2/model_raw_outputs.jsonl").read_text(encoding="utf-8"))
                 self.assertEqual(row["prompt_version"], "semantic-prompt-v2")
+
+    def test_frozen_pack_rejects_mismatched_request_before_upload(self):
+        prompt_version = "semantic-prompt-v2"
+        prompt_hash = file_sha256(prompt_path(prompt_version))
+        for layout in ("snapshot", "legacy_holdout"):
+            with self.subTest(layout=layout), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                pack, items = self._pack(root)
+                protocol = {"provider_base_url": "http://aigw.dlut.edu.cn/v1",
+                            "model_id": "DeepSeek-V4-Flash-0731-W8A8",
+                            "prompt_version": prompt_version, "prompt_sha256": prompt_hash,
+                            "temperature": 0}
+                manifest = {"experiment_id": "frozen-test"}
+                if layout == "snapshot":
+                    manifest["frozen_model_protocol"] = protocol
+                else:
+                    manifest["config"] = {"frozen_model_id": protocol["model_id"],
+                                          "frozen_prompt_version": prompt_version,
+                                          "frozen_prompt_sha256": prompt_hash}
+                with patch("research.semantic.run_model.load_pack", return_value=(items, manifest)), \
+                     patch("research.semantic.run_model.request_completion", return_value='{"events":[]}') as request:
+                    mismatches = (
+                        ("default_v1", {}),
+                        ("model", {"prompt_version": prompt_version, "model": "another-model"}),
+                        ("gateway", {"prompt_version": prompt_version, "base_url": "https://example.test/v1"}),
+                        ("temperature", {"prompt_version": prompt_version, "temperature": 0.2}),
+                    )
+                    for name, options in mismatches:
+                        destination = root / name
+                        with self.subTest(layout=layout, mismatch=name), \
+                             self.assertRaisesRegex(ValueError, "frozen protocol"):
+                            run_model(pack, destination, "secret", **options)
+                        self.assertFalse(destination.exists())
+                    request.assert_not_called()
+                    result = run_model(pack, root / "valid", "secret", prompt_version=prompt_version)
+                    self.assertEqual(result["model_rows"], len(items))
+                    self.assertEqual(request.call_count, len(items))
 
     def test_runner_archives_source_bound_raw_response_without_api_key(self):
         item = {"item_id": "item-1", "source_text_sha256": "a" * 64,

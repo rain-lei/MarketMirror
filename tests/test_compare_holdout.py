@@ -71,6 +71,10 @@ class CompareHoldoutTest(unittest.TestCase):
                              "config": {"frozen_model_id": model_id,
                                         "frozen_prompt_version": prompt_version,
                                         "frozen_prompt_sha256": file_sha256(prompt_path(prompt_version))},
+                             "frozen_model_protocol": {
+                                 "provider_base_url": "http://aigw.dlut.edu.cn/v1",
+                                 "model_id": model_id, "prompt_version": prompt_version,
+                                 "prompt_sha256": file_sha256(prompt_path(prompt_version)), "temperature": 0},
                              "artifacts": {"annotation_items.jsonl": {"sha256": file_sha256(items_path)}}}
             (pack / "annotation_manifest.json").write_text(json.dumps(pack_manifest), encoding="utf-8")
             labels = [label(samples[0], "human-a", [event(samples[0]["segments"][0]["text"])]),

@@ -1,0 +1,29 @@
+{
+  "agent_signal_enabled": false,
+  "business_exposure_values_verified": false,
+  "expected_companies": 123,
+  "frozen_at_utc": "2026-10-01T06:57:28.098677+00:00",
+  "inputs": {
+    "research_outputs/issuer_half_reports_raw_2019_v1/manifest.json": "2092907d4fc3e5554bde18aac0221613805000af51aaa90e52cf65aebaf15007"
+  },
+  "limitations": [
+    "Literal mention is not verified operating exposure or regional revenue. No-mention or missing source remains unknown, not zero.",
+    "Registered office, operating subsidiaries, guarantees, customer geography and source revenue segment coverage are different concepts.",
+    "Group vs parent, current vs comparison and complete vs material-segment coverage require individual table review; region labels such as central/western China do not identify a Wuhan percentage.",
+    "Original archive is retrieved retrospectively. Revisions keep own dates; this existing cohort is not new blind validation."
+  ],
+  "literal_search_terms": [
+    "分地区",
+    "分区域",
+    "地区分部",
+    "营业收入构成",
+    "主营业务构成",
+    "湖北",
+    "武汉",
+    "受限",
+    "所有权或使用权"
+  ],
+  "raw_manifest_path": "research_outputs/issuer_half_reports_raw_2019_v1/manifest.json",
+  "stage_scope": "Full cohort page index and preserved original context, not economic or numeric exposure classification. No target returns or Q&A labels.",
+  "version": "pre-wuhan-half-business-literal-evidence-index-v1"
+}

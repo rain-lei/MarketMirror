@@ -1,0 +1,61 @@
+{
+  "agent_signal_enabled": false,
+  "baseline": "market_industry_financial",
+  "blocks": {
+    "primary_operating_assets": [
+      "operating_net_cashflow_to_period_end_assets",
+      "ytd_net_profit_to_period_end_assets"
+    ],
+    "secondary_asset_structure": [
+      "cash_equivalent_closing_to_assets",
+      "trading_financial_assets_to_assets",
+      "other_current_assets_to_assets"
+    ],
+    "secondary_revenue_margins": [
+      "operating_net_cashflow_to_selected_revenue",
+      "ytd_net_profit_to_selected_revenue"
+    ]
+  },
+  "expected_parent_companies": 123,
+  "fit_and_clock_rule": "Use the frozen base study 29 training days, purge December 12 target and evaluate December 13-31, at first evaluation t-2 15:00 cutoff. All coefficients/scales use paired training only. Industry controls and original three financial features remain. No penalty, truncation, tuning or post-evaluation feature selection.",
+  "forecast_rule": "Signed cashflow/profit ratios are retained. Raw negative absolute-return predictions are counted without clipping. Static operating data is not combined with company fixed effects; fixed-effect market model remains a reference.",
+  "inputs": {
+    "balance_states": {
+      "path": "../../research_outputs/issuer_financial_states_2019q3_v1.json",
+      "sha256": "593e407f743399aebc3fddc3ca407f06d754fd930b53e5de82248abede22c77b"
+    },
+    "base_independent_audit": {
+      "path": "../../research_outputs/issuer_financial_increment_2019_v1/independent_audit.json",
+      "sha256": "ee530022bd3c740f4434b766381b54df804fae95adbe7d0bdffd2b9c00d9cb4c"
+    },
+    "base_manifest": {
+      "path": "../../research_outputs/issuer_financial_increment_2019_v1/manifest.json",
+      "sha256": "b26cdb0acb13ee4f7b36a5fb317f3981315a21f0fdf105926074a696959c0d92"
+    },
+    "base_panel": {
+      "path": "../../research_outputs/issuer_financial_increment_2019_v1/panel.json",
+      "sha256": "754bf4d92bfdd3aed14d5dc75f72c41578a233a37220c9d9b45d98c87130bbab"
+    },
+    "base_results": {
+      "path": "../../research_outputs/issuer_financial_increment_2019_v1/results.json",
+      "sha256": "b0d87c03e1577c5f57401bd38b0e2d8d4ae1004baa7d1f51fd958d2e236de592"
+    },
+    "operating_states": {
+      "path": "../../research_outputs/issuer_operating_states_2019q3_v1.json",
+      "sha256": "787c08d6bacf4ad86d5707abecd51154eeecc459b99125a094d7392b35caff37"
+    }
+  },
+  "limitations": [
+    "The 2019 dates and retrospective January 2020 Q&A-selected cohort were already inspected. This is development, not new blind validation.",
+    "Source/PDF and market adjustment bytes were retrieved later and are not certified unchanged historical snapshots; own publication-date proxies are maintained.",
+    "Cash equivalents and trading assets are not unrestricted cash. The asset block has large source-based missingness and represents a different smaller issuer mix.",
+    "Ratios are YTD flows to period-end stocks or source revenue, not annualized ROA; coarse category controls omit business geography and detailed industry.",
+    "Repeated financial values and shared market dates are dependent. Delete-one-date ranges are sensitivity, not confidence intervals or p-values.",
+    "No stock direction, policy causality, real investor calibration or endogenous market-price improvement follows from a risk regression."
+  ],
+  "multiple_comparison_rule": "Primary specified before computing outputs. Two secondary blocks exploratory; all results, rank/condition and delete-one-date sensitivity retained. No best block adopted as a signal.",
+  "pairing_rule": "Every model including references is rebuilt on identical source-visible company-dates within the block. Asset block excludes all records lacking any fixed asset numerator; blanks and absent rows are not zero. Compare gains only within each block, not across different samples.",
+  "primary_block": "primary_operating_assets",
+  "target": "absolute_stock_return",
+  "version": "issuer-operating-prespecified-paired-risk-blocks-v1"
+}

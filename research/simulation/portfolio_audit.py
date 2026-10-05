@@ -6,13 +6,16 @@ from fractions import Fraction
 
 from .audit_background import reconstruct_day
 from .audit_auction import audit_day as dense_audit_day
+from .call_auction import resolve_price_tie_breaks
 
 VERSION = "portfolio-wallet-reconstruction-v1"
 
 
-def audit_portfolio_day(record, previous, settings, session, dense=False):
+def audit_portfolio_day(record, previous, settings, session, dense=False,
+                        price_tie_break="nearest_prior"):
     saved = record["portfolio_auction"]
     assets = sorted(previous["prices"])
+    tie_breaks = resolve_price_tie_breaks(assets, price_tie_break)
     before = copy.deepcopy(previous["accounts"])
     if session:
         for a in before.values():
@@ -67,8 +70,8 @@ def audit_portfolio_day(record, previous, settings, session, dense=False):
                  "initial_cash_minor": sum(a["cash_minor"] for a in local.values()), "initial_shares": previous["initial_shares"][asset]}
         day = {k: record[k] for k in ("trade_date", "signal_cutoff_date", "execution_reference_date")}
         day["auction"] = saved["asset_calls"][asset]
-        rebuilt = reconstruct_day(day, prior, settings, 0)
-        if dense and dense_audit_day(day, prior, settings, 0) != rebuilt:
+        rebuilt = reconstruct_day(day, prior, settings, 0, tie_breaks[asset])
+        if dense and dense_audit_day(day, prior, settings, 0, tie_breaks[asset]) != rebuilt:
             raise ValueError("portfolio interval and full-tick audits differ")
         prices[asset] = rebuilt["price_minor"]
         fee += rebuilt["fee_pool_minor"]

@@ -15,6 +15,7 @@ from ..data_pipeline.provenance import file_sha256
 from .audit_model_run import audit_model_run
 from .review_workflow import validate_adjudication
 from .assistant_review import load_review, POLICY_PATH
+from .model_protocol import frozen_model_protocol
 from .signal_validation import binary_counts, evaluate, load_pack, read_jsonl
 
 
@@ -22,7 +23,6 @@ VERSION = "semantic-holdout-comparison-v1"
 AI_VERSION = "semantic-ai-reference-comparison-v1"
 BOOTSTRAP_REPLICATES = 5000
 BOOTSTRAP_SEED = 20260927
-FROZEN_GATEWAY = "http://aigw.dlut.edu.cn/v1"
 
 
 def _percentile(sorted_values: list[float], probability: float) -> float:
@@ -137,7 +137,7 @@ def compare_holdout(pack_dir: Path, comparison_dir: Path, gold_dir: Path,
         raise ValueError("use a new empty comparison output directory")
     items, pack_manifest = load_pack(pack_dir)
     experiment_id = pack_manifest["experiment_id"]
-    config = pack_manifest["config"]
+    protocol = frozen_model_protocol(pack_manifest, required=True)
 
     if ai_review_dir is not None:
         gold, reference = load_review(pack_dir, ai_review_dir)
@@ -157,11 +157,11 @@ def compare_holdout(pack_dir: Path, comparison_dir: Path, gold_dir: Path,
     raw_manifest, raw_path = _verified_artifact(
         raw_model_dir, "model_run_manifest.json", "model_raw_outputs.jsonl",
         "pack_experiment_id", experiment_id)
-    if (raw_manifest["model_id"] != config["frozen_model_id"]
-            or raw_manifest["prompt_version"] != config["frozen_prompt_version"]
-            or raw_manifest["provider_base_url"] != FROZEN_GATEWAY
+    if (raw_manifest["model_id"] != protocol["model_id"]
+            or raw_manifest["prompt_version"] != protocol["prompt_version"]
+            or raw_manifest["provider_base_url"] != protocol["provider_base_url"]
             or raw_manifest["temperature"] != 0
-            or raw_manifest["input_sha256"]["prompt"] != config["frozen_prompt_sha256"]
+            or raw_manifest["input_sha256"]["prompt"] != protocol["prompt_sha256"]
             or raw_manifest["input_sha256"]["annotation_manifest"]
             != file_sha256(pack_dir / "annotation_manifest.json")
             or raw_manifest["input_sha256"]["annotation_items"]
@@ -179,8 +179,8 @@ def compare_holdout(pack_dir: Path, comparison_dir: Path, gold_dir: Path,
             or normalized_inputs["annotation_items"] != file_sha256(pack_dir / "annotation_items.jsonl")
             or normalized_inputs["raw_outputs"] != file_sha256(raw_path)
             or normalized_inputs["model_run_manifest"] != file_sha256(raw_model_dir / "model_run_manifest.json")
-            or normalized_manifest["model_ids"] != [config["frozen_model_id"]]
-            or normalized_manifest["prompt_versions"] != [config["frozen_prompt_version"]]
+            or normalized_manifest["model_ids"] != [protocol["model_id"]]
+            or normalized_manifest["prompt_versions"] != [protocol["prompt_version"]]
             or normalized_manifest["model_rows"] != len(items)):
         raise ValueError("normalized model predictions differ from the frozen raw run")
     model_audit = audit_model_run(pack_dir, raw_model_dir, normalized_model_dir)
@@ -251,7 +251,7 @@ def compare_holdout(pack_dir: Path, comparison_dir: Path, gold_dir: Path,
                     "code_sha256": {name: file_sha256(Path(__file__).with_name(name)) for name in
                                     ("compare_holdout.py", "signal_validation.py", "review_workflow.py",
                                      "audit_model_run.py", "parse_model_outputs.py", "quote_grounding.py",
-                                     "prompt_contract.py", "assistant_review.py")},
+                                     "prompt_contract.py", "model_protocol.py", "assistant_review.py")},
                     "artifacts": {report.name: {"sha256": file_sha256(report)}}}
         (staging / "comparison_manifest.json").write_text(
             json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

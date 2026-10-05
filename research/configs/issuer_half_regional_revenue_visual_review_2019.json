@@ -1,0 +1,191 @@
+{
+  "agent_signal_enabled": false,
+  "business_exposure_values_verified": false,
+  "complete_selected_pages_reviewed": 8,
+  "existing_three_literal_reader_qc_issuers_resolved": false,
+  "geographic_allocation_verified": false,
+  "inputs": {
+    "research_outputs/issuer_half_regional_revenue_audit_2019_v1.json": "d837a0639c21cff577087703a90ef71d849b9af64f1f065e7a0c656d8d421417",
+    "research_outputs/issuer_half_regional_revenue_candidates_2019_v2.json": "d24f35f5ac8ce4f0efa5b59bef22853c3b8abb2c21ab902b3bdda2608c1ef808",
+    "research_outputs/issuer_half_regional_revenue_states_2019_v1.json": "1a3feadbb55a35b18ad64939424d1f292f34ab10de7950ef1b8df2c9e517e1dd",
+    "research_outputs/issuer_half_regional_revenue_visual_review_2019_v1/000776_pdf_page_023.png": "e7dd32cbfc8f741e48a6b6af8a04e2c6f49ef89742de3b5c25e2f2f6826b3394",
+    "research_outputs/issuer_half_regional_revenue_visual_review_2019_v1/000776_pdf_page_024.png": "e9aa6deb68c33f0991b1c303359265d797d7db819dd9370a5cb112f8bafef89b",
+    "research_outputs/issuer_half_regional_revenue_visual_review_2019_v1/002360_pdf_page_012.png": "1e8a7dc57dddb426c82669fccbb275b3d1627dfadb445543f37f60bf54f50982",
+    "research_outputs/issuer_half_regional_revenue_visual_review_2019_v1/002360_pdf_page_013.png": "be481be7090ab49edc0376750db1a55701f3eb5d4a6199ac7e1660096b7e52f1",
+    "research_outputs/issuer_half_regional_revenue_visual_review_2019_v1/002727_pdf_page_020.png": "3149471c255d7b6818d75bf94422333e4938e84ec5580ab2fe98ca34177f74f5",
+    "research_outputs/issuer_half_regional_revenue_visual_review_2019_v1/002727_pdf_page_021.png": "75773913f471e4b116619a8d8c3c8421ab3461d1710d5613904b7250281599be",
+    "research_outputs/issuer_half_regional_revenue_visual_review_2019_v1/600565_pdf_page_016.png": "7361d460154e45045700e959941dff3886ace832a41066c9b4d6a52a46e47916",
+    "research_outputs/issuer_half_regional_revenue_visual_review_2019_v1/600565_pdf_page_017.png": "a1abc3dc76121191c8fed8e906a8736453b447258b8ac2ae3c7283b56086c6bd",
+    "research_outputs/issuer_half_regional_revenue_visual_review_2019_v1/render_manifest.json": "a283ce1969e445f3e74f1854cb5fe0084bcf28b91820a72cdefe7a2e6859ee67",
+    "research_outputs/issuer_half_reports_raw_2019_v1/000776/run_1/attempt1.pdf": "14b086a5740ae3a10cca2e492a90cb71bfce5b7e635900e5eb24c6a1199285da",
+    "research_outputs/issuer_half_reports_raw_2019_v1/002360/run_1/attempt1.pdf": "065fe71df4807f0126a9a596fb519d54dd8784b05fceeed95acc365e9263be2a",
+    "research_outputs/issuer_half_reports_raw_2019_v1/002727/run_1/attempt1.pdf": "3f1e8abb64b7253b68a3c646d2c5f50f61eb84baafe99a0e37c333b1895d10ab",
+    "research_outputs/issuer_half_reports_raw_2019_v1/600565/run_1/attempt1.pdf": "8f2b79caea4d7ef8a0f0efeb841a25b3f680990f68173e50e987a8bcd259f7d1",
+    "research_outputs/issuer_pdf_reader_data_probe_2019_v1.json": "1edc3f3270449099384cb23c818489f7c21aa92f5cd96f68828ac14ed3af416e",
+    "research_outputs/issuer_pdf_reader_data_probe_2019_v1_config.json": "761e66e30ac444f2e02b240af7c8964686da7096c9365784a3aed66ff534dc20"
+  },
+  "market_predictive_gain_tested": false,
+  "page_reviews": [
+    {
+      "complete_page_visually_inspected": true,
+      "inspection_scope": "entire_selected_page; limited source/table context only; no full-document certification",
+      "pdf_page": 12,
+      "raster_path": "research_outputs/issuer_half_regional_revenue_visual_review_2019_v1/002360_pdf_page_012.png",
+      "raster_sha256": "1e8a7dc57dddb426c82669fccbb275b3d1627dfadb445543f37f60bf54f50982",
+      "render_diagnostic_present": true,
+      "render_stderr": "Syntax Error: No display font for 'Symbol'\r\nSyntax Error: No display font for 'ArialUnicode'\r\n",
+      "selected_table_text_and_digits_visibly_legible": true,
+      "source_pdf_path": "research_outputs/issuer_half_reports_raw_2019_v1/002360/run_1/attempt1.pdf",
+      "source_pdf_sha256": "065fe71df4807f0126a9a596fb519d54dd8784b05fceeed95acc365e9263be2a",
+      "stock_code": "002360"
+    },
+    {
+      "complete_page_visually_inspected": true,
+      "inspection_scope": "entire_selected_page; limited source/table context only; no full-document certification",
+      "pdf_page": 13,
+      "raster_path": "research_outputs/issuer_half_regional_revenue_visual_review_2019_v1/002360_pdf_page_013.png",
+      "raster_sha256": "be481be7090ab49edc0376750db1a55701f3eb5d4a6199ac7e1660096b7e52f1",
+      "render_diagnostic_present": true,
+      "render_stderr": "Syntax Error: No display font for 'Symbol'\r\nSyntax Error: No display font for 'ArialUnicode'\r\n",
+      "selected_table_text_and_digits_visibly_legible": true,
+      "source_pdf_path": "research_outputs/issuer_half_reports_raw_2019_v1/002360/run_1/attempt1.pdf",
+      "source_pdf_sha256": "065fe71df4807f0126a9a596fb519d54dd8784b05fceeed95acc365e9263be2a",
+      "stock_code": "002360"
+    },
+    {
+      "complete_page_visually_inspected": true,
+      "inspection_scope": "entire_selected_page; limited source/table context only; no full-document certification",
+      "pdf_page": 20,
+      "raster_path": "research_outputs/issuer_half_regional_revenue_visual_review_2019_v1/002727_pdf_page_020.png",
+      "raster_sha256": "3149471c255d7b6818d75bf94422333e4938e84ec5580ab2fe98ca34177f74f5",
+      "render_diagnostic_present": true,
+      "render_stderr": "Syntax Error: No display font for 'Symbol'\r\nSyntax Error: No display font for 'ArialUnicode'\r\n",
+      "selected_table_text_and_digits_visibly_legible": true,
+      "source_pdf_path": "research_outputs/issuer_half_reports_raw_2019_v1/002727/run_1/attempt1.pdf",
+      "source_pdf_sha256": "3f1e8abb64b7253b68a3c646d2c5f50f61eb84baafe99a0e37c333b1895d10ab",
+      "stock_code": "002727"
+    },
+    {
+      "complete_page_visually_inspected": true,
+      "inspection_scope": "entire_selected_page; limited source/table context only; no full-document certification",
+      "pdf_page": 21,
+      "raster_path": "research_outputs/issuer_half_regional_revenue_visual_review_2019_v1/002727_pdf_page_021.png",
+      "raster_sha256": "75773913f471e4b116619a8d8c3c8421ab3461d1710d5613904b7250281599be",
+      "render_diagnostic_present": true,
+      "render_stderr": "Syntax Error: No display font for 'Symbol'\r\nSyntax Error: No display font for 'ArialUnicode'\r\n",
+      "selected_table_text_and_digits_visibly_legible": true,
+      "source_pdf_path": "research_outputs/issuer_half_reports_raw_2019_v1/002727/run_1/attempt1.pdf",
+      "source_pdf_sha256": "3f1e8abb64b7253b68a3c646d2c5f50f61eb84baafe99a0e37c333b1895d10ab",
+      "stock_code": "002727"
+    },
+    {
+      "complete_page_visually_inspected": true,
+      "inspection_scope": "entire_selected_page; limited source/table context only; no full-document certification",
+      "pdf_page": 16,
+      "raster_path": "research_outputs/issuer_half_regional_revenue_visual_review_2019_v1/600565_pdf_page_016.png",
+      "raster_sha256": "7361d460154e45045700e959941dff3886ace832a41066c9b4d6a52a46e47916",
+      "render_diagnostic_present": true,
+      "render_stderr": "Syntax Error: No display font for 'Symbol'\r\nSyntax Error: No display font for 'ArialUnicode'\r\n",
+      "selected_table_text_and_digits_visibly_legible": true,
+      "source_pdf_path": "research_outputs/issuer_half_reports_raw_2019_v1/600565/run_1/attempt1.pdf",
+      "source_pdf_sha256": "8f2b79caea4d7ef8a0f0efeb841a25b3f680990f68173e50e987a8bcd259f7d1",
+      "stock_code": "600565"
+    },
+    {
+      "complete_page_visually_inspected": true,
+      "inspection_scope": "entire_selected_page; limited source/table context only; no full-document certification",
+      "pdf_page": 17,
+      "raster_path": "research_outputs/issuer_half_regional_revenue_visual_review_2019_v1/600565_pdf_page_017.png",
+      "raster_sha256": "a1abc3dc76121191c8fed8e906a8736453b447258b8ac2ae3c7283b56086c6bd",
+      "render_diagnostic_present": false,
+      "render_stderr": "",
+      "selected_table_text_and_digits_visibly_legible": true,
+      "source_pdf_path": "research_outputs/issuer_half_reports_raw_2019_v1/600565/run_1/attempt1.pdf",
+      "source_pdf_sha256": "8f2b79caea4d7ef8a0f0efeb841a25b3f680990f68173e50e987a8bcd259f7d1",
+      "stock_code": "600565"
+    },
+    {
+      "complete_page_visually_inspected": true,
+      "inspection_scope": "entire_selected_page; limited source/table context only; no full-document certification",
+      "pdf_page": 23,
+      "raster_path": "research_outputs/issuer_half_regional_revenue_visual_review_2019_v1/000776_pdf_page_023.png",
+      "raster_sha256": "e7dd32cbfc8f741e48a6b6af8a04e2c6f49ef89742de3b5c25e2f2f6826b3394",
+      "render_diagnostic_present": false,
+      "render_stderr": "",
+      "selected_table_text_and_digits_visibly_legible": true,
+      "source_pdf_path": "research_outputs/issuer_half_reports_raw_2019_v1/000776/run_1/attempt1.pdf",
+      "source_pdf_sha256": "14b086a5740ae3a10cca2e492a90cb71bfce5b7e635900e5eb24c6a1199285da",
+      "stock_code": "000776"
+    },
+    {
+      "complete_page_visually_inspected": true,
+      "inspection_scope": "entire_selected_page; limited source/table context only; no full-document certification",
+      "pdf_page": 24,
+      "raster_path": "research_outputs/issuer_half_regional_revenue_visual_review_2019_v1/000776_pdf_page_024.png",
+      "raster_sha256": "e9aa6deb68c33f0991b1c303359265d797d7db819dd9370a5cb112f8bafef89b",
+      "render_diagnostic_present": false,
+      "render_stderr": "",
+      "selected_table_text_and_digits_visibly_legible": true,
+      "source_pdf_path": "research_outputs/issuer_half_reports_raw_2019_v1/000776/run_1/attempt1.pdf",
+      "source_pdf_sha256": "14b086a5740ae3a10cca2e492a90cb71bfce5b7e635900e5eb24c6a1199285da",
+      "stock_code": "000776"
+    }
+  ],
+  "recorded_at_utc": "2026-10-01T09:02:25.401727+00:00",
+  "render_manifest_preserved_without_retroactive_mutation": true,
+  "render_warning_page_count": 5,
+  "review_protocol": "Record observations after complete visual inspection of the selected eight source pages. Selected examples are development QA, not preregistered random review or independent human gold labels.",
+  "reviewer": "single_assistant",
+  "source_observations": {
+    "000776": {
+      "geographic_definition_verified": false,
+      "historical_short_name": "广发证券",
+      "observations": [
+        "PDF 23 proves current 2019 January-June revenue and expenditure columns and records Hubei current revenue 138835514.73 in the printed unit yuan; the unit label alone does not explicitly certify CNY. Hubei must not be refined to Wuhan.",
+        "PDF 24 continuation contains headquarters, parent total 7095532929.77, domestic subsidiaries 4186260137.58, domestic subtotal 11281793067.35, overseas subsidiaries 714112646.58, elimination -54401399.12 and grand total 11941504314.81. Preserve the signed elimination and hierarchical scope; no normalized regional share is accepted."
+      ],
+      "pdf_pages": [
+        23,
+        24
+      ]
+    },
+    "002360": {
+      "geographic_definition_verified": false,
+      "historical_short_name": "同德化工",
+      "observations": [
+        "PDF 12 lists FULL_REVENUE_COMPOSITION in explicit CNY: total 307586147.94; province-inside 246340922.99, province-outside 39023643.98, domestic 17974775.80, foreign 4246805.17. Printed table closes, but these labels have different geographic granularity and their operational definition is not verified.",
+        "PDF 13 separately lists MATERIAL_SEGMENTS_ONLY; province-inside 245281053.36 differs from the full composition and must not substitute for it. Civil-explosives detail is a separate subset."
+      ],
+      "pdf_pages": [
+        12,
+        13
+      ]
+    },
+    "002727": {
+      "geographic_definition_verified": false,
+      "historical_short_name": "一心堂",
+      "observations": [
+        "PDF 20 full composition total is 5060022840.42 CNY. Six region labels coexist with other business revenue 121013330.36, printed 2.39%; other revenue is unallocated and is not a region. Do not discard it or renormalize the region rows.",
+        "PDF 21 material-segment region table covers only the listed >=10% subset. The following non-main-business and asset-analysis headings terminate continuation; the partial asset table is not certified by this revenue review."
+      ],
+      "pdf_pages": [
+        20,
+        21
+      ]
+    },
+    "600565": {
+      "geographic_definition_verified": false,
+      "historical_short_name": "迪马股份",
+      "observations": [
+        "PDF 16 provides the business context and starts the main-business analysis at the bottom; PDF 17 has industry/product and city region tables. Regional total 3434138884.23 agrees with the MAIN_BUSINESS_SCOPE_ONLY total. Wuhan 126534962.85 is 0.03684619845489201081343768900 of that table total, not a verified full-issuer exposure or causal market coefficient.",
+        "The land-reserve/ownership table below is a different relation and its equity percentages must not be interpreted as revenue shares. CNY unit evidence is on PDF 15 and was checked in the independent cell audit; PDF 15 is not one of the visually reviewed pages here."
+      ],
+      "pdf_pages": [
+        16,
+        17
+      ]
+    }
+  },
+  "source_pdf_count": 4,
+  "version": "half-year-regional-revenue-limited-single-assistant-visual-review-v1"
+}

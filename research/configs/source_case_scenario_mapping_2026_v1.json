@@ -1,0 +1,48 @@
+{
+  "schema_version": "source-case-assumed-mechanism-mapping-v1",
+  "data_kind": "source_text_with_synthetic_market",
+  "historical_returns_or_prices_applied": false,
+  "empirical_investor_calibration": false,
+  "independent_semantic_validation": false,
+  "source_case_config": "research/configs/source_case_facts_development_2026_v1.json",
+  "model_mechanism_config": "research/configs/agent_decision_probes_2026_v1.json",
+  "modes": ["no_text", "keywords", "reviewed_llm", "llm_asset_placebo"],
+  "seeds": [7, 11, 23, 47, 89],
+  "sessions": 18,
+  "pre_information_trade_steps": 3,
+  "information_duration_steps": 6,
+  "cutoff_rule": "t-2 source-calendar date, conservative end of China-local day",
+  "case_calendars": {
+    "asset_management_guidance_2018": "research_outputs/observed_2018/prepared/market_manifest.json",
+    "wuhan_transport_restrictions_2020": "research_outputs/observed_2020/prepared/market_manifest.json",
+    "sse_spring_festival_closure_extension_2020": "research_outputs/observed_2020/prepared/market_manifest.json",
+    "company_reply_workbook": "research_outputs/semantic_market_h2_2020_all126_prepared/market_manifest.json"
+  },
+  "actual_issuer_exposure_identified": false,
+  "hypothetical_exposed_asset": "A",
+  "placebo_exposed_asset": "B",
+  "economic_meaning": "Fact kinds select declared scenario assumptions, not estimated returns or investment advice.",
+  "fact_mapping": {
+    "regulatory_constraint": {"signal": 0.0, "uncertainty": 0.35, "basis": "Illustrative compliance uncertainty; return sign unknown."},
+    "operational_disruption": {"signal": -0.4, "uncertainty": 0.6, "basis": "Hypothetical directly exposed business; magnitude and listed-company exposure are assumed."},
+    "approval_uncertainty": {"signal": 0.0, "uncertainty": 0.6, "basis": "Approval uncertainty may reduce exposure through role uncertainty aversion."},
+    "completed_transaction": {"signal": 0.0, "uncertainty": 0.0, "basis": "Completion date and novelty unknown in these cases; no new economic increment assigned."},
+    "static_information": {"signal": 0.0, "uncertainty": 0.0, "basis": "A static relationship or aspiration is not a newly completed event."},
+    "information_gap": {"signal": 0.0, "uncertainty": 0.0, "basis": "An uninformative reply does not itself establish adverse company conditions."},
+    "calendar_change": {"signal": 0.0, "uncertainty": 0.0, "basis": "Calendar availability is shared by all modes, not converted into a signed stock belief."},
+    "other": {"signal": null, "uncertainty": null, "basis": "Unidentified mapping, excluded from numeric contributions and recorded as unresolved."}
+  },
+  "aggregation": "At most one contribution per kind, bounded sum of signals, maximum mapped uncertainty; prevent fact splitting from amplifying the signal.",
+  "keyword_rules": [
+    {"token": "暂停", "signal": -0.4, "uncertainty": 0.6},
+    {"token": "关闭", "signal": -0.4, "uncertainty": 0.6},
+    {"token": "不确定", "signal": 0.0, "uncertainty": 0.6},
+    {"token": "不得", "signal": 0.0, "uncertainty": 0.35},
+    {"token": "收购", "signal": 0.25, "uncertainty": 0.0},
+    {"token": "持有", "signal": 0.25, "uncertainty": 0.0}
+  ],
+  "keyword_aggregation": "Bounded sum across unique matched tokens, maximum uncertainty; intentionally simple baseline, not semantic ground truth.",
+  "company_evidence_rule": "Only reply text can generate confirmed company facts or keyword matches.",
+  "selection_before_simulated_effects": true,
+  "preexisting_wuhan_v6_gate_is_unchanged_and_still_closed": true
+}

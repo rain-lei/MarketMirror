@@ -1,0 +1,56 @@
+{
+  "agent_signal_enabled": false,
+  "base_config": "research/configs/wuhan_pre_event_pit_portfolio_no_text_2020.json",
+  "components": [
+    "base_anchor_minus_current",
+    "belief_total_exposure",
+    "total_risk_weight_cap",
+    "belief_relative_allocation",
+    "asset_concentration_clip",
+    "risk_liquidation_branch",
+    "confirmation_rebalance_wait",
+    "post_allocation_risk_cap",
+    "minimum_trade_gate",
+    "turnover_cap"
+  ],
+  "dense_audit_sessions": [
+    0,
+    10
+  ],
+  "expected_asset_positions": 253872,
+  "expected_decisions": 84624,
+  "expected_ledger_records": 7052,
+  "expected_paths": 164,
+  "freeze_scope": "Source results and first-day examples already inspected. Freeze ordered accounting stages before computing full-panel attribution; this is factual development diagnosis, not blind treatment selection.",
+  "frozen_at_utc": "2026-10-01T13:12:42.663680+00:00",
+  "inputs": {
+    "research/configs/pre_wuhan_quantity_controls_2019.json": "71a1b339e6de17bb4f264b457392dcf55b7f881a4e5aa44b258aeb832daab5b5",
+    "research/configs/wuhan_pre_event_pit_portfolio_no_text_2020.json": "097012736f5a1b51d60a5de4af8e304d8619a20bb7c92556dd3872555eae6b1f",
+    "research_outputs/pre_wuhan_quantity_controls_2019_v1/ledger.jsonl.gz": "3be5a1113105aed9e119e021a7c3cf0c73aa7a58f78497b301eb98282baea90b",
+    "research_outputs/pre_wuhan_quantity_controls_2019_v1/manifest.json": "e24f2c70e61ae97fa3e6147fa0048c5dd8fe94f7ea1745d635af97825ec50ce2",
+    "research_outputs/pre_wuhan_quantity_controls_2019_v1/results.json": "6d3e32c56e0bea8fa17c69306bafb5f04d062cb37bef9b708654175ad5cee2b7"
+  },
+  "interpretation": "Ordered accounting decomposition of factual target/order changes on all four consumed synthetic development ledgers. Components telescope to pre-rounding weight/share-equivalent changes; they are not additive causal effects or attribution of filled orders. Submitted/accepted/filled quantities remain separate factual checks. All initial funds, own-price history, information receipts, risk/wait/allocation, and settlement are independently reconstructed. No real investor behavior, improved market calibration, forecasting benefit or economic signal is certified.",
+  "variant_controls": {
+    "background_current_anchor": {
+      "background_anchor": "current_inventory",
+      "strategy_wait": "original"
+    },
+    "current_anchor_and_daily": {
+      "background_anchor": "current_inventory",
+      "strategy_wait": "immediate_daily"
+    },
+    "original_quantity_reference": null,
+    "strategy_immediate_daily": {
+      "background_anchor": "initial_inventory",
+      "strategy_wait": "immediate_daily"
+    }
+  },
+  "variants": [
+    "original_quantity_reference",
+    "background_current_anchor",
+    "strategy_immediate_daily",
+    "current_anchor_and_daily"
+  ],
+  "version": "pre-wuhan-ordered-factual-allocation-attribution-v1"
+}

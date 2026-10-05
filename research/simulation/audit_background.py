@@ -12,6 +12,7 @@ from pathlib import Path
 
 from ..data_pipeline.provenance import file_sha256
 from .agents import AgentParameters
+from .call_auction import PRICE_TIE_BREAKS
 from .audit_auction import audit_day as dense_audit_day
 from .audit_feedback import check_feedback
 from .background_experiment import experiment_inputs, load_summary
@@ -25,11 +26,13 @@ def rounded_fee(notional, bps):
     return whole + bool(remainder)
 
 
-def interval_price(auction: dict, settings: dict):
+def interval_price(auction: dict, settings: dict, price_tie_break: str = "nearest_prior"):
     """Sweep demand/supply intervals, not the engine's candidate price list.
 
     Demand drops immediately above a buy limit; supply rises at a sell limit.
-    On each constant-volume interval the nearest prior tick is optimal.
+    On each constant-volume interval, the final tick follows the selected
+    tie-break rule. The default chooses the nearest prior tick; the SSE
+    midpoint option is an exchange-rule sensitivity, not a full venue model.
     """
     lower, upper = auction["price_bounds_minor"]
     tick, prior = settings["tick_minor"], auction["price_before_minor"]
@@ -44,14 +47,31 @@ def interval_price(auction: dict, settings: dict):
         else:
             events.setdefault(limit, [0, 0])[1] += quantity
     boundaries = sorted({lower, upper + tick} | {p for p in events if lower <= p <= upper})
-    best, imbalance = None, None
+    if price_tie_break not in PRICE_TIE_BREAKS:
+        raise ValueError("unsupported independent auction tie-break rule")
+    pressure = sum(order["accepted_quantity"] * (1 if order["side"] == "buy" else -1)
+                   for order in auction["orders"])
+    best, imbalance, scored_intervals = None, None, []
     for left, next_left in zip(boundaries, boundaries[1:]):
         change = events.get(left, (0, 0))
         demand, supply = demand + change[0], supply + change[1]
-        candidate = max(left, min(prior, next_left - tick))
-        key = (-min(demand, supply), abs(demand - supply), abs(candidate - prior), candidate)
+        right = next_left - tick
+        scored_intervals.append((left, right, demand, supply))
+        candidate = (next_left - tick if pressure > 0 else left) if (
+            price_tie_break == "accepted_order_pressure" and pressure) else max(left, min(prior, next_left - tick))
+        key = ((-min(demand, supply), abs(demand - supply), -candidate if pressure > 0 else candidate,
+                candidate) if price_tie_break == "accepted_order_pressure" and pressure else
+               (-min(demand, supply), abs(demand - supply), abs(candidate - prior), candidate))
+        if price_tie_break == "sse_midpoint":
+            key = (-min(demand, supply), abs(demand - supply))
         if best is None or key < best:
             best, imbalance = key, demand - supply
+    if price_tie_break == "sse_midpoint" and -best[0] > 0:
+        optimal = [row for row in scored_intervals if (-min(row[2], row[3]), abs(row[2] - row[3])) == best]
+        first, last = min(row[0] for row in optimal), max(row[1] for row in optimal)
+        price = ((first // tick + last // tick + 1) // 2) * tick
+        interval = next(row for row in optimal if row[0] <= price <= row[1])
+        return price, -best[0], interval[2] - interval[3]
     if best[0] == 0:
         imbalance = sum(o["accepted_quantity"] * (1 if o["side"] == "buy" else -1) for o in auction["orders"]
                         if (o["side"] == "buy" and o["limit_price_minor"] >= prior) or (o["side"] == "sell" and o["limit_price_minor"] <= prior))
@@ -59,7 +79,7 @@ def interval_price(auction: dict, settings: dict):
     return best[3], -best[0], imbalance
 
 
-def reconstruct_day(record, previous, settings, session):
+def reconstruct_day(record, previous, settings, session, price_tie_break="nearest_prior"):
     auction = record["auction"]
     before = {name: dict(a) for name, a in previous["accounts"].items()}
     if session:
@@ -130,7 +150,7 @@ def reconstruct_day(record, previous, settings, session):
             raise ValueError("order fee differs from reconstructed trades")
         balances[order["owner"]]["cash_minor"] -= fee
         fees += fee
-    calculated_price, calculated_volume, imbalance = interval_price(auction, settings)
+    calculated_price, calculated_volume, imbalance = interval_price(auction, settings, price_tie_break)
     if (price != calculated_price or volume != calculated_volume or auction["matched_volume"] != volume
             or auction["clearing_imbalance"] != imbalance):
         raise ValueError("clearing differs from independent interval sweep")
@@ -158,6 +178,22 @@ def verify_background_demands(record, previous, case, stock, session, settings, 
         if case["mode"] == "idle":
             expected = {"mode": "idle", "current_shares": shares, "target_shares": shares,
                         "requested_quantity": 0, "side": "hold", "limit_price_minor": None, "shock_sha256": None}
+        elif case["mode"] == "stochastic_arrival":
+            digest = hashlib.sha256(f"{case['seed']}:{stock}:{session}:{name}".encode()).hexdigest()
+            arrived = int(digest[:16], 16) * 10000 // 2**64 < case["arrival_rate_bps"]
+            side = ("buy" if int(digest[16:32], 16) < 2**63 else "sell") if arrived else "hold"
+            lots = 1 + int(digest[32:48], 16) * case["max_order_lots"] // 2**64
+            quantity = lots * lot if arrived else 0
+            quote = None
+            if quantity:
+                numerator = prior * (10000 + (case["urgency_bps"] if side == "buy" else -case["urgency_bps"]))
+                denominator = 10000 * tick
+                units = numerator // denominator if side == "buy" else -(-numerator // denominator)
+                quote = max(bounds[0], min(bounds[1], units * tick))
+            expected = {"mode": "stochastic_arrival", "current_shares": shares,
+                        "arrival_rate_bps": case["arrival_rate_bps"], "arrived": arrived,
+                        "requested_quantity": quantity, "side": side,
+                        "limit_price_minor": quote, "shock_sha256": digest}
         else:
             digest = hashlib.sha256(f"{case['seed']}:{stock}:{session}:{name}".encode()).hexdigest()
             offset = int(digest[:16], 16) * (2 * case["target_range_lots"] + 1) // 2**64 - case["target_range_lots"]

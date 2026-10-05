@@ -1,0 +1,78 @@
+{
+  "agent_signal_enabled": false,
+  "candidates_path": "research_outputs/issuer_half_balance_sheet_candidates_2019_v2.json",
+  "expected_companies": 123,
+  "field_labels": {
+    "assets": [
+      "资产总计",
+      "资产合计"
+    ],
+    "bank_cash_and_central_bank_balances": [
+      "现金及存放中央银行款项"
+    ],
+    "bonds_payable": [
+      "应付债券"
+    ],
+    "current_assets": [
+      "流动资产合计"
+    ],
+    "current_liabilities": [
+      "流动负债合计"
+    ],
+    "customer_deposits_in_money_funds": [
+      "其中：客户存款",
+      "其中：客户资金存款"
+    ],
+    "equity": [
+      "所有者权益合计",
+      "所有者权益总计",
+      "股东权益合计",
+      "所有者权益（或股东权益）合计"
+    ],
+    "inventories": [
+      "存货"
+    ],
+    "lease_liabilities": [
+      "租赁负债"
+    ],
+    "liabilities": [
+      "负债合计",
+      "负债总计"
+    ],
+    "liabilities_and_equity": [
+      "负债和所有者权益总计",
+      "负债及所有者权益总计",
+      "负债和股东权益总计",
+      "负债及股东权益总计",
+      "负债和所有者权益（或股东权益）总计"
+    ],
+    "long_term_borrowings": [
+      "长期借款"
+    ],
+    "money_funds": [
+      "货币资金"
+    ],
+    "noncurrent_liabilities_due_within_one_year": [
+      "一年内到期的非流动负债"
+    ],
+    "short_term_borrowings": [
+      "短期借款"
+    ],
+    "trade_receivables": [
+      "应收账款"
+    ]
+  },
+  "frozen_at_utc": "2026-10-01T11:33:05.112520+00:00",
+  "inputs": {
+    "research_outputs/issuer_half_balance_sheet_candidates_2019_v2.json": "91039beeb7b98484c566d8b875c5bbcbf012041c0bdf9d40bb0bfe5f7ae5fea0",
+    "research_outputs/issuer_half_business_evidence_audit_2019_v3.json": "d71bcd9c2775c8816f3bb0a5653e6f8f72eec43a9e431618099bb2675ac3fc43",
+    "research_outputs/issuer_half_reports_raw_2019_v1/manifest.json": "2092907d4fc3e5554bde18aac0221613805000af51aaa90e52cf65aebaf15007"
+  },
+  "interpretation": "Independent pdfplumber physical-border read of every declared half-year balance field/current and comparison column; explicit RMB and universal-note presentation declarations are re-read in their physical source rectangles. Explicit 附注 rectangles are retained separately rather than interpreted as financial amounts; continuation omission requires matching physical rectangles. No production parser used. Individual failure continues the cohort but is not adopted; upstream reader QC persists regardless of selected-cell agreement. No economic validation or certified historical-byte claim.",
+  "literal_audit_path": "research_outputs/issuer_half_business_evidence_audit_2019_v3.json",
+  "pdfplumber_version": "0.11.10",
+  "report_end_date": "2019-06-30",
+  "report_manifest": "research_outputs/issuer_half_reports_raw_2019_v1/manifest.json",
+  "snapshot_at": "2020-01-22T23:59:59+08:00",
+  "version": "half-year-independent-border-balance-and-currency-audit-v1"
+}

@@ -1,0 +1,121 @@
+{
+  "agent_signal_enabled": false,
+  "balance_audit": "research_outputs/issuer_q3_balance_sheet_audit_2019_v1.json",
+  "balance_candidates": "research_outputs/issuer_q3_balance_sheet_candidates_2019_v1.json",
+  "balance_states": "research_outputs/issuer_financial_states_2019q3_v1.json",
+  "bank_balance_review": "research/configs/issuer_q3_bank_balance_review_2019.json",
+  "expected_companies": 123,
+  "field_labels": {
+    "additional_assets": {
+      "other_current_assets": [
+        "其他流动资产"
+      ],
+      "other_debt_investments": [
+        "其他债权投资"
+      ],
+      "other_equity_instrument_investments": [
+        "其他权益工具投资"
+      ],
+      "trading_financial_assets": [
+        "交易性金融资产"
+      ]
+    },
+    "cashflow": {
+      "cash_equivalent_closing": [
+        "期末现金及现金等价物余额",
+        "9月30日的现金及现金等价物余额"
+      ],
+      "cash_equivalent_net_change": [
+        "现金及现金等价物净增加额",
+        "现金及现金等价物净减少额",
+        "现金及现金等价物净（减少）/增加额"
+      ],
+      "cash_equivalent_opening": [
+        "期初现金及现金等价物余额",
+        "年初现金及现金等价物余额",
+        "1月1日的现金及现金等价物余额"
+      ],
+      "financing_cash_inflow": [
+        "筹资活动现金流入小计"
+      ],
+      "financing_cash_outflow": [
+        "筹资活动现金流出小计"
+      ],
+      "financing_net_cashflow": [
+        "筹资活动产生的现金流量净额",
+        "筹资活动（使用）的现金流量净额"
+      ],
+      "fx_effect_on_cash": [
+        "汇率变动对现金及现金等价物的影响"
+      ],
+      "investing_cash_inflow": [
+        "投资活动现金流入小计"
+      ],
+      "investing_cash_outflow": [
+        "投资活动现金流出小计"
+      ],
+      "investing_net_cashflow": [
+        "投资活动产生的现金流量净额",
+        "投资活动（使用）/产生的现金流量净额"
+      ],
+      "operating_cash_inflow": [
+        "经营活动现金流入小计"
+      ],
+      "operating_cash_outflow": [
+        "经营活动现金流出小计"
+      ],
+      "operating_net_cashflow": [
+        "经营活动产生的现金流量净额",
+        "经营活动产生/（使用）的现金流量净额",
+        "经营活动（使用）/产生的现金流量净额",
+        "经营活动使用的现金流量净额"
+      ]
+    },
+    "profit": {
+      "income_tax_expense": [
+        "所得税费用"
+      ],
+      "minority_profit": [
+        "少数股东损益"
+      ],
+      "net_profit": [
+        "净利润"
+      ],
+      "net_profit_attributable_to_parent": [
+        "归属于母公司所有者的净利润",
+        "归属于母公司股东的净利润",
+        "归属本行股东的净利润"
+      ],
+      "operating_profit": [
+        "营业利润"
+      ],
+      "operating_revenue": [
+        "营业收入"
+      ],
+      "operating_total_revenue": [
+        "营业总收入",
+        "营业收入合计"
+      ],
+      "profit_total": [
+        "利润总额"
+      ]
+    }
+  },
+  "inputs": {
+    "research/configs/issuer_q3_bank_balance_review_2019.json": "3bc2b0ecbfed479008705b830edce576a0e62ca25f830980c0419ddd32ddfbed",
+    "research_outputs/issuer_financial_states_2019q3_v1.json": "593e407f743399aebc3fddc3ca407f06d754fd930b53e5de82248abede22c77b",
+    "research_outputs/issuer_q3_balance_sheet_audit_2019_v1.json": "287877aa9da8ac349fad4da725effd1cf59f06001166df00388bf88e4e9a1c0c",
+    "research_outputs/issuer_q3_balance_sheet_candidates_2019_v1.json": "e6802865c3eaddc6b1d16adc6dc1b186db17ac43fa120a98c744331e536251db",
+    "research_outputs/issuer_q3_reports_raw_2019_v1/manifest.json": "dfd5d638881b3209efd1af2ba5450943e61c2eaca81816501e1e9dfa76532f98"
+  },
+  "number_policy": "Exact Decimal values with source signs and units. Parenthesized expenses/outflows are signed source presentations; ordinary negative tax benefits are not reversed. Missing is never zero.",
+  "period_policy": "Select a unique explicitly dated or formally source-year/window identified January-September nonparent column. Undeclared comparative dates remain null; source comparatives are not earlier publications. No annualization or synthetic quarterly subtraction.",
+  "report_end_date": "2019-09-30",
+  "report_manifest": "research_outputs/issuer_q3_reports_raw_2019_v1/manifest.json",
+  "report_year": 2019,
+  "reviewed_flow_anchors": "research/configs/issuer_q3_operating_visual_review_2019.json",
+  "snapshot_at": "2020-01-22T23:59:59+08:00",
+  "source_policy": "Selected original report and own next-midnight publication-date proxy. Revised report availability is never backdated; current fetched PDF bytes are not certified unchanged historical snapshots.",
+  "verification_policy": "Candidates require an independent border-cell/line re-read before export. Representative complete-page assistant review covers layout hazards, not all cohort pages.",
+  "version": "full-cohort-source-dated-ytd-operating-candidates-v1"
+}

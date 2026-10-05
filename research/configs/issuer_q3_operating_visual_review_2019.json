@@ -1,0 +1,496 @@
+{
+  "additional_complete_page_review": [
+    {
+      "hazards": [
+        "merged YTD date cells",
+        "alternating consolidated and parent columns",
+        "client cash not generic company cash"
+      ],
+      "pages": [
+        14,
+        15,
+        16
+      ],
+      "stock_code": "000776"
+    },
+    {
+      "hazards": [
+        "Q3 and YTD columns in same table",
+        "explicit negative tax benefit",
+        "blank comparative financing",
+        "trading assets not presumed freely usable cash"
+      ],
+      "pages": [
+        12,
+        17,
+        18,
+        19,
+        20,
+        24,
+        25
+      ],
+      "stock_code": "688018"
+    }
+  ],
+  "agent_signal_enabled": false,
+  "coverage_limit": "Representative complete-page review, not manual certification of every cell of all 123 reports.",
+  "review_basis": "Complete original-page raster inspection of units, printed dates, group/parent hierarchy, monetary columns, source expense/outflow parentheses, continuation context and blank cells. No patient or unrelated-project sources.",
+  "reviewer": "assistant_single_reviewer",
+  "sources": [
+    {
+      "source_pdf_path": "research_outputs/issuer_q3_reports_raw_2019_v1/000001/run_1/attempt1.pdf",
+      "source_pdf_sha256": "b0cced02997b823f2e67bf7ae4706210a2117d1d1940227421bf82028a051db6",
+      "statements": {
+        "利润表": {
+          "columns_reviewed_left_to_right": [
+            {
+              "period_end": "2019-09-30",
+              "period_start": "2019-07-01",
+              "scope": "issuer_as_stated"
+            },
+            {
+              "period_end": "2018-09-30",
+              "period_start": "2018-07-01",
+              "scope": "issuer_as_stated"
+            },
+            {
+              "period_end": "2019-09-30",
+              "period_start": "2019-01-01",
+              "scope": "issuer_as_stated"
+            },
+            {
+              "period_end": "2018-09-30",
+              "period_start": "2018-01-01",
+              "scope": "issuer_as_stated"
+            }
+          ],
+          "complete_pdf_pages_reviewed": [
+            30
+          ],
+          "numeric_column_boundaries_by_page": {
+            "30": [
+              298,
+              367,
+              430,
+              494,
+              552
+            ]
+          },
+          "period_header_regions_by_page": {
+            "30": [
+              [
+                303.63,
+                123.78324999999995,
+                356.45,
+                133.65200000000004
+              ],
+              [
+                366.73,
+                123.78324999999995,
+                417.27,
+                133.65200000000004
+              ],
+              [
+                426.8,
+                123.78324999999995,
+                477.35,
+                133.65200000000004
+              ],
+              [
+                487.63,
+                123.78324999999995,
+                540.42,
+                133.65200000000004
+              ]
+            ]
+          },
+          "reported_unit": "百万元"
+        },
+        "现金流量表": {
+          "columns_reviewed_left_to_right": [
+            {
+              "period_end": "2019-09-30",
+              "period_start": "2019-01-01",
+              "scope": "issuer_as_stated"
+            },
+            {
+              "period_end": "2018-09-30",
+              "period_start": "2018-01-01",
+              "scope": "issuer_as_stated"
+            }
+          ],
+          "complete_pdf_pages_reviewed": [
+            31
+          ],
+          "numeric_column_boundaries_by_page": {
+            "31": [
+              315,
+              460,
+              552
+            ]
+          },
+          "period_header_regions_by_page": {
+            "31": [
+              [
+                363.7,
+                132.889,
+                419.52,
+                143.56399999999996
+              ],
+              [
+                483.13,
+                132.889,
+                538.92,
+                143.56399999999996
+              ]
+            ]
+          },
+          "reported_unit": "百万元"
+        }
+      },
+      "stock_code": "000001"
+    },
+    {
+      "source_pdf_path": "research_outputs/issuer_q3_reports_raw_2019_v1/002936/run_1/attempt1.pdf",
+      "source_pdf_sha256": "e5da8c799afda3a34639637aa8c04890101b8f8f25ee282d3ba5a9eb1c8cfd3c",
+      "statements": {
+        "利润表": {
+          "columns_reviewed_left_to_right": [
+            {
+              "period_end": "2019-09-30",
+              "period_start": "2019-01-01",
+              "scope": "consolidated"
+            },
+            {
+              "period_end": "2018-09-30",
+              "period_start": "2018-01-01",
+              "scope": "consolidated"
+            },
+            {
+              "period_end": "2019-09-30",
+              "period_start": "2019-01-01",
+              "scope": "parent"
+            },
+            {
+              "period_end": "2018-09-30",
+              "period_start": "2018-01-01",
+              "scope": "parent"
+            }
+          ],
+          "complete_pdf_pages_reviewed": [
+            18,
+            19,
+            20
+          ],
+          "numeric_column_boundaries_by_page": {
+            "18": [
+              258,
+              333,
+              407,
+              481,
+              552
+            ],
+            "19": [
+              258,
+              333,
+              407,
+              481,
+              552
+            ],
+            "20": [
+              255,
+              331,
+              404,
+              476,
+              548
+            ]
+          },
+          "period_header_regions_by_page": {
+            "18": [
+              [
+                255.49,
+                191.4699999999999,
+                318.71,
+                236.4699999999999
+              ],
+              [
+                329.19,
+                191.4699999999999,
+                392.39,
+                236.4699999999999
+              ],
+              [
+                403.02,
+                191.4699999999999,
+                466.22,
+                236.4699999999999
+              ],
+              [
+                476.7,
+                191.4699999999999,
+                539.92,
+                236.4699999999999
+              ]
+            ],
+            "19": [
+              [
+                255.49,
+                191.4699999999999,
+                318.71,
+                236.4699999999999
+              ],
+              [
+                329.19,
+                191.4699999999999,
+                392.39,
+                236.4699999999999
+              ],
+              [
+                403.02,
+                191.4699999999999,
+                466.22,
+                236.4699999999999
+              ],
+              [
+                476.7,
+                191.4699999999999,
+                539.92,
+                236.4699999999999
+              ]
+            ],
+            "20": [
+              [
+                252.13,
+                175.39,
+                315.35,
+                220.39
+              ],
+              [
+                324.87,
+                175.39,
+                388.07,
+                220.39
+              ],
+              [
+                397.62,
+                175.39,
+                460.82,
+                220.39
+              ],
+              [
+                470.58,
+                175.39,
+                533.8,
+                220.39
+              ]
+            ]
+          },
+          "reported_unit": "千元"
+        },
+        "现金流量表": {
+          "columns_reviewed_left_to_right": [
+            {
+              "period_end": "2019-09-30",
+              "period_start": "2019-01-01",
+              "scope": "consolidated"
+            },
+            {
+              "period_end": "2018-09-30",
+              "period_start": "2018-01-01",
+              "scope": "consolidated"
+            },
+            {
+              "period_end": "2019-09-30",
+              "period_start": "2019-01-01",
+              "scope": "parent"
+            },
+            {
+              "period_end": "2018-09-30",
+              "period_start": "2018-01-01",
+              "scope": "parent"
+            }
+          ],
+          "complete_pdf_pages_reviewed": [
+            24,
+            25,
+            26,
+            27,
+            28
+          ],
+          "numeric_column_boundaries_by_page": {
+            "24": [
+              235,
+              310,
+              384,
+              458,
+              533
+            ],
+            "25": [
+              235,
+              310,
+              384,
+              458,
+              533
+            ],
+            "26": [
+              235,
+              310,
+              384,
+              458,
+              533
+            ],
+            "27": [
+              235,
+              310,
+              384,
+              458,
+              533
+            ],
+            "28": [
+              215,
+              296,
+              370,
+              444,
+              518
+            ]
+          },
+          "period_header_regions_by_page": {
+            "24": [
+              [
+                233.17,
+                191.3499999999999,
+                296.39,
+                236.3499999999999
+              ],
+              [
+                306.87,
+                191.3499999999999,
+                370.07,
+                236.3499999999999
+              ],
+              [
+                377.67,
+                191.3499999999999,
+                440.9,
+                236.3499999999999
+              ],
+              [
+                454.26,
+                191.3499999999999,
+                517.48,
+                236.3499999999999
+              ]
+            ],
+            "25": [
+              [
+                232.81,
+                191.3499999999999,
+                296.03,
+                236.3499999999999
+              ],
+              [
+                306.51,
+                191.3499999999999,
+                369.71,
+                236.3499999999999
+              ],
+              [
+                380.19,
+                191.3499999999999,
+                443.42,
+                236.3499999999999
+              ],
+              [
+                454.02,
+                191.3499999999999,
+                517.24,
+                236.3499999999999
+              ]
+            ],
+            "26": [
+              [
+                232.81,
+                191.3499999999999,
+                296.03,
+                236.3499999999999
+              ],
+              [
+                306.51,
+                191.3499999999999,
+                369.71,
+                236.3499999999999
+              ],
+              [
+                380.19,
+                191.3499999999999,
+                443.42,
+                236.3499999999999
+              ],
+              [
+                454.02,
+                191.3499999999999,
+                517.24,
+                236.3499999999999
+              ]
+            ],
+            "27": [
+              [
+                232.81,
+                191.3499999999999,
+                296.03,
+                236.3499999999999
+              ],
+              [
+                306.51,
+                191.3499999999999,
+                369.71,
+                236.3499999999999
+              ],
+              [
+                380.19,
+                191.3499999999999,
+                443.42,
+                236.3499999999999
+              ],
+              [
+                454.02,
+                191.3499999999999,
+                517.24,
+                236.3499999999999
+              ]
+            ],
+            "28": [
+              [
+                219.01,
+                191.3499999999999,
+                282.21,
+                236.3499999999999
+              ],
+              [
+                292.71,
+                191.3499999999999,
+                355.91,
+                236.3499999999999
+              ],
+              [
+                366.39,
+                191.3499999999999,
+                429.62,
+                236.3499999999999
+              ],
+              [
+                440.1,
+                191.3499999999999,
+                503.3,
+                236.3499999999999
+              ]
+            ]
+          },
+          "reported_unit": "千元"
+        }
+      },
+      "stock_code": "002936"
+    }
+  ],
+  "version": "assistant-complete-page-operating-review-v1"
+}

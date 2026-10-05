@@ -1,0 +1,130 @@
+{
+  "catalog_id": "asset-management-guidance-2018-pilot-issuer-exposure-v1",
+  "data_kind": "exploratory_pre_event_exposure_mapping",
+  "event_id": "asset_management_guidance_2018",
+  "as_of_date": "2018-04-27",
+  "policy_source_sha256": "55ba0b404c25c55dfa536e00e92f5c9096de3aca5710e87ab6c0bda443505601",
+  "sources": [
+    {
+      "source_id": "pbc_asset_management_guidance",
+      "source_kind": "policy_source",
+      "publisher": "中国人民银行",
+      "url": "https://www.pbc.gov.cn/jinrongwendingju/146766/146770/c2e228ad641d4a85acdc9142da4f955d/index.html",
+      "archive_path": "research_outputs/observed_2018/evidence/pbc_asset_management_2018.html",
+      "sha256": "55ba0b404c25c55dfa536e00e92f5c9096de3aca5710e87ab6c0bda443505601",
+      "available_by": "2018-04-27",
+      "date_basis": "document_body",
+      "role": "event_scope"
+    },
+    {
+      "source_id": "bao_code_name_crosswalk",
+      "source_kind": "provider_identity_crosswalk",
+      "publisher": "BaoStock",
+      "url": "https://www.baostock.com/mainContent?file=pythonAPI.md",
+      "archive_path": "research_outputs/wuhan_pit_market_download_2020/security_basic_raw.csv",
+      "sha256": "d837e1b36a3f8be91ea8d10819c08800d690df72a6ac030ab492cb2cc353df23",
+      "available_by": "2026-09-28",
+      "date_basis": "provider_retrieval",
+      "role": "issuer_identity"
+    },
+    {
+      "source_id": "bao_download_manifest",
+      "source_kind": "provider_identity_crosswalk",
+      "publisher": "BaoStock",
+      "url": "https://www.baostock.com/mainContent?file=pythonAPI.md",
+      "archive_path": "research_outputs/wuhan_pit_market_download_2020/download_manifest.json",
+      "sha256": "c4ba18441e4b8b694e425c36b2be2aead9dc18c46c3a4cfb0d71eae45e864a9c",
+      "available_by": "2026-09-28",
+      "date_basis": "provider_retrieval",
+      "role": "issuer_identity"
+    },
+    {
+      "source_id": "pingan_q1_2018",
+      "source_kind": "issuer_report",
+      "publisher": "深圳证券交易所 / 巨潮资讯",
+      "url": "http://static.cninfo.com.cn/finalpage/2018-04-20/1204670574.PDF",
+      "archive_path": ".firecrawl/pingan-q1-2018.md",
+      "sha256": "94334c1b5b00f68d50917d5e14f1a566f1a59130f45bfa067d07db23f409d1fa",
+      "available_by": "2018-04-20",
+      "date_basis": "document_body",
+      "role": "issuer_business"
+    },
+    {
+      "source_id": "pingan_wealth_product_2017",
+      "source_kind": "issuer_product_disclosure",
+      "publisher": "平安银行",
+      "url": "https://bank.pingan.com/touzilicai/1517190391679.shtml",
+      "archive_path": ".firecrawl/pingan-wealth-product-2017.md",
+      "sha256": "bb6b5346624499e21d8a71a6ca3ff6df3b5096748b938d58e62994fe5064b7ff",
+      "available_by": "2018-01-29",
+      "date_basis": "document_body",
+      "role": "issuer_business"
+    },
+    {
+      "source_id": "vanke_q3_2017",
+      "source_kind": "issuer_report",
+      "publisher": "万科企业股份有限公司",
+      "url": "https://www.vanke.com/upload/file/2017-10-27/dddb60a1-b71c-49d6-b63a-44cc2aa546ae.PDF",
+      "archive_path": ".firecrawl/vanke-q3-2017.md",
+      "sha256": "9eb9392d7a19c6ff12e7416aab79109c97bd5ccfff8e1f86fc10b1fd907e3de4",
+      "available_by": "2017-10-27",
+      "date_basis": "official_archive_path",
+      "role": "issuer_business"
+    },
+    {
+      "source_id": "moutai_annual_summary_2017",
+      "source_kind": "issuer_report",
+      "publisher": "上海证券交易所 / 巨潮资讯",
+      "url": "http://static.cninfo.com.cn/finalpage/2018-03-28/1204526772.PDF",
+      "archive_path": ".firecrawl/moutai-annual-2017.md",
+      "sha256": "9bdfc54e727a81b1fea8887f17f6031fc6feb3dce31cfccccd74b684bdf29c77",
+      "available_by": "2018-03-28",
+      "date_basis": "official_archive_path",
+      "role": "issuer_business"
+    }
+  ],
+  "issuers": [
+    {
+      "issuer_code": "000001",
+      "issuer_name": "平安银行股份有限公司",
+      "business_description": "银行；政策前披露的一项2017年银行理财产品年度管理报告，披露该产品由平安银行管理并于2017年3月成立。",
+      "industry_code": null,
+      "industry_code_status": "source_described_no_standard_code",
+      "direct_scope_match": "yes",
+      "rationale": "央行意见直接涵盖银行资产管理业务；政策前银行报告和理财产品报告支持该发行人属于银行且当时存在理财产品管理活动。发行人股价反应方向和幅度仍未知。",
+      "secondary_channels": [],
+      "evidence_source_ids": ["bao_code_name_crosswalk", "pbc_asset_management_guidance", "pingan_q1_2018", "pingan_wealth_product_2017"],
+      "impact_direction": "unknown",
+      "impact_magnitude": "unknown",
+      "agent_signal_enabled": false
+    },
+    {
+      "issuer_code": "000002",
+      "issuer_name": "万科企业股份有限公司",
+      "business_description": "房地产开发和经营是其2017年报告所述的主要业务之一。",
+      "industry_code": null,
+      "industry_code_status": "source_described_no_standard_code",
+      "direct_scope_match": "no",
+      "rationale": "政策直接监管金融机构资产管理业务，万科本身不是此类金融机构；是否受融资链条间接影响未从该公司来源量化。",
+      "secondary_channels": ["可能存在资产管理产品投资与房地产融资之间的间接渠道，发行人层面的方向和大小未验证。"],
+      "evidence_source_ids": ["vanke_q3_2017"],
+      "impact_direction": "unknown",
+      "impact_magnitude": "unknown",
+      "agent_signal_enabled": false
+    },
+    {
+      "issuer_code": "600519",
+      "issuer_name": "贵州茅台酒股份有限公司",
+      "business_description": "2017年报告摘要描述白酒生产、销售和白酒行业经营情况。",
+      "industry_code": null,
+      "industry_code_status": "source_described_no_standard_code",
+      "direct_scope_match": "no",
+      "rationale": "该发行人披露的主营业务与金融机构资产管理业务不匹配；没有据此认定其免受一般市场传导影响。",
+      "secondary_channels": ["一般市场和融资传导未量化。"],
+      "evidence_source_ids": ["moutai_annual_summary_2017"],
+      "impact_direction": "unknown",
+      "impact_magnitude": "unknown",
+      "agent_signal_enabled": false
+    }
+  ]
+}

@@ -1,0 +1,179 @@
+{
+  "discovery_indices": [
+    {
+      "path": ".firecrawl/pbc-expanded-rates-list84.json",
+      "sha256": "c7eed9aec36f9b65cc82dbf9559d2cf13e889aa2e21c1b8fc39bbfe802b2b879",
+      "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-84.html"
+    },
+    {
+      "path": ".firecrawl/pbc-expanded-rates-list85.json",
+      "sha256": "28b26e310634a3b95e1cd830c8e54041dfa3e26a16483e76ee3e6c6f7953d9f9",
+      "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-85.html"
+    },
+    {
+      "path": ".firecrawl/pbc-expanded-rates-list86.json",
+      "sha256": "7d16436d6d7885f66554fa166ca6aa2953204b297f75bc280f42c859a14f0a99",
+      "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-86.html"
+    },
+    {
+      "path": ".firecrawl/pbc-omo-list87.json",
+      "sha256": "c556d7b296354074982f5a9679a9c427a7f9e6c23030b93b4be17fa659d22fe4",
+      "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-87.html"
+    },
+    {
+      "path": ".firecrawl/pbc-omo-list88.json",
+      "sha256": "fd4d82d4bcb28e7ce83d7115a03f5e86051ae2755ecd88e522b8cc48b88b5eb5",
+      "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-88.html"
+    },
+    {
+      "path": ".firecrawl/pbc-omo-list89.json",
+      "sha256": "353748194473c7c58e94d0b0c77338aa5dcdd61d408246f753c77401ce5e30e3",
+      "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-89.html"
+    },
+    {
+      "path": ".firecrawl/pbc-omo-list90.json",
+      "sha256": "8b9b2cbf5734c2f2ae32c39ce463fef31b789a21919af8a1c21c052872052081",
+      "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-90.html"
+    },
+    {
+      "path": ".firecrawl/pbc-omo-list91.json",
+      "sha256": "aba21c33b47c2e500a841bd353efcc29b3562e59f04eaaadc30438fed380ec29",
+      "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-91.html"
+    },
+    {
+      "path": ".firecrawl/pbc-expanded-rates-list92.json",
+      "sha256": "9a579e163499d6262fa135a65073831fe92c888497a8b147c94326cc9782dbf7",
+      "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-92.html"
+    },
+    {
+      "path": ".firecrawl/pbc-expanded-rates-list93.json",
+      "sha256": "6e1b5a1a4dcb288eabe3da54349609f8a7b8c0037d750c0c73b6496cc5af5051",
+      "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-93.html"
+    }
+  ],
+  "expected_source_counts": {
+    "lpr": 8,
+    "omo": 170
+  },
+  "interpretation": "Original current HTTP bytes for all dated ordinary PBC OMO-title bulletins selected from frozen indices in Aug2019-Mar2020, plus complete eight monthly reform-era LPR announcements. Separate CBS-title notices, RRR changes, maturities, expectations and issuer exposure are not comprehensive here. Offshore yields and fees are not mainland policy-rate changes. Current responses are not certified historical unrevised snapshots. Pending/failed records remain explicit and prevent derived output.",
+  "lpr_sources": [
+    {
+      "archive_name": "cfets_lpr_20190820.html",
+      "discovery_snapshot": {
+        "path": ".firecrawl/cfets-lpr-20190820.json",
+        "sha256": "714f90c5b9348cb8f3935e58fc4306267817b03eafe1b30b2d2042930281fd49"
+      },
+      "expected_html_title": "2019年8月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告_中国货币网",
+      "kind": "lpr",
+      "publication_date": "2019-08-20",
+      "source_id": "cfets_lpr_20190820",
+      "title": "2019年8月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告",
+      "url": "https://www.chinamoney.com.cn/chinese/rdgz/20190820/1365567.html"
+    },
+    {
+      "archive_name": "cfets_lpr_20190920.html",
+      "discovery_snapshot": {
+        "path": ".firecrawl/cfets-lpr-20190920.json",
+        "sha256": "cdfad8d4c825efc59ec3bbb40cb8de858cafd1b79a116bcd86cda59a57a70e43"
+      },
+      "expected_html_title": "2019年9月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告_中国货币网",
+      "kind": "lpr",
+      "publication_date": "2019-09-20",
+      "source_id": "cfets_lpr_20190920",
+      "title": "2019年9月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告",
+      "url": "https://www.chinamoney.com.cn/chinese/bklprmkn2/20190920/1397759.html"
+    },
+    {
+      "archive_name": "cfets_lpr_20191021.html",
+      "discovery_snapshot": {
+        "path": ".firecrawl/cfets-lpr-20191021.json",
+        "sha256": "050bfcdc6e12b6d1e84d86769ef72be65372a53af4b39be8263638520832c117"
+      },
+      "expected_html_title": "2019年10月21日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告_中国货币网",
+      "kind": "lpr",
+      "publication_date": "2019-10-21",
+      "source_id": "cfets_lpr_20191021",
+      "title": "2019年10月21日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告",
+      "url": "https://www.chinamoney.com.cn/chinese/rdgz/20191021/1423385.html"
+    },
+    {
+      "archive_name": "cfets_lpr_20191120.html",
+      "discovery_snapshot": {
+        "path": ".firecrawl/cfets-lpr-20191120.json",
+        "sha256": "a3745b9387f0e19e48e5acefc8eeb32c3e23fa5a41f1b4e440c5610d73428d3c"
+      },
+      "expected_html_title": "2019年11月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告_中国货币网",
+      "kind": "lpr",
+      "publication_date": "2019-11-20",
+      "source_id": "cfets_lpr_20191120",
+      "title": "2019年11月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告",
+      "url": "https://www.chinamoney.com.cn/chinese/rdgz/20191120/1456678.html"
+    },
+    {
+      "archive_name": "cfets_lpr_20191220.html",
+      "discovery_snapshot": {
+        "path": ".firecrawl/cfets-lpr-20191220.json",
+        "sha256": "72ff3b15a8c8abc8c585a92dc802982d8fa0fe06ea87abe077d4f1fe3655ee1f"
+      },
+      "expected_html_title": "2019年12月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告_中国货币网",
+      "kind": "lpr",
+      "publication_date": "2019-12-20",
+      "source_id": "cfets_lpr_20191220",
+      "title": "2019年12月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告",
+      "url": "https://www.chinamoney.com.cn/chinese/rdgz/20191220/1487729.html"
+    },
+    {
+      "archive_name": "cfets_lpr_20200120.html",
+      "discovery_snapshot": {
+        "path": ".firecrawl/cfets-expanded-rates-lpr-20200120.json",
+        "sha256": "8c91186442a1a9d985c9d7124c29f64f2093b3195f631fdfcb45f949a4409dcb"
+      },
+      "expected_html_title": "2020年1月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告_中国货币网",
+      "kind": "lpr",
+      "publication_date": "2020-01-20",
+      "source_id": "cfets_lpr_20200120",
+      "title": "2020年1月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告",
+      "url": "https://www.chinamoney.com.cn/chinese/rdgz/20200120/1516351.html"
+    },
+    {
+      "archive_name": "cfets_lpr_20200220.html",
+      "discovery_snapshot": {
+        "path": ".firecrawl/cfets-expanded-rates-lpr-20200220.json",
+        "sha256": "00e729ab6f9731b66d501301d060ecfaf1e71c89c61c71afd020614942fa22c1"
+      },
+      "expected_html_title": "2020年2月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告_中国货币网",
+      "kind": "lpr",
+      "publication_date": "2020-02-20",
+      "source_id": "cfets_lpr_20200220",
+      "title": "2020年2月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告",
+      "url": "https://www.chinamoney.com.cn/chinese/rdgz/20200220/1540218.html"
+    },
+    {
+      "archive_name": "cfets_lpr_20200320.html",
+      "discovery_snapshot": {
+        "path": ".firecrawl/cfets-expanded-rates-lpr-20200320.json",
+        "sha256": "e5721cf38950a6968b43ab3f6db5e2ed5c41b9d6cca322d8dcfe0f435afb8ad9"
+      },
+      "expected_html_title": "2020年3月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告_中国货币网",
+      "kind": "lpr",
+      "publication_date": "2020-03-20",
+      "source_id": "cfets_lpr_20200320",
+      "title": "2020年3月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告",
+      "url": "https://www.chinamoney.com.cn/chinese/rdgz/20200320/1574372.html"
+    }
+  ],
+  "maximum_concurrent_requests": 2,
+  "reuse_manifests": [
+    {
+      "path": "research_outputs/pre_wuhan_pbc_omo_raw_2019_v1/manifest.json",
+      "sha256": "e380e3b050e94c966b026f1f8ef5ede0cc4f0b761b5b3ea5c2d03a3cd13fe97e"
+    },
+    {
+      "path": "research_outputs/pre_wuhan_policy_raw_2019_v2/manifest.json",
+      "sha256": "6e9ce9aa47aeeef6dad395eff1672a6c24cc5b666e954c38272176788de7a6c7"
+    }
+  ],
+  "source_end_date": "2020-03-31",
+  "source_start_date": "2019-08-01",
+  "version": "extended-official-rate-source-selection-v1"
+}

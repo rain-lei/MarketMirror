@@ -1,0 +1,49 @@
+{
+  "schema_version": "mechanism-prototype-offline-evidence-v1",
+  "studies": {
+    "source_cases": {
+      "config": "research/configs/source_case_decision_study_2026_v1.json",
+      "output": "research_outputs/source_case_decisions_20261004_v1",
+      "verification_status": "PASS_ALL_SIX_REAL_SOURCE_CASES_120_RAW_PATHS_ASOF_FACT_LINKS_SETTLEMENT_AND_PAIRS"
+    },
+    "fixed_state": {
+      "config": "research/configs/source_case_fixed_state_2026_v1.json",
+      "output": "research_outputs/source_case_fixed_states_20261004_v1",
+      "verification_status": "PASS_ALL_SIX_CASES_FIXED_STATE_SOURCE_CLOCKS_EXACT_RULES_SIGNED_REQUESTS_AND_PAIRS"
+    },
+    "duration": {
+      "config": "research/configs/source_case_duration_2026_v1.json",
+      "output": "research_outputs/source_case_durations_20261004_v1",
+      "verification_status": "PASS_ALL_SIX_CASES_THREE_DURATIONS_SOURCE_CLOCKS_FULL_SETTLEMENT_AND_150_PAIRS"
+    }
+  },
+  "bindings": {
+    "research/configs/source_case_decision_study_2026_v1.json": "6ff633d4d48148c1f53e02cde91905779168ae4e9bb79de5acc35684cf6d6c93",
+    "research/configs/source_case_duration_2026_v1.json": "907236e2d2d99ea7a285cbe5d6f627931503f941898b9b52f0df0169b7b227d5",
+    "research/configs/source_case_fixed_state_2026_v1.json": "df78a71cce7faf10f999e5a47304d8f0359484c4dc774b4b96bbcff0642ba423",
+    "research_outputs/source_case_decision_full_suite_20261004_v1.json": "544ef0f2553272c94d20c5ca5bbd2cd9422cf3a6845a7334b01c333176121bbd",
+    "research_outputs/source_case_decision_full_suite_20261004_v1.txt": "9ad34dd432538b12ef15dc7585007af56291e3593dc4d3cb2db0a6f36140a545",
+    "research_outputs/source_case_decision_process_20261004_v1.json": "b7f53be1d053d4fdf018e1b2ab5ed822e68522a809d17645b1ba0beb2e5163d3",
+    "research_outputs/source_case_decision_process_20261004_v1.txt": "fb9080baed4ba1cb0309581cc01bc31e45f5119ff8dec368efe8d34e96ce52d0",
+    "research_outputs/source_case_decisions_20261004_v1/independent_verification.json": "38344a6530c80b78aa78f31ed3a92259cdc57ed768a0610e2c556a5a6f8e34bd",
+    "research_outputs/source_case_decisions_20261004_v1/manifest.json": "2cc4d987d8e578572576d3ac9c0b1de9a043eba4935384e7eee8dde0e55a9cc0",
+    "research_outputs/source_case_duration_audit_20261004_v1.json": "e34da5841903adcffc497f19f1fe1318afdd97dc7a7b40244fe5c565410ffec9",
+    "research_outputs/source_case_duration_audit_20261004_v1.txt": "cc6b858b2ddb44f9fe467b68196c7fc63e332c934d2432b10640ca695363168c",
+    "research_outputs/source_case_duration_full_suite_20261004_v1.json": "de783c13eac6032578e0bf42ed2db629a6ec065ce7fcbfa6cc5f3642c30d15a4",
+    "research_outputs/source_case_duration_full_suite_20261004_v1.txt": "2504664f04be4461011be7089042fb938364ddd328c89ae05c262811bfbc4c91",
+    "research_outputs/source_case_duration_producer_20261004_v1.json": "249499dffa9492afb724676123580566a25bda3db288c42dac8a73247062f63b",
+    "research_outputs/source_case_duration_producer_20261004_v1.txt": "fab0d7340411f276b4d7485ce20249085e711b8868abf351f4b9b42b0be4c373",
+    "research_outputs/source_case_durations_20261004_v1/independent_verification.json": "d58f7f01092ee7fdb3891f0e34ee4937c0f1af9b0943e027a1f9190fa76f915b",
+    "research_outputs/source_case_durations_20261004_v1/manifest.json": "e9578b53ebb0ee5e67341bd50d636312ac974f8e93c0d08c4b3d316a3b6183d6",
+    "research_outputs/source_case_fixed_state_audit_20261004_v1.json": "77f302daa1293a64d424ebd5b01ed161890b70734140cca956aa0b4e5bbac97d",
+    "research_outputs/source_case_fixed_state_audit_20261004_v1.txt": "94501efe63aa08f4c92e7139cb3ee560a1ae2b406d7a6050b378ece06f25db1e",
+    "research_outputs/source_case_fixed_state_full_suite_20261004_v2.json": "80b8c26b871ec7799a16202e41568adae5a86d8fbce446580096ad7606a91114",
+    "research_outputs/source_case_fixed_state_full_suite_20261004_v2.txt": "be2b968c534217b1b49692aa1faf76760d29801f97c547998ac150c855ec53ed",
+    "research_outputs/source_case_fixed_state_producer_20261004_v1.json": "f6c4da5b4c21464fb58677f8e15d51ec4f4f478dba3983504e5e356e5c8b6fb0",
+    "research_outputs/source_case_fixed_state_producer_20261004_v1.txt": "1150aa0711d670be22a8bdfc685f57d4efe72f2ca44f766a3bdc83f9644211aa",
+    "research_outputs/source_case_fixed_states_20261004_v1/independent_verification.json": "7adadb22bbc2657525d85568a327942900489daef97ce1afc297dab605aa1be6",
+    "research_outputs/source_case_fixed_states_20261004_v1/manifest.json": "1e6aef26f2366cecebbbdc1a5437cc1601f9894d2f4a4badd813f71840de9d4e"
+  },
+  "online_model_calls": 0,
+  "historical_market_fidelity_or_prediction_proven": false
+}

@@ -16,6 +16,7 @@ from ..data_pipeline.build_dataset import valid_stock_code
 from ..data_pipeline.market_data import VERSION as MARKET_VERSION, strict_date
 from ..data_pipeline.provenance import file_sha256
 from ..semantic.agent_signal_adapter import AI_GATE_PIPELINE, verify_gate, build_signal_rows
+from ..semantic.event_snapshot import VERSION as SNAPSHOT_VERSION
 from .agents import AgentParameters, finite_range
 from .historical_replay import prepare_steps, replay_path
 from .semantic_replay import replay_semantic_path
@@ -28,18 +29,27 @@ CODE_PATHS = {name: RESEARCH_ROOT / name for name in (
     "simulation/semantic_historical_replay.py", "simulation/semantic_replay.py",
     "simulation/semantic_signal_join.py", "simulation/historical_replay.py", "simulation/agents.py",
     "semantic/agent_signal_adapter.py", "semantic/signal_validation.py", "semantic/compare_holdout.py",
-    "semantic/assistant_review.py", "baselines/run_experiments.py", "data_pipeline/market_data.py")}
+    "semantic/assistant_review.py", "semantic/model_protocol.py", "semantic/event_snapshot.py",
+    "baselines/run_experiments.py", "data_pipeline/market_data.py")}
 REQUIRED = {"run_id", "data_kind", "market_manifest", "download_manifest", "signal_directory",
             "selection_rule", "stock_codes", "start_date", "end_date", "momentum_sessions", "volatility_sessions",
             "transaction_cost_rate", "agents"}
+OPTIONAL = {"universe_config"}
+SNAPSHOT_SELECTION = "pre_event_snapshot_universe"
 
 
 def _read_config(path: Path) -> dict[str, Any]:
     cfg = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(cfg, dict) or set(cfg) != REQUIRED or cfg["data_kind"] != "observed":
+    if (not isinstance(cfg, dict) or not REQUIRED <= set(cfg) or not set(cfg).issubset(REQUIRED | OPTIONAL)
+            or cfg["data_kind"] != "observed"):
         raise ValueError("semantic ablation config must declare the observed input and all parameters")
-    if cfg["selection_rule"] not in {"all_signal_stocks", "nonzero_signal_stocks"}:
+    if cfg["selection_rule"] not in {"all_signal_stocks", "nonzero_signal_stocks", SNAPSHOT_SELECTION}:
         raise ValueError("selection_rule must identify the complete or nonzero-signal cohort")
+    if cfg["selection_rule"] == SNAPSHOT_SELECTION:
+        if not isinstance(cfg.get("universe_config"), str) or not cfg["universe_config"].strip():
+            raise ValueError("pre-event snapshot replay requires universe_config")
+    elif "universe_config" in cfg:
+        raise ValueError("universe_config is only used for a pre-event snapshot")
     for key in ("run_id", "market_manifest", "download_manifest", "signal_directory"):
         if not isinstance(cfg[key], str) or not cfg[key].strip():
             raise ValueError(f"{key} must be a nonempty string")
@@ -83,10 +93,14 @@ def _verified_inputs(config_path: Path, cfg: dict[str, Any]) -> tuple[dict, list
             or download.get("benchmark_symbol") != market["settings"]["benchmark_id"]
             or download.get("end_date") < cfg["end_date"]):
         raise ValueError("download identity or range differs from the observed market panel")
-    if (Path(market.get("config_path", "")).resolve() != (download_path.parent / "market_import.json").resolve()
-            or market.get("config_sha256") != file_sha256(download_path.parent / "market_import.json")):
+    declared_config = market.get("config_path")
+    if not isinstance(declared_config, str) or not Path(declared_config).is_absolute():
+        raise ValueError("prepared market has no absolute import config path")
+    market_config = Path(declared_config).resolve()
+    if (market.get("config_sha256") != file_sha256(market_config)
+            or market.get("settings") != json.loads(market_config.read_text(encoding="utf-8"))):
         raise ValueError("prepared market settings do not match the verified download")
-    source_paths = [config_path, market_path, market_csv, download_path]
+    source_paths = [config_path, market_path, market_csv, download_path, market_config]
     for name, info in download["artifacts"].items():
         artifact = download_path.parent / name
         if file_sha256(artifact) != info["sha256"]:
@@ -124,8 +138,27 @@ def _verified_inputs(config_path: Path, cfg: dict[str, Any]) -> tuple[dict, list
     predictions = [Path(name) for name in signal_result["input_sha256"] if Path(name).name == "model_predictions.jsonl"]
     if len(packs) != 1 or len(predictions) != 1 or build_signal_rows(packs[0], predictions[0], comparisons[0])[0] != rows:
         raise ValueError("signal rows differ from the current deterministic adapter mapping")
-    selected = ({row["stock_code"] for row in rows} if cfg["selection_rule"] == "all_signal_stocks"
-                else {row["stock_code"] for row in rows if row["text_signal"] != 0})
+    if cfg["selection_rule"] == SNAPSHOT_SELECTION:
+        pack = json.loads((packs[0] / "annotation_manifest.json").read_text(encoding="utf-8"))
+        universe_path = (parent / cfg["universe_config"]).resolve()
+        universe = json.loads(universe_path.read_text(encoding="utf-8"))
+        universe_codes = universe.get("stock_codes")
+        if (pack.get("snapshot_pipeline_version") != SNAPSHOT_VERSION
+                or pack.get("input_sha256", {}).get(str(universe_path)) != file_sha256(universe_path)
+                or not isinstance(universe_codes, list) or universe_codes != cfg["stock_codes"]
+                or pack.get("universe_size") != len(universe_codes)
+                or pack.get("universe_selection") != universe.get("selection")
+                or len(rows) != len({row["stock_code"] for row in rows})
+                or not {row["stock_code"] for row in rows} <= set(universe_codes)
+                or pack.get("counts", {}).get("selected_companies") != len(rows)
+                or pack.get("counts", {}).get("companies_without_reply_snapshot") != len(universe_codes) - len(rows)):
+            raise ValueError("pre-event signal rows or market cohort differ from the frozen snapshot universe")
+        source_paths.append(universe_path)
+        selected = set(universe_codes)
+    elif cfg["selection_rule"] == "all_signal_stocks":
+        selected = {row["stock_code"] for row in rows}
+    else:
+        selected = {row["stock_code"] for row in rows if row["text_signal"] != 0}
     if selected != set(cfg["stock_codes"]):
         raise ValueError("selected stocks differ from the declared complete cohort")
     if not rows or any(row["stock_code"] not in market["series"] and row["text_signal"] != 0 for row in rows):
@@ -250,6 +283,7 @@ def run_ablation(config_path: Path, output_dir: Path) -> dict[str, Any]:
         lines += ["", "方向为零但存在事件的记录仍可通过不确定性影响 Agent；无事件记录不施加不确定性惩罚。",
                   "信号只影响示意 Agent 决策，不改变已观察的市场收益。文本事件按当前合并规则持续保留，未估计衰减期限。",
                   ("当前仅选非零信号公司，属于事后选择；不能推广到全部来源公司。" if cfg["selection_rule"] == "nonzero_signal_stocks"
+                   else "覆盖固定事前提问活跃公司样本；没有事前确认回复的公司保留为空文本对照。" if cfg["selection_rule"] == SNAPSHOT_SELECTION
                    else "覆盖固定样本全部公司；样本按话题分层且复核协议已变更，仍属探索性分析。"),
                   "末值差异不是模型预测收益能力的证据。", ""]
         report = staging / "semantic_ablation_report.md"

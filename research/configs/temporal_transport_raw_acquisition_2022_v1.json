@@ -1,0 +1,2075 @@
+{
+  "analysis_period": [
+    "2022-01-01",
+    "2022-03-31"
+  ],
+  "bindings": {
+    "research/TEMPORAL_TRANSPORT_PREREGISTRATION_2022.md": "ed8feb67875474ccff0de729c86b57fa2e33c1cac94c698510246549cdc4cda8",
+    "research/configs/temporal_transport_design_2022_v1.json": "1baa7349658668c92fe86bcc26f0e512ccac06941e8a75f2b2b9ed379567458f",
+    "research/data_pipeline/audit_eastmoney_carrier.py": "a6a701b64d5d38520a31d13a50e6820c4b3bf962d242ab7e54c3a62d6fdc44f3",
+    "research/data_pipeline/fetch_eastmoney_raw.py": "0912059e391f315dfb7f9ce4c4a1a2738f07d6f6489c810f8d4dd92f0fee75be",
+    "research/data_pipeline/market_data.py": "d62ee60c97e0969d546a72812b8fff24521c4e74c112af16df55c1cefe82d85e",
+    "research/data_pipeline/provenance.py": "ac4dbb3a558f40e3207c5801b0e204f653eedc9b5f4f8278d65de11af37752a7",
+    "research/data_pipeline/temporal_transport_sources.py": "cf89a4a80468dd2237d98a3698c6c961848cd71b83f07e7ecbd1b5716519523a",
+    "research_outputs/acquire_temporal_firecrawl_raw_20261002_v6.py": "232989aa26a2546d47bc75ab85e0dd6208336603581ffee8b8b6ff4ea535d290",
+    "research_outputs/acquire_temporal_transport_sources_20261003_v1.py": "948e5ff9ff0974dd737341dc36f461fdeb4939432cecebb4172caa0db0d6b455",
+    "research_outputs/register_temporal_transport_2022_20261003_v1.py": "672589b7a5c17e1a4a8643df47d2f827df91a66b3cc626d32fa9fce238a1c284",
+    "research_outputs/temporal_transport_exchange_calendar_2022_v1.json": "9494c9d0e2cbd8c55775044277533628e9119dc3a3e68c472ae636b917f54aa4",
+    "research_outputs/temporal_transport_full_suite_20261003_v1.json": "a6c9cbb3b3a5961376709864d9bd4477c4377ee155d4b7753146b093582553db",
+    "research_outputs/temporal_transport_prior_period_adjudication_20261003_v1.json": "815833d588e108fd4ff62b058e30e15ef3bfc40d85feadc98c7f1b7d1985a7cc",
+    "tests/test_temporal_transport_sources.py": "4f77bc237ce65cbace05b383c1d55461ce659ea9889c25e2d2ecdddb849a6031"
+  },
+  "cli_entrypoint": "C:\\Users\\rain_\\AppData\\Roaming\\npm\\node_modules\\firecrawl-cli\\dist\\index.js",
+  "design_protocol_path": "research/configs/temporal_transport_design_2022_v1.json",
+  "direct_timeout_seconds": 15,
+  "download_period": [
+    "2021-09-01",
+    "2022-03-31"
+  ],
+  "expected_session_dates": [
+    "2021-09-01",
+    "2021-09-02",
+    "2021-09-03",
+    "2021-09-06",
+    "2021-09-07",
+    "2021-09-08",
+    "2021-09-09",
+    "2021-09-10",
+    "2021-09-13",
+    "2021-09-14",
+    "2021-09-15",
+    "2021-09-16",
+    "2021-09-17",
+    "2021-09-22",
+    "2021-09-23",
+    "2021-09-24",
+    "2021-09-27",
+    "2021-09-28",
+    "2021-09-29",
+    "2021-09-30",
+    "2021-10-08",
+    "2021-10-11",
+    "2021-10-12",
+    "2021-10-13",
+    "2021-10-14",
+    "2021-10-15",
+    "2021-10-18",
+    "2021-10-19",
+    "2021-10-20",
+    "2021-10-21",
+    "2021-10-22",
+    "2021-10-25",
+    "2021-10-26",
+    "2021-10-27",
+    "2021-10-28",
+    "2021-10-29",
+    "2021-11-01",
+    "2021-11-02",
+    "2021-11-03",
+    "2021-11-04",
+    "2021-11-05",
+    "2021-11-08",
+    "2021-11-09",
+    "2021-11-10",
+    "2021-11-11",
+    "2021-11-12",
+    "2021-11-15",
+    "2021-11-16",
+    "2021-11-17",
+    "2021-11-18",
+    "2021-11-19",
+    "2021-11-22",
+    "2021-11-23",
+    "2021-11-24",
+    "2021-11-25",
+    "2021-11-26",
+    "2021-11-29",
+    "2021-11-30",
+    "2021-12-01",
+    "2021-12-02",
+    "2021-12-03",
+    "2021-12-06",
+    "2021-12-07",
+    "2021-12-08",
+    "2021-12-09",
+    "2021-12-10",
+    "2021-12-13",
+    "2021-12-14",
+    "2021-12-15",
+    "2021-12-16",
+    "2021-12-17",
+    "2021-12-20",
+    "2021-12-21",
+    "2021-12-22",
+    "2021-12-23",
+    "2021-12-24",
+    "2021-12-27",
+    "2021-12-28",
+    "2021-12-29",
+    "2021-12-30",
+    "2021-12-31",
+    "2022-01-04",
+    "2022-01-05",
+    "2022-01-06",
+    "2022-01-07",
+    "2022-01-10",
+    "2022-01-11",
+    "2022-01-12",
+    "2022-01-13",
+    "2022-01-14",
+    "2022-01-17",
+    "2022-01-18",
+    "2022-01-19",
+    "2022-01-20",
+    "2022-01-21",
+    "2022-01-24",
+    "2022-01-25",
+    "2022-01-26",
+    "2022-01-27",
+    "2022-01-28",
+    "2022-02-07",
+    "2022-02-08",
+    "2022-02-09",
+    "2022-02-10",
+    "2022-02-11",
+    "2022-02-14",
+    "2022-02-15",
+    "2022-02-16",
+    "2022-02-17",
+    "2022-02-18",
+    "2022-02-21",
+    "2022-02-22",
+    "2022-02-23",
+    "2022-02-24",
+    "2022-02-25",
+    "2022-02-28",
+    "2022-03-01",
+    "2022-03-02",
+    "2022-03-03",
+    "2022-03-04",
+    "2022-03-07",
+    "2022-03-08",
+    "2022-03-09",
+    "2022-03-10",
+    "2022-03-11",
+    "2022-03-14",
+    "2022-03-15",
+    "2022-03-16",
+    "2022-03-17",
+    "2022-03-18",
+    "2022-03-21",
+    "2022-03-22",
+    "2022-03-23",
+    "2022-03-24",
+    "2022-03-25",
+    "2022-03-28",
+    "2022-03-29",
+    "2022-03-30",
+    "2022-03-31"
+  ],
+  "external_runtime_bindings": {
+    "C:\\Program Files\\nodejs\\node.exe": "47cd67453da180a39cdf5daedb89862667b8e627e60c116607874633450cd30d",
+    "C:\\Users\\rain_\\AppData\\Roaming\\npm\\node_modules\\firecrawl-cli\\dist\\index.js": "080a87f5fdaebb69b360b3ffe16016e9f2d82da7bd94a8b24ba56875800e1333",
+    "C:\\Users\\rain_\\AppData\\Roaming\\npm\\node_modules\\firecrawl-cli\\package.json": "7b1fd90640b0dc260aa51f331442a4192a9c42c5d98cae9504cf96b9689d28dd"
+  },
+  "formal_execution_protocol_frozen": false,
+  "frozen_at_utc": "2026-10-03T13:17:41.288114+00:00",
+  "limitations": [
+    "Raw response validity is separate from unit, adjustment, adjacent return and trading-status eligibility.",
+    "All 123 companies and 139 expected positions remain; failures and missing values are never filled or replaced.",
+    "Current provider adjustment history is not certified economic total return or an archived point-in-time feed.",
+    "The provider has no daily explicit trade-status field; absent rows and zero volume do not certify suspension.",
+    "Carrier JSON is rendered response text, not original HTTP wire bytes.",
+    "Extra retries are bounded at 100 for the full fixed grid; no credit purchase or sample reduction.",
+    "2022 remains source/model-QC pending, not an approved default or policy/semantic forecasting result."
+  ],
+  "max_attempts": 2,
+  "max_workers": 2,
+  "maximum_response_bytes": 2000000,
+  "minimum_request_interval_seconds": 8.0,
+  "model_eligible": false,
+  "node_executable": "C:\\Program Files\\nodejs\\node.exe",
+  "outcome_analysis_enabled": false,
+  "output_root": ".firecrawl/temporal_transport_raw_2021_2022_v1",
+  "preexisting_information": "An unused model-effect transport window within the inspected workspace metadata. Existing raw all-history source contains 2022 dates; no strict blind/global non-inspection claim.",
+  "probe_max_attempts": 1,
+  "probe_requests": [
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000001"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000001"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000001"
+    },
+    {
+      "fqt": 0,
+      "kind": "benchmark",
+      "secid": "1.000300"
+    }
+  ],
+  "process_timeout_seconds": 55,
+  "requests": [
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000001"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000001"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000001"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000062"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000062"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000062"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000505"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000505"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000505"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000506"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000506"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000506"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000599"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000599"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000599"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000698"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000698"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000698"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000758"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000758"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000758"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000761"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000761"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000761"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000762"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000762"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000762"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000776"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000776"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000776"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000777"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000777"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000777"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000802"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000802"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000802"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000810"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000810"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000810"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000861"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000861"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000861"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000895"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000895"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000895"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000906"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000906"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000906"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000917"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000917"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000917"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000926"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000926"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000926"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000950"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000950"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000950"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002009"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002009"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002009"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002093"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002093"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002093"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002098"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002098"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002098"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002105"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002105"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002105"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002126"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002126"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002126"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002133"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002133"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002133"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002153"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002153"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002153"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002160"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002160"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002160"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002191"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002191"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002191"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002194"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002194"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002194"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002274"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002274"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002274"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002331"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002331"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002331"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002350"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002350"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002350"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002360"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002360"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002360"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002376"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002376"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002376"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002385"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002385"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002385"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002393"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002393"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002393"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002474"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002474"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002474"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002521"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002521"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002521"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002527"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002527"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002527"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002562"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002562"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002562"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002594"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002594"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002594"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002615"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002615"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002615"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002631"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002631"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002631"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002727"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002727"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002727"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002775"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002775"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002775"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002819"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002819"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002819"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002827"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002827"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002827"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002828"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002828"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002828"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002837"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002837"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002837"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002906"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002906"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002906"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002936"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002936"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002936"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002945"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002945"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002945"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300086"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300086"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300086"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300091"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300091"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300091"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300119"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300119"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300119"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300133"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300133"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300133"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300139"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300139"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300139"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300213"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300213"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300213"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300215"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300215"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300215"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300225"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300225"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300225"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300230"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300230"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300230"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300286"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300286"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300286"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300289"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300289"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300289"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300296"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300296"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300296"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300306"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300306"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300306"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300308"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300308"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300308"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300318"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300318"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300318"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300331"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300331"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300331"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300370"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300370"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300370"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300422"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300422"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300422"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300476"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300476"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300476"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300479"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300479"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300479"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300513"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300513"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300513"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300575"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300575"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300575"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300619"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300619"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300619"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300634"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300634"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300634"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300664"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300664"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300664"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300667"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300667"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300667"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300684"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300684"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300684"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300691"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300691"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300691"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300722"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300722"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300722"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300772"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300772"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300772"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300778"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300778"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300778"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600037"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600037"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600037"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600129"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600129"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600129"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600196"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600196"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600196"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600256"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600256"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600256"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600278"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600278"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600278"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600323"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600323"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600323"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600448"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600448"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600448"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600459"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600459"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600459"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600489"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600489"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600489"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600546"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600546"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600546"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600565"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600565"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600565"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600594"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600594"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600594"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600706"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600706"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600706"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600733"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600733"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600733"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600794"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600794"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600794"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600814"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600814"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600814"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600824"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600824"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600824"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.601010"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.601010"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.601010"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.601020"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.601020"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.601020"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.601038"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.601038"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.601038"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.601330"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.601330"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.601330"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.601339"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.601339"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.601339"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603010"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603010"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603010"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603040"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603040"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603040"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603127"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603127"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603127"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603156"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603156"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603156"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603197"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603197"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603197"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603316"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603316"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603316"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603335"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603335"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603335"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603496"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603496"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603496"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603517"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603517"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603517"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603677"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603677"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603677"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603697"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603697"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603697"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603711"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603711"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603711"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603789"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603789"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603789"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603803"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603803"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603803"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603839"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603839"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603839"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603880"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603880"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603880"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603959"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603959"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603959"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.688018"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.688018"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.688018"
+    },
+    {
+      "fqt": 0,
+      "kind": "benchmark",
+      "secid": "1.000300"
+    }
+  ],
+  "semantic_gate_enabled": false,
+  "source_selection_rule": "All four direct probes valid => direct HTTP; otherwise run the same four carrier probes; >=1 valid => carrier. No source changes driven by market/model effects.",
+  "total_extra_retry_ceiling": 100,
+  "version": "temporal-transport-raw-sources-v1"
+}

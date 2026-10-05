@@ -1,0 +1,16 @@
+{
+  "agent_signal_enabled": false,
+  "audit_path": "research_outputs/issuer_half_balance_sheet_audit_2019_v2.json",
+  "candidates_path": "research_outputs/issuer_half_balance_sheet_candidates_2019_v3.json",
+  "expected_companies": 123,
+  "frozen_at_utc": "2026-10-01T11:46:58.952959+00:00",
+  "inputs": {
+    "research_outputs/issuer_half_balance_sheet_audit_2019_v2.json": "d83c9194a033b761aa5ba2d2e5092c89e6d382fedf7d3efdaecc8e98ef7822d5",
+    "research_outputs/issuer_half_balance_sheet_candidates_2019_v3.json": "33974a19cf224d6da569db085ef2c737223bcd118ca12ad00e5196e89ec9739e",
+    "research_outputs/issuer_half_restricted_asset_states_2019_v1.json": "0cd230c9da3bc1098efbfa6749a5ef8463bfc7a5b76c3c25f8036d432fec2c11"
+  },
+  "interpretation": "Limited source facts and exact Decimal relationships from the same archived June balance and restricted-asset notes. Source missing/independent failures/upstream reader QC remain explicit; no zero imputation or future-revision backdating. Complete interest-bearing debt, total restricted money funds, unrestricted/spendable cash and financing impact remain unknown. All dates/cohort are development; no predictive gain, causal response, calibrated agent or certified unchanged historical bytes claimed.",
+  "ratio_policy": "Only verified same-printed-balance current fields, known June consolidated scope; units cancel within that single statement. Restricted cash relationships also require identical original PDF/metadata, consolidated note scope, explicitly established matching currency and source unit scale. Local unspecified 元 may use only an earlier matching independently checked universal note presentation. No overall restriction sum, imputed debt component or spendable cash is built. Each printed cash row stays separate; max single-row fraction is explicitly a row statistic, not total restriction fraction. Fractions exceeding 1 are QC. Industry J generic company ratios are excluded.",
+  "restricted_states_path": "research_outputs/issuer_half_restricted_asset_states_2019_v1.json",
+  "version": "half-year-same-source-limited-financing-states-v1"
+}

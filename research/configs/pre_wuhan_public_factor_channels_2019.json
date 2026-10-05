@@ -1,0 +1,263 @@
+{
+  "agent_signal_enabled": false,
+  "dense_audit_sessions": [
+    0,
+    10
+  ],
+  "derived_expected_coverage": {
+    "asset_calls": 423120,
+    "baseline_same_state_records_audited": 35260,
+    "common_innovation_draws": 215,
+    "conditions": 80,
+    "dense_asset_calls": 19680,
+    "full_path_ledger_records": 141040,
+    "independent_lagged_feature_rows": 5289,
+    "independent_seeded_public_rows": 26445,
+    "legacy_complete_paths_matched": 820,
+    "legacy_daily_records_matched": 35260,
+    "paired_private_receipt_values": 9520200,
+    "paths": 3280,
+    "quote_only_same_state_strategy_targets": 423120,
+    "same_state_public_records": 105780,
+    "strategy_allocation_checks": 1692480,
+    "target_only_same_state_backgrounds": 1269360
+  },
+  "frozen_at_utc": "2026-10-02T03:15:29.493387+00:00",
+  "hypothesis": "Empirically lagged heterogeneous benchmark exposure may alter common market dynamics through strategy targets and physical quote channels, separately and together.",
+  "inputs": {
+    "research/configs/pre_wuhan_price_feedback_channels_2019.json": "6ae7c811a30b4d3203f35d4440684b01d3020ce70cc8bdd499a4ee73d73777c4",
+    "research/simulation/audit_public_factor_channels.py": "2a934f3938c649200bf1cd8f98473159e1d9d9c48e76c9d729b5c3f055f6443b",
+    "research/simulation/audit_public_market_factor.py": "bad64ca55b728ef560e95c20fc3d645c04823e8491d983776190a5d77d288ca6",
+    "research/simulation/portfolio_public_factor_channels.py": "1a7b94ea31bfde45cda6164c74e299333fcb9405d41270c2e0ab8ce3c4fe33b8",
+    "research/simulation/public_factor_channels.py": "d944345304b6f234e74a1c598a3b0df6c42fcc0926d16fe3988252f8a0585249",
+    "research/simulation/public_factor_metrics.py": "647b02e6bf55214d77019f09e8b743d3db74872da99ea86b6474772d4affaf95",
+    "research/simulation/public_market_factor.py": "3d45ed2886dcc3d70d43d59e6ec6987be21378916cb73d63830e6be6f4a58789",
+    "research/simulation/run_pre_wuhan_public_factor_channels_2019.py": "f94f77f7bac4bd411c8974c33f8e4312e0bffa696430101a804982169e887fd5",
+    "research/simulation/verify_pre_wuhan_public_factor_channels_2019.py": "7c3747a2f6d0416959dec1ea20e3a4dee3604939d25a5ba71727c48663420399",
+    "research_outputs/check_public_factor_lineage_20261002.py": "37db089a795d4bb51fc06d32a8af810b5d33b995c4646af5172585f6d6d7ce1d",
+    "research_outputs/freeze_public_factor_study_20261002.py": "c004c561ea63a9bce5083d1b999050e4214a2081dff0a6465b0194bb64e9c4df",
+    "research_outputs/pre_wuhan_cash_resource_final_verification_20261002.json": "56f72d5bc80ccf37e9db229f5a2cdc30fe85dd418965dfc130159d430189a003",
+    "research_outputs/pre_wuhan_price_feedback_channel_statistics_2019_v2.json": "71c89bca31bec7096276d478430053dd0cf9e55e688e149447ad889ef38f56c4",
+    "research_outputs/pre_wuhan_price_feedback_channels_2019_v1/ledger.jsonl.gz": "cb2b458945dee7401702a703aab436d2a89ec7a37431a5b31d19860603f50f43",
+    "research_outputs/pre_wuhan_price_feedback_channels_2019_v1/manifest.json": "d5c07996b3e9e4ac4f4d8bbf787445d5612061b4b8f55eebd782eaee87c35d54",
+    "research_outputs/pre_wuhan_price_feedback_channels_2019_v1/results.json": "28af5d3fc6852f9c7ef09b09eebcc24abfdaac76e986b8db64bdb587e421d53e",
+    "research_outputs/pre_wuhan_public_factor_lineage_20261002.json": "84028d9fc773fd33efcf59481b9b17d854c97ce5eea5f624f9b7c54f37ebd2e8",
+    "research_outputs/pre_wuhan_public_factor_prefreeze_failure_registry_20261002.json": "db82a53fbde7fbe5179ba0d30db52147b97958cf0550cf299a6c07713e3785d3",
+    "research_outputs/pre_wuhan_public_factor_prefreeze_input_checks_20261002_v2.json": "e1f2f59e9f17691aee3dd81ce01a6bf567104181ec452f30b13973596c29b6d2",
+    "research_outputs/pre_wuhan_public_factor_prefreeze_input_log_20261002.txt": "a561d8493e8323111cfc36fe31fae1cf213bd94da816e04905e6d3b5c9d90d6c",
+    "research_outputs/pre_wuhan_public_factor_prefreeze_input_log_20261002_v2.txt": "c05cb5f0cb2b804e8312aef32ce46c440c9ed486cad9014f1167d44d474ea9b2",
+    "research_outputs/pre_wuhan_public_factor_prefreeze_unit_log_20261002.txt": "27bf7571d7dc12fdf8275323574fe2a7edf760fbd6b8505c11498ce5cc7bae54",
+    "research_outputs/preflight_public_factor_inputs_20261002.py": "20cc94533e83876f3a7d9400a4dfe9890642d1c40d22d3e9de16ef5b06f951bc",
+    "research_outputs/preflight_public_factor_inputs_20261002_v2.py": "50b4853c678dcf3398bb5c962b16679ce4eec42313c25728d50ed2ae7b1093d8",
+    "research_outputs/run_public_factor_full_tests_20261002.py": "e3dd1080c9efeccffabd0ab60bde40f096cb80d989c4033dd6d67cfad29c3813",
+    "tests/test_public_factor_channels.py": "ba89670feb0e6d80ecaed0f526a12ff98f266286f575d04f3825ae8df1bb0750",
+    "tests/test_public_factor_metrics.py": "c3dae08d2c80863703263ea43dae535a05ef69eba1b76ac8e77054af33050531"
+  },
+  "interpretation": "Further mechanism development on the consumed, retrospectively selected 2019 cohort. A 20-session stock/index return window ending at each declared t-minus-two cutoff estimates OLS beta and index sample volatility. A same-seed/date common uniform standardized innovation has mean zero and theoretical variance one; it is synthetic, not actual target-day return/news. Public valuation is beta times lagged index volatility times the common innovation, in bps, risk multiplier one and cap 500 bps, belief scale 1000. Negative/zero beta is retained; missing source or zero index variance fails explicitly. The unchanged private stock-risk innovation remains present: public addition increases total valuation variance and is not a fixed-marginal-variance covariance recovery. Target channel changes only strategy beliefs/allocation; physical quote channel changes strategies and all backgrounds. Background quantity targets, private receipts, finite resources, core allocation and auction remain frozen. Same-state records contain decisions and submitted orders only, no hypothetical acceptance/fills/prices. All four public cells cross both inventory anchors, original/all-off own-price feedback and all five seeds; no selection or gain fitting. Existing tolerances are descriptive development checks, not investor calibration, unused-period validation or permission to claim policy forecasts. Earlier native renderer hash/source-PDF QC exceptions remain; no new PDF parsing/rendering is used. Small implementation fixtures and full-panel input bounds were inspected before freeze.",
+  "joint_limits": {
+    "mean_return_gap_max": 0.005,
+    "portfolio_volatility_ratio_max": 2.0,
+    "portfolio_volatility_ratio_min": 0.5,
+    "stock_correlation_gap_max": 0.1,
+    "volatility_ratio_max": 2.0,
+    "volatility_ratio_min": 0.5,
+    "zero_return_fraction_gap_max": 0.1
+  },
+  "legacy_bridge": "All 820 no-public complete summaries/specs and 35,260 complete daily objects must reproduce original four anchor/feedback cells; no projected numerical differences removed.",
+  "public_parameters": {
+    "belief_scale_bps": 1000,
+    "benchmark_id": "sh.000300",
+    "history_window": 20,
+    "max_shift_bps": 500,
+    "risk_multiplier": 1.0
+  },
+  "public_seed_rule": "marketmirror-public-market-factor-v1: plus the unchanged private innovation seed, then shared date digest public-factor-common-v1:seed:trade_date",
+  "seeds": [
+    {
+      "arrival_seed": 7,
+      "background_seed": 7,
+      "information_seed": "marketmirror-issuer-information-coverage-v1",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1",
+      "seed_id": "reference_seed7"
+    },
+    {
+      "arrival_seed": 11,
+      "background_seed": 11,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:11",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:11",
+      "seed_id": "replicate_seed11"
+    },
+    {
+      "arrival_seed": 23,
+      "background_seed": 23,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:23",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:23",
+      "seed_id": "replicate_seed23"
+    },
+    {
+      "arrival_seed": 47,
+      "background_seed": 47,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:47",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:47",
+      "seed_id": "replicate_seed47"
+    },
+    {
+      "arrival_seed": 89,
+      "background_seed": 89,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:89",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:89",
+      "seed_id": "replicate_seed89"
+    }
+  ],
+  "variants": [
+    {
+      "background_anchor": "initial_inventory",
+      "feedback_scale": 1.0,
+      "name": "initial_inventory_feedback_full_public_none",
+      "public_controls": null,
+      "public_mode": "none"
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "feedback_scale": 1.0,
+      "name": "initial_inventory_feedback_full_public_targets_only",
+      "public_controls": {
+        "quote_scale": 0.0,
+        "strategy_target_scale": 1.0
+      },
+      "public_mode": "targets_only"
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "feedback_scale": 1.0,
+      "name": "initial_inventory_feedback_full_public_quotes_only",
+      "public_controls": {
+        "quote_scale": 1.0,
+        "strategy_target_scale": 0.0
+      },
+      "public_mode": "quotes_only"
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "feedback_scale": 1.0,
+      "name": "initial_inventory_feedback_full_public_both",
+      "public_controls": {
+        "quote_scale": 1.0,
+        "strategy_target_scale": 1.0
+      },
+      "public_mode": "both"
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "feedback_scale": 0.0,
+      "name": "initial_inventory_feedback_both_off_public_none",
+      "public_controls": null,
+      "public_mode": "none"
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "feedback_scale": 0.0,
+      "name": "initial_inventory_feedback_both_off_public_targets_only",
+      "public_controls": {
+        "quote_scale": 0.0,
+        "strategy_target_scale": 1.0
+      },
+      "public_mode": "targets_only"
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "feedback_scale": 0.0,
+      "name": "initial_inventory_feedback_both_off_public_quotes_only",
+      "public_controls": {
+        "quote_scale": 1.0,
+        "strategy_target_scale": 0.0
+      },
+      "public_mode": "quotes_only"
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "feedback_scale": 0.0,
+      "name": "initial_inventory_feedback_both_off_public_both",
+      "public_controls": {
+        "quote_scale": 1.0,
+        "strategy_target_scale": 1.0
+      },
+      "public_mode": "both"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "feedback_scale": 1.0,
+      "name": "current_inventory_feedback_full_public_none",
+      "public_controls": null,
+      "public_mode": "none"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "feedback_scale": 1.0,
+      "name": "current_inventory_feedback_full_public_targets_only",
+      "public_controls": {
+        "quote_scale": 0.0,
+        "strategy_target_scale": 1.0
+      },
+      "public_mode": "targets_only"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "feedback_scale": 1.0,
+      "name": "current_inventory_feedback_full_public_quotes_only",
+      "public_controls": {
+        "quote_scale": 1.0,
+        "strategy_target_scale": 0.0
+      },
+      "public_mode": "quotes_only"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "feedback_scale": 1.0,
+      "name": "current_inventory_feedback_full_public_both",
+      "public_controls": {
+        "quote_scale": 1.0,
+        "strategy_target_scale": 1.0
+      },
+      "public_mode": "both"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "feedback_scale": 0.0,
+      "name": "current_inventory_feedback_both_off_public_none",
+      "public_controls": null,
+      "public_mode": "none"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "feedback_scale": 0.0,
+      "name": "current_inventory_feedback_both_off_public_targets_only",
+      "public_controls": {
+        "quote_scale": 0.0,
+        "strategy_target_scale": 1.0
+      },
+      "public_mode": "targets_only"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "feedback_scale": 0.0,
+      "name": "current_inventory_feedback_both_off_public_quotes_only",
+      "public_controls": {
+        "quote_scale": 1.0,
+        "strategy_target_scale": 0.0
+      },
+      "public_mode": "quotes_only"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "feedback_scale": 0.0,
+      "name": "current_inventory_feedback_both_off_public_both",
+      "public_controls": {
+        "quote_scale": 1.0,
+        "strategy_target_scale": 1.0
+      },
+      "public_mode": "both"
+    }
+  ],
+  "version": "pre-wuhan-lagged-public-market-factor-five-seed-v1"
+}

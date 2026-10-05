@@ -8,7 +8,7 @@ from __future__ import annotations
 import copy
 from dataclasses import asdict, dataclass
 
-from .call_auction import AuctionAccount, CallAuction, LimitOrder, fee_minor
+from .call_auction import AuctionAccount, CallAuction, LimitOrder, fee_minor, resolve_price_tie_breaks
 
 VERSION = "finite-portfolio-auction-v1"
 
@@ -31,12 +31,14 @@ class PortfolioAccount:
 
 
 class PortfolioAuction:
-    def __init__(self, accounts, assets, settings):
+    def __init__(self, accounts, assets, settings, price_tie_break="nearest_prior"):
         if (not isinstance(assets, list) or not assets or len(assets) != len(set(assets))
                 or "shared" in assets or any(not isinstance(a, str) or not a for a in assets)
                 or not accounts or any(not isinstance(n, str) or not n for n in accounts)):
             raise ValueError("portfolio market requires unique assets and named accounts")
         self.assets, self.settings = sorted(assets), dict(settings)
+        self.price_tie_break_by_asset = resolve_price_tie_breaks(self.assets, price_tie_break)
+        self.price_tie_break = price_tie_break
         for account in accounts.values():
             account.validate(self.assets)
         self.accounts = copy.deepcopy(accounts)
@@ -52,7 +54,7 @@ class PortfolioAuction:
         s = self.settings
         return CallAuction({n: AuctionAccount(escrow.get((n, asset), 0), a.shares[asset], a.sellable[asset])
                             for n, a in accounts.items()}, self.prices[asset], s["lot_size"], s["tick_minor"],
-                           s["fee_bps"], s["price_band_bps"])
+                           s["fee_bps"], s["price_band_bps"], self.price_tie_break_by_asset[asset])
 
     def clear(self, session, books, available):
         if (type(session) is not int or session != self.session + 1 or set(books) != set(self.assets)

@@ -22,9 +22,10 @@ from .market_data import numeric, strict_date
 from .provenance import file_sha256
 
 DOCUMENTATION = "https://www.baostock.com/mainContent?file=pythonAPI.md"
-VERSION = "baostock-fetch-v1"
+VERSION = "baostock-fetch-v2"
 STOCK_FIELDS = "date,code,close,preclose,volume,amount,adjustflag,tradestatus,pctChg"
 INDEX_FIELDS = "date,code,close,preclose,volume,amount,pctChg"
+SECURITY_FIELDS = {"code", "code_name", "ipoDate", "outDate", "type", "status"}
 
 
 def consume(result: Any) -> tuple[list[str], list[list[str]]]:
@@ -63,6 +64,49 @@ def prepare_calendar(fields: list[str], rows: list[list[str]], start: date, end:
     if len(sessions) < 2:
         raise ValueError("at least two open sessions are required")
     return sessions
+
+
+def security_windows(fields: list[str], rows: list[list[str]], symbols: list[str],
+                     start: date, end: date) -> dict[str, dict[str, str | None]]:
+    """Bound each history request to the provider's declared listing interval."""
+    if not SECURITY_FIELDS <= set(fields):
+        raise ValueError("security catalog is missing listing interval fields")
+    wanted = set(symbols)
+    catalog = {}
+    for row in rows:
+        record = dict(zip(fields, row))
+        code = record["code"]
+        if code in wanted:
+            if code in catalog:
+                raise ValueError(f"security catalog has a duplicate symbol for {code}")
+            catalog[code] = record
+    result = {}
+    for symbol in symbols:
+        record = catalog.get(symbol)
+        if record is None or record["type"] != "1":
+            raise ValueError(f"security catalog has no stock record for {symbol}")
+        try:
+            ipo_date = strict_date(record["ipoDate"])
+        except ValueError as exc:
+            raise ValueError(f"security catalog has no valid IPO date for {symbol}") from exc
+        out_date = None
+        raw_out_date = record.get("outDate")
+        if raw_out_date and raw_out_date != "0000-00-00":
+            try:
+                out_date = strict_date(raw_out_date)
+            except ValueError as exc:
+                raise ValueError(f"security catalog has an invalid delisting date for {symbol}") from exc
+            if out_date < ipo_date:
+                raise ValueError(f"security catalog listing interval is reversed for {symbol}")
+        first = max(start, ipo_date)
+        last = min(end, out_date) if out_date is not None else end
+        if first > last:
+            raise ValueError(f"security {symbol} has no listed sessions in the requested period")
+        result[symbol] = {"ipo_date": ipo_date.isoformat(),
+                          "out_date": out_date.isoformat() if out_date else None,
+                          "query_start_date": first.isoformat(), "query_end_date": last.isoformat(),
+                          "catalog_status": record["status"]}
+    return result
 
 
 def prepare_series(fields: list[str], rows: list[list[str]], symbol: str,
@@ -147,22 +191,37 @@ def fetch_baostock(symbols: list[str], benchmark: str, start_date: str, end_date
         calendar_result = sdk.query_trade_dates(start_date=start_date, end_date=end_date)
         calendar_fields, calendar_rows = consume(calendar_result)
         sessions = prepare_calendar(calendar_fields, calendar_rows, start, end)
-        raw_responses = {"calendar_raw.csv": (calendar_fields, calendar_rows)}
+        security_fields, security_rows = consume(sdk.query_stock_basic())
+        windows = security_windows(security_fields, security_rows, symbols, start, end)
+        raw_responses = {"calendar_raw.csv": (calendar_fields, calendar_rows),
+                         "security_basic_raw.csv": (security_fields, security_rows)}
         queries.append({"function": "query_trade_dates", "start_date": start_date, "end_date": end_date,
                         "rows": len(calendar_rows), "raw_file": "calendar_raw.csv"})
+        queries.append({"function": "query_stock_basic", "symbols": symbols,
+                        "rows": len(security_rows), "raw_file": "security_basic_raw.csv"})
         stocks, summaries = [], []
         for symbol in symbols + [benchmark]:
             is_stock = symbol != benchmark
             fields = STOCK_FIELDS if is_stock else INDEX_FIELDS
             flag = "1" if is_stock else "3"
-            response = sdk.query_history_k_data_plus(symbol, fields, start_date=start_date,
-                                                       end_date=end_date, frequency="d", adjustflag=flag)
+            window = windows[symbol] if is_stock else {"query_start_date": start_date,
+                                                        "query_end_date": end_date}
+            response = sdk.query_history_k_data_plus(symbol, fields,
+                                                       start_date=window["query_start_date"],
+                                                       end_date=window["query_end_date"],
+                                                       frequency="d", adjustflag=flag)
             response_fields, rows = consume(response)
-            values, info = prepare_series(response_fields, rows, symbol, sessions, is_stock)
+            series_sessions = ([day for day in sessions
+                                if window["query_start_date"] <= day.isoformat() <= window["query_end_date"]]
+                               if is_stock else sessions)
+            values, info = prepare_series(response_fields, rows, symbol, series_sessions, is_stock)
+            if is_stock:
+                info.update(window)
             raw_name = symbol.replace(".", "_") + "_raw.csv"
             raw_responses[raw_name] = (response_fields, rows)
             queries.append({"function": "query_history_k_data_plus", "symbol": symbol, "fields": fields,
-                            "start_date": start_date, "end_date": end_date, "frequency": "d", "adjustflag": flag,
+                            "start_date": window["query_start_date"], "end_date": window["query_end_date"],
+                            "frequency": "d", "adjustflag": flag,
                             "rows": len(rows), "raw_file": raw_name})
             summaries.append(info)
             if is_stock:
@@ -189,6 +248,7 @@ def fetch_baostock(symbols: list[str], benchmark: str, start_date: str, end_date
                 "Stocks use provider daily pctChg checked against same-day close/preclose, not returns computed from adjacent adjusted price levels.",
                 "Adjacent adjusted-price discontinuities remain recorded; these levels are quarantined in raw files, never repaired or used as coherent price inputs.",
                 "Data is a current provider vintage and may include historical corrections; it is not an archived point-in-time feed.",
+                "Per-stock history starts at the provider-declared IPO date and ends at its declared delisting date when present; catalog status is recorded but not used to select the sample.",
                 "Stock suspensions are retained only if provider status, flat close/preclose and zero volume agree; no local filling is done.",
                 "The trading calendar is a separate provider query, not inferred from observed stock or benchmark rows.",
                 "Sample symbols are explicitly selected for a pilot; no representativeness or forecasting claim.",

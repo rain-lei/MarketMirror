@@ -1,0 +1,12 @@
+{
+  "agent_signal_enabled": false,
+  "frozen_at_utc": "2026-10-01T10:27:41.524977+00:00",
+  "inputs": {
+    "research/configs/issuer_half_balance_sheets_2019.json": "e52180626d776dcb8cb081d6ccf6466ffbfc0668c6259301e09c0b1de2c3464e",
+    "research/data_pipeline/extract_issuer_half_balance_sheets.py": "a13c695245a7d6a78060d8e9399b59ef9fdda5ad681612207602f48725f89973",
+    "research_outputs/issuer_half_balance_sheet_candidates_2019_v1.json": "e59de21c353300506c84e6efc56be46bf95333f6eaf852958134d5bd08b0186d"
+  },
+  "interpretation": "v1 source extraction is freshly reconstructed byte-identically before correcting its summary label mismatch: upstream READER_DIAGNOSTIC_REVIEW_REQUIRED is counted, missing-source state is separate. Original v1 remains archived. All company/cell/period/unit/currency records are unchanged. No upstream source QC, economic signal or predictive validation is released.",
+  "original_output": "research_outputs/issuer_half_balance_sheet_candidates_2019_v1.json",
+  "version": "half-year-dated-balance-source-cells-v2"
+}

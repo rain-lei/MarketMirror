@@ -1,0 +1,23 @@
+{
+  "development_start": "2019-11-01",
+  "development_end": "2019-12-31",
+  "company_count": 123,
+  "basket_size": 3,
+  "eligibility_rule": "complete_development_calendar_and_at_least_22_prior_return_sessions",
+  "company_drop_rule": "largest_sha256_of_six_digit_stock_code_among_eligible",
+  "shock_design": {
+    "pulse_sessions": [10, 11, 26, 27],
+    "pulse_polarities": [1, 1, -1, -1],
+    "issuer_seed": "marketmirror-synthetic-exposure-v1"
+  },
+  "variants": [
+    {"name": "no_shock", "quote_response_bps": 200, "background_urgency_bps": 25,
+     "price_tie_break": "nearest_prior", "common_amplitude": 0.0, "issuer_amplitude": 0.0},
+    {"name": "common_only", "quote_response_bps": 200, "background_urgency_bps": 25,
+     "price_tie_break": "nearest_prior", "common_amplitude": 0.30, "issuer_amplitude": 0.0},
+    {"name": "issuer_specific_only", "quote_response_bps": 200, "background_urgency_bps": 25,
+     "price_tie_break": "nearest_prior", "common_amplitude": 0.0, "issuer_amplitude": 0.30},
+    {"name": "common_plus_issuer_specific", "quote_response_bps": 200, "background_urgency_bps": 25,
+     "price_tie_break": "nearest_prior", "common_amplitude": 0.20, "issuer_amplitude": 0.20}
+  ]
+}

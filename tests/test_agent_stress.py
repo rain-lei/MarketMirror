@@ -37,6 +37,25 @@ class AgentStressTest(unittest.TestCase):
             self.assertTrue(all(a["cash"] >= 0 and a["shares"] >= 0 and a["closing_wealth"] > 0 for a in agents.values()))
             self.assertTrue(all(a["decision"]["action"] in {"buy", "sell", "hold"} for a in agents.values()))
 
+    def test_large_fractional_share_ledger_tolerates_relative_float_roundoff(self):
+        config = copy.deepcopy(self.config)
+        config["liquidity_notional"] = 1e15
+        for agent in config["agents"]:
+            agent["initial_cash"] = 1e12
+        source_steps = config["steps"][3:14]
+        config["steps"] = [
+            {**step, "evidence_id": f"large-ledger-{cycle}-{offset}"}
+            for cycle in range(8) for offset, step in enumerate(source_steps)
+        ]
+        result = simulate(config)
+        residuals = []
+        for step in result["trace"]:
+            agent_shares = sum(agent["shares"] for agent in step["agents"].values())
+            residuals.append(abs(agent_shares + step["external_shares"]))
+            self.assertTrue(math.isclose(agent_shares, -step["external_shares"],
+                                         rel_tol=1e-12, abs_tol=1e-8))
+        self.assertGreater(max(residuals), 1e-8)
+
     def test_text_ablation_changes_only_information_channel_at_initial_decision(self):
         with_text = simulate(self.config)
         no_text = simulate({**self.config, "use_text": False})

@@ -124,8 +124,10 @@ def simulate(config: dict[str, Any]) -> dict[str, Any]:
         if not math.isclose(sum(s.cash for s in states.values()) + external_cash + fee_pool, initial_cash,
                             rel_tol=1e-12, abs_tol=1e-6):
             raise AssertionError("cash ledger did not conserve")
-        if not math.isclose(sum(s.shares for s in states.values()) + external_shares, 0.0,
-                            rel_tol=1e-12, abs_tol=1e-8):
+        agent_shares = sum(s.shares for s in states.values())
+        # Compare the two large ledger sides directly; relative tolerance is
+        # ineffective when the residual is compared with zero.
+        if not math.isclose(agent_shares, -external_shares, rel_tol=1e-12, abs_tol=1e-8):
             raise AssertionError("shares ledger did not conserve")
         trace.append({"step": t, "evidence_id": step["evidence_id"], "price_before": price,
                       "exogenous_return": step["exogenous_return"], "net_order_notional_at_open": net_notional,

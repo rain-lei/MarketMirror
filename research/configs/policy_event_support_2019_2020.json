@@ -1,0 +1,15 @@
+{
+  "agent_signal_enabled": false,
+  "evaluation_start_date": "2020-01-23",
+  "inputs": {
+    "research_outputs/policy_information_clock_completed_2019_2020_v1/clock_panels.json": "8759f8771f811c5d2072f75e9cd23340b6d64821b580cef539814b2b2a4f4a24",
+    "research_outputs/policy_information_clock_completed_2019_2020_v1/manifest.json": "3ff01f4580eaa7868053f8fc70d9b19ec8778e80b3222e83b98e81d363ff7665",
+    "research_outputs/policy_information_clock_completed_2019_2020_v1/results.json": "01265a7428a74bbefed2cfd29e87558ec34df9959729fc06e2266134162dfaf8",
+    "research_outputs/policy_information_clock_completed_audit_2019_2020_v1.json": "5a42c3d2b94b3dd62b5a5b467af4b5484e4873dda0aa06ca08e4e63b769f5e43"
+  },
+  "limitations": "Training sensitivity on consumed development windows. Unit leverage means the design can perfectly fit any training response at that date; it is not a claim of event accuracy or causal shock identification.",
+  "method": "Design only: exact Fraction and NumPy rank of policy columns and full training design. Drop each newly observed nonzero policy date separately. Check exact membership of each event indicator in the policy-column span, plus SVD projection diagonal leverage. Do not read market targets, re-fit coefficients or select a variant.",
+  "source_directory": "research_outputs/policy_information_clock_completed_2019_2020_v1",
+  "training_end_date": "2020-01-22",
+  "version": "completed-clock-policy-event-support-diagnostic-v1"
+}

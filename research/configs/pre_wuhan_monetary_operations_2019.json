@@ -1,0 +1,38 @@
+{
+  "version": "pre-wuhan-pbc-omo-source-and-lagged-context-v1",
+  "archive_start_date": "2019-10-16",
+  "archive_end_date": "2019-12-31",
+  "development_start_date": "2019-11-01",
+  "development_end_date": "2019-12-31",
+  "discovery_indices": [
+    {
+      "path": ".firecrawl/pbc-omo-list87.json",
+      "sha256": "c556d7b296354074982f5a9679a9c427a7f9e6c23030b93b4be17fa659d22fe4",
+      "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-87.html"
+    },
+    {
+      "path": ".firecrawl/pbc-omo-list88.json",
+      "sha256": "fd4d82d4bcb28e7ce83d7115a03f5e86051ae2755ecd88e522b8cc48b88b5eb5",
+      "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-88.html"
+    },
+    {
+      "path": ".firecrawl/pbc-omo-list89.json",
+      "sha256": "353748194473c7c58e94d0b0c77338aa5dcdd61d408246f753c77401ce5e30e3",
+      "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-89.html"
+    },
+    {
+      "path": ".firecrawl/pbc-omo-list90.json",
+      "sha256": "8b9b2cbf5734c2f2ae32c39ce463fef31b789a21919af8a1c21c052872052081",
+      "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-90.html"
+    }
+  ],
+  "reference_path": "research_outputs/pre_wuhan_quantity_controls_2019_v1/results.json",
+  "reference_sha256": "6d3e32c56e0bea8fa17c69306bafb5f04d062cb37bef9b708654175ad5cee2b7",
+  "maximum_concurrent_requests": 2,
+  "signal_cutoff_rule": "archived t-2 date at 23:59:59+08:00; exact page publication timestamp must be no later",
+  "use_policy": {
+    "mode": "source_verified_context",
+    "agent_signal_enabled": false
+  },
+  "interpretation": "All bulletins in the archived PBC OMO category within the fixed date window, including explicit no-reverse-repo notices and CBS separately. Not a complete catalog of all monetary policies. Gross operations are not net liquidity; absence of an instrument is unknown, never an economic zero. Current retrieval is not a certified unrevised historical snapshot. No stock-price direction or shock coefficient is assigned."
+}

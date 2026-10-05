@@ -1,0 +1,186 @@
+{
+  "agent_signal_enabled": false,
+  "baseline": "market_industry_financial",
+  "blocks": {
+    "primary_restricted_cash_buffer": [
+      "h1_max_verified_restricted_money_fund_row_to_money_funds",
+      "h1_money_funds_to_assets"
+    ],
+    "secondary_maturity_cash_coverage": [
+      "h1_short_term_borrowings_to_assets",
+      "h1_due_within_one_year_noncurrent_liabilities_to_assets",
+      "h1_money_funds_to_current_liabilities"
+    ],
+    "secondary_restriction_market_interactions": [
+      "h1_max_verified_restricted_money_fund_row_to_money_funds",
+      "h1_money_funds_to_assets",
+      "h1_restricted_row_x_benchmark_volatility_20",
+      "h1_restricted_row_x_log_amount_surprise_20"
+    ]
+  },
+  "expected_parent_companies": 123,
+  "feature_rule": "H1 consolidated Jun 30 cash/assets and debt components use same-statement units. Verified restricted money-fund single-row maximum is divided by total money funds from the same PDF, same period, same scope with proven currency; never sum repeated printed rows or infer complete restricted/free cash. Blank/absent debt is missing, not zero. H1 denominators never use Q3 balances.",
+  "fit_and_clock_rule": "Keep original 29 training dates ending Dec 11, purge Dec 12 and evaluate 13 dates Dec 13-31. First evaluation fit cutoff Dec 11 15:00 +08:00; only t-2 visible market features and each H1 report own publication-date proxy. Means/scales/coefficients use training only; no penalty, winsorization, clipping or tuning.",
+  "forecast_rule": "Keep raw negative absolute-return forecasts and count them. Company fixed-market model is a reference without added H1 features; static source facts would be absorbed by company effects.",
+  "freeze_scope": "Before computing any financing-block forecasts or error metrics. Source-only missingness inspected; old base outcomes and this development period already used.",
+  "frozen_at_utc": "2026-10-01T12:27:23.716697+00:00",
+  "frozen_split": {
+    "dates": [
+      "2019-11-01",
+      "2019-11-04",
+      "2019-11-05",
+      "2019-11-06",
+      "2019-11-07",
+      "2019-11-08",
+      "2019-11-11",
+      "2019-11-12",
+      "2019-11-13",
+      "2019-11-14",
+      "2019-11-15",
+      "2019-11-18",
+      "2019-11-19",
+      "2019-11-20",
+      "2019-11-21",
+      "2019-11-22",
+      "2019-11-25",
+      "2019-11-26",
+      "2019-11-27",
+      "2019-11-28",
+      "2019-11-29",
+      "2019-12-02",
+      "2019-12-03",
+      "2019-12-04",
+      "2019-12-05",
+      "2019-12-06",
+      "2019-12-09",
+      "2019-12-10",
+      "2019-12-11",
+      "2019-12-12",
+      "2019-12-13",
+      "2019-12-16",
+      "2019-12-17",
+      "2019-12-18",
+      "2019-12-19",
+      "2019-12-20",
+      "2019-12-23",
+      "2019-12-24",
+      "2019-12-25",
+      "2019-12-26",
+      "2019-12-27",
+      "2019-12-30",
+      "2019-12-31"
+    ],
+    "evaluation_dates": [
+      "2019-12-13",
+      "2019-12-16",
+      "2019-12-17",
+      "2019-12-18",
+      "2019-12-19",
+      "2019-12-20",
+      "2019-12-23",
+      "2019-12-24",
+      "2019-12-25",
+      "2019-12-26",
+      "2019-12-27",
+      "2019-12-30",
+      "2019-12-31"
+    ],
+    "model_fit_cutoff_at": "2019-12-11T15:00:00+08:00",
+    "purged_dates": [
+      "2019-12-12"
+    ],
+    "training_dates": [
+      "2019-11-01",
+      "2019-11-04",
+      "2019-11-05",
+      "2019-11-06",
+      "2019-11-07",
+      "2019-11-08",
+      "2019-11-11",
+      "2019-11-12",
+      "2019-11-13",
+      "2019-11-14",
+      "2019-11-15",
+      "2019-11-18",
+      "2019-11-19",
+      "2019-11-20",
+      "2019-11-21",
+      "2019-11-22",
+      "2019-11-25",
+      "2019-11-26",
+      "2019-11-27",
+      "2019-11-28",
+      "2019-11-29",
+      "2019-12-02",
+      "2019-12-03",
+      "2019-12-04",
+      "2019-12-05",
+      "2019-12-06",
+      "2019-12-09",
+      "2019-12-10",
+      "2019-12-11"
+    ]
+  },
+  "inputs": {
+    "base_independent_audit": {
+      "path": "../../research_outputs/issuer_financial_increment_2019_v1/independent_audit.json",
+      "sha256": "ee530022bd3c740f4434b766381b54df804fae95adbe7d0bdffd2b9c00d9cb4c"
+    },
+    "base_manifest": {
+      "path": "../../research_outputs/issuer_financial_increment_2019_v1/manifest.json",
+      "sha256": "b26cdb0acb13ee4f7b36a5fb317f3981315a21f0fdf105926074a696959c0d92"
+    },
+    "base_panel": {
+      "path": "../../research_outputs/issuer_financial_increment_2019_v1/panel.json",
+      "sha256": "754bf4d92bfdd3aed14d5dc75f72c41578a233a37220c9d9b45d98c87130bbab"
+    },
+    "base_results": {
+      "path": "../../research_outputs/issuer_financial_increment_2019_v1/results.json",
+      "sha256": "b0d87c03e1577c5f57401bd38b0e2d8d4ae1004baa7d1f51fd958d2e236de592"
+    },
+    "financing_state_audit": {
+      "path": "../../research_outputs/issuer_half_financing_state_audit_2019_v1.json",
+      "sha256": "bbc5e6f0eeaa0ce59a27ca86504f1553c4ea3004d56d0908975f9998dd6658ba"
+    },
+    "financing_states": {
+      "path": "../../research_outputs/issuer_half_financing_states_2019_v1.json",
+      "sha256": "aa13fd8d76787b3fe7e2ded7d63168b2310f8deaf4e864b563924a60823420ba"
+    },
+    "half_balance_audit": {
+      "path": "../../research_outputs/issuer_half_balance_sheet_audit_2019_v2.json",
+      "sha256": "d83c9194a033b761aa5ba2d2e5092c89e6d382fedf7d3efdaecc8e98ef7822d5"
+    },
+    "half_balance_candidates": {
+      "path": "../../research_outputs/issuer_half_balance_sheet_candidates_2019_v3.json",
+      "sha256": "33974a19cf224d6da569db085ef2c737223bcd118ca12ad00e5196e89ec9739e"
+    },
+    "restricted_asset_states": {
+      "path": "../../research_outputs/issuer_half_restricted_asset_states_2019_v1.json",
+      "sha256": "0cd230c9da3bc1098efbfa6749a5ef8463bfc7a5b76c3c25f8036d432fec2c11"
+    }
+  },
+  "interactions": {
+    "h1_restricted_row_x_benchmark_volatility_20": [
+      "h1_max_verified_restricted_money_fund_row_to_money_funds",
+      "benchmark_volatility_20"
+    ],
+    "h1_restricted_row_x_log_amount_surprise_20": [
+      "h1_max_verified_restricted_money_fund_row_to_money_funds",
+      "log_amount_surprise_20"
+    ]
+  },
+  "limitations": [
+    "2019 dates and retrospective Q&A-selected 123-company parent cohort were already inspected. This is development, not new blind validation; the different 126-company batch is not mixed in.",
+    "The restriction value is the maximum verified disclosed money-fund row fraction, not total restricted share; not all restrictions are disclosed or classified. Missing source rows are not zero.",
+    "Three source-reader QC reports, ten balance/QC states, one missing H1 source and generic financial-sector exclusions remain. Available restriction and maturity samples are selected and differ.",
+    "Source/PDF and adjusted-market bytes were retrieved later; unchanged original historical bytes are not certified. H1 own publication proxies are preserved independently of Q3 availability.",
+    "Q3 controls plus H1 financing facts are from different dated reports; H1 ratios use only their own H1 denominators. One-year noncurrent liabilities are not a verified exact debt maturity distribution.",
+    "Repeated financial facts/shared dates are dependent. Delete-one-date ranges are sensitivity, not confidence intervals, significance or independent replication.",
+    "This risk regression does not validate stock direction, policy causality, investor behavior, endogenous market dynamics or regulatory early warning; no Agent signal or trading cash amount is enabled."
+  ],
+  "multiple_comparison_rule": "Primary restriction/cash-buffer block fixed before outputs; two secondary blocks are exploratory. Interactions use restriction with existing lagged benchmark volatility and amount surprise, not same-day shocks. All blocks, coefficients, SVD rank/condition and delete-one-date sensitivity retained; no best-block adoption.",
+  "pairing_rule": "Rebuild all seven references and each added model on identical company-dates within its block. Preserve the full 123 by 43 grid with explicit exclusions. Primary and restriction-interaction blocks must have identical eligibility; maturity block may have different issuers and cannot be compared by raw cross-block errors.",
+  "primary_block": "primary_restricted_cash_buffer",
+  "target": "absolute_stock_return",
+  "version": "issuer-financing-prespecified-paired-risk-blocks-v1"
+}

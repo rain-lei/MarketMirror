@@ -1,0 +1,861 @@
+{
+  "analysis_dates": [
+    "2021-01-04",
+    "2021-01-05",
+    "2021-01-06",
+    "2021-01-07",
+    "2021-01-08",
+    "2021-01-11",
+    "2021-01-12",
+    "2021-01-13",
+    "2021-01-14",
+    "2021-01-15",
+    "2021-01-18",
+    "2021-01-19",
+    "2021-01-20",
+    "2021-01-21",
+    "2021-01-22",
+    "2021-01-25",
+    "2021-01-26",
+    "2021-01-27",
+    "2021-01-28",
+    "2021-01-29",
+    "2021-02-01",
+    "2021-02-02",
+    "2021-02-03",
+    "2021-02-04",
+    "2021-02-05",
+    "2021-02-08",
+    "2021-02-09",
+    "2021-02-10",
+    "2021-02-18",
+    "2021-02-19",
+    "2021-02-22",
+    "2021-02-23",
+    "2021-02-24",
+    "2021-02-25",
+    "2021-02-26",
+    "2021-03-01",
+    "2021-03-02",
+    "2021-03-03",
+    "2021-03-04",
+    "2021-03-05",
+    "2021-03-08",
+    "2021-03-09",
+    "2021-03-10",
+    "2021-03-11",
+    "2021-03-12",
+    "2021-03-15",
+    "2021-03-16",
+    "2021-03-17",
+    "2021-03-18",
+    "2021-03-19",
+    "2021-03-22",
+    "2021-03-23",
+    "2021-03-24",
+    "2021-03-25",
+    "2021-03-26",
+    "2021-03-29",
+    "2021-03-30",
+    "2021-03-31"
+  ],
+  "available_observation_profile_adopted_as_default": false,
+  "benchmark_positions_path": "research_outputs/temporal_risk_raw_independent_qc_20261002_v2/source_positions.jsonl.gz",
+  "bindings": {
+    "research/configs/pre_wuhan_public_factor_channels_2019.json": "ab26ab711e49cad458c39f64c63321a5d572fd7683b9343de015d9160ff2c46e",
+    "research/configs/pre_wuhan_public_information_risk_2019_v1.json": "33b6b06573c7b9920631d373fecce65969476294db15521e5adf56939401994d",
+    "research/configs/temporal_hfq_acquisition_2020_2021_v1.json": "be9563c75f5737aa18c3fea518cb5cb8a7add78dbef1e0dc3709c3b77b9f0d34",
+    "research/data_pipeline/temporal_input_contract.py": "f905746a4d54a2da549e2a51171e16144c63b181612d6b0fc890df66b900c21f",
+    "research_outputs/freeze_temporal_input_preflight_20261003_v1.py": "ac962544573e50e05ea4a9791e19a9f3c94a24547d2d4b81f9614ca4529f3882",
+    "research_outputs/run_temporal_input_preflight_20261003_v1.py": "35929325ae93799e76f709634be291ae43508dbf32bf510a25c3841e431a5ed4",
+    "research_outputs/temporal_benchmark_overlap_verification_20261002_v1.json": "89925ae6e37ec3549a26babc402e2f59df28e4c8e865c22ebd44d4eb9d1fc625",
+    "research_outputs/temporal_hfq_ratios_20261003_v3/positions.jsonl.gz": "c15cdb8dd76501a2df6ad75b489063533cb13c86991403afe8a5335acbdb6d70",
+    "research_outputs/temporal_hfq_ratios_verification_20261003_v3.json": "d4af9f5bd72e4adbe89535fe307d63083f4c4961d54b2929e9faf509cf437c92",
+    "research_outputs/temporal_hfq_source_qc_20261003_v3/results.json": "799a4abf1776ba317e44e484d26d3eb379d3006ce2eba5f83af079aa254cb520",
+    "research_outputs/temporal_raw_qc_final_verification_20261002_v2.json": "b622128c2e178f5b410f376e5108c930dd2818282f4ce759be8b37fda12a1a85",
+    "research_outputs/temporal_risk_raw_independent_qc_20261002_v2/source_positions.jsonl.gz": "a3b128db0fcc8e81c9b6999676fb0beb74b588fa10d0f44e6893b5d0535c0620",
+    "research_outputs/verify_temporal_input_preflight_20261003_v1.py": "af77b3ba9c0252999843b1938d7e4a71b0a9169016eed7c01d66a3fee901012b",
+    "tests/test_temporal_input_contract.py": "cec2d50a9db26a6451be4377f45ba9d8e44123a094a550bc015ed337003b39c8"
+  },
+  "clock_contract": {
+    "agent_information": "t-2",
+    "conditional_exchange_status": "t, retrospective only",
+    "evaluation_target": "t adjacent quote ratio or null",
+    "raw_price_reference": "t-1"
+  },
+  "economic_total_return_certified": false,
+  "frozen_at_utc": "2026-10-03T01:44:33.402996+00:00",
+  "history_window": 20,
+  "interpretation": "An input contract audit rather than simulation outcomes. All companies and analysis dates retained. Missing quoted returns, reference prices and undefined variance estimates stay null; no carried or interpolated daily price is created.",
+  "missing_returns_filled": false,
+  "model_effects_evaluated": false,
+  "model_eligible": false,
+  "output_path": "research_outputs/temporal_input_preflight_20261003_v1",
+  "point_in_time_feed_certified": false,
+  "preexisting_information": "Full source and vendor ratio QC were examined, including six documented suspension spans. No 2021 model effect has been evaluated. The available-observation profile is only a labelled estimator candidate; no new default is selected.",
+  "profiles": [
+    "fixed twenty calendar observations",
+    "last twenty available observed adjacent daily returns with disclosed staleness"
+  ],
+  "stock_pairs_path": "research_outputs/temporal_hfq_ratios_20261003_v3/positions.jsonl.gz",
+  "stock_specs": [
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000001"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000062"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000505"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000506"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000599"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000698"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000758"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000761"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000762"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000776"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000777"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000802"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000810"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000861"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000895"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000906"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000917"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000926"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.000950"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002009"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002093"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002098"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002105"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002126"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002133"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002153"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002160"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002191"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002194"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002274"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002331"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002350"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002360"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002376"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002385"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002393"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002474"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002521"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002527"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002562"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002594"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002615"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002631"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002727"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002775"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002819"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002827"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002828"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002837"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002906"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002936"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.002945"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300086"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300091"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300119"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300133"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300139"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300213"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300215"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300225"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300230"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300286"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300289"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300296"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300306"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300308"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300318"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300331"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300370"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300422"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300476"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300479"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300513"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300575"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300619"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300634"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300664"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300667"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300684"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300691"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300722"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300772"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "0.300778"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600037"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600129"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600196"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600256"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600278"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600323"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600448"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600459"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600489"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600546"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600565"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600594"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600706"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600733"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600794"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600814"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.600824"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.601010"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.601020"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.601038"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.601330"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.601339"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603010"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603040"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603127"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603156"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603197"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603316"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603335"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603496"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603517"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603677"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603697"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603711"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603789"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603803"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603839"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603880"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.603959"
+    },
+    {
+      "fqt": 2,
+      "kind": "stock",
+      "secid": "1.688018"
+    }
+  ],
+  "trade_dates": [
+    "2020-09-01",
+    "2020-09-02",
+    "2020-09-03",
+    "2020-09-04",
+    "2020-09-07",
+    "2020-09-08",
+    "2020-09-09",
+    "2020-09-10",
+    "2020-09-11",
+    "2020-09-14",
+    "2020-09-15",
+    "2020-09-16",
+    "2020-09-17",
+    "2020-09-18",
+    "2020-09-21",
+    "2020-09-22",
+    "2020-09-23",
+    "2020-09-24",
+    "2020-09-25",
+    "2020-09-28",
+    "2020-09-29",
+    "2020-09-30",
+    "2020-10-09",
+    "2020-10-12",
+    "2020-10-13",
+    "2020-10-14",
+    "2020-10-15",
+    "2020-10-16",
+    "2020-10-19",
+    "2020-10-20",
+    "2020-10-21",
+    "2020-10-22",
+    "2020-10-23",
+    "2020-10-26",
+    "2020-10-27",
+    "2020-10-28",
+    "2020-10-29",
+    "2020-10-30",
+    "2020-11-02",
+    "2020-11-03",
+    "2020-11-04",
+    "2020-11-05",
+    "2020-11-06",
+    "2020-11-09",
+    "2020-11-10",
+    "2020-11-11",
+    "2020-11-12",
+    "2020-11-13",
+    "2020-11-16",
+    "2020-11-17",
+    "2020-11-18",
+    "2020-11-19",
+    "2020-11-20",
+    "2020-11-23",
+    "2020-11-24",
+    "2020-11-25",
+    "2020-11-26",
+    "2020-11-27",
+    "2020-11-30",
+    "2020-12-01",
+    "2020-12-02",
+    "2020-12-03",
+    "2020-12-04",
+    "2020-12-07",
+    "2020-12-08",
+    "2020-12-09",
+    "2020-12-10",
+    "2020-12-11",
+    "2020-12-14",
+    "2020-12-15",
+    "2020-12-16",
+    "2020-12-17",
+    "2020-12-18",
+    "2020-12-21",
+    "2020-12-22",
+    "2020-12-23",
+    "2020-12-24",
+    "2020-12-25",
+    "2020-12-28",
+    "2020-12-29",
+    "2020-12-30",
+    "2020-12-31",
+    "2021-01-04",
+    "2021-01-05",
+    "2021-01-06",
+    "2021-01-07",
+    "2021-01-08",
+    "2021-01-11",
+    "2021-01-12",
+    "2021-01-13",
+    "2021-01-14",
+    "2021-01-15",
+    "2021-01-18",
+    "2021-01-19",
+    "2021-01-20",
+    "2021-01-21",
+    "2021-01-22",
+    "2021-01-25",
+    "2021-01-26",
+    "2021-01-27",
+    "2021-01-28",
+    "2021-01-29",
+    "2021-02-01",
+    "2021-02-02",
+    "2021-02-03",
+    "2021-02-04",
+    "2021-02-05",
+    "2021-02-08",
+    "2021-02-09",
+    "2021-02-10",
+    "2021-02-18",
+    "2021-02-19",
+    "2021-02-22",
+    "2021-02-23",
+    "2021-02-24",
+    "2021-02-25",
+    "2021-02-26",
+    "2021-03-01",
+    "2021-03-02",
+    "2021-03-03",
+    "2021-03-04",
+    "2021-03-05",
+    "2021-03-08",
+    "2021-03-09",
+    "2021-03-10",
+    "2021-03-11",
+    "2021-03-12",
+    "2021-03-15",
+    "2021-03-16",
+    "2021-03-17",
+    "2021-03-18",
+    "2021-03-19",
+    "2021-03-22",
+    "2021-03-23",
+    "2021-03-24",
+    "2021-03-25",
+    "2021-03-26",
+    "2021-03-29",
+    "2021-03-30",
+    "2021-03-31"
+  ],
+  "version": "temporal-complete-observed-history-preflight-2021-v1"
+}

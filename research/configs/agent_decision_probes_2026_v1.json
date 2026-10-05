@@ -1,0 +1,235 @@
+{
+  "schema_version": "three-role-synthetic-decision-probes-v1",
+  "data_kind": "synthetic",
+  "empirical_calibration": false,
+  "historical_event_signal_applied": false,
+  "llm_outputs_used": false,
+  "scope": "Common portfolio-rule explanation and controlled synthetic mechanism probes.",
+  "assets": [
+    "A",
+    "B",
+    "C"
+  ],
+  "sessions": 18,
+  "synthetic_dates_are_ordering_only": true,
+  "pulse_start": 3,
+  "pulse_stop": 9,
+  "cases": [
+    {
+      "case_id": "neutral",
+      "signal": 0.0,
+      "uncertainty": 0.0,
+      "scope": "public",
+      "volatility_floor": 0.01
+    },
+    {
+      "case_id": "positive_public",
+      "signal": 0.6,
+      "uncertainty": 0.05,
+      "scope": "public",
+      "volatility_floor": 0.01
+    },
+    {
+      "case_id": "negative_public",
+      "signal": -0.6,
+      "uncertainty": 0.05,
+      "scope": "public",
+      "volatility_floor": 0.01
+    },
+    {
+      "case_id": "positive_issuer",
+      "signal": 0.6,
+      "uncertainty": 0.05,
+      "scope": "issuer_a",
+      "volatility_floor": 0.01
+    },
+    {
+      "case_id": "high_uncertainty",
+      "signal": 0.0,
+      "uncertainty": 0.8,
+      "scope": "public",
+      "volatility_floor": 0.01
+    },
+    {
+      "case_id": "high_risk",
+      "signal": 0.6,
+      "uncertainty": 0.05,
+      "scope": "public",
+      "volatility_floor": 0.3
+    }
+  ],
+  "seeds": [
+    7,
+    11,
+    23,
+    47,
+    89
+  ],
+  "text_modes": [
+    false,
+    true
+  ],
+  "agent_parameters": [
+    {
+      "name": "aggressive",
+      "role": "aggressive",
+      "initial_cash": 100000.0,
+      "base_weight": 0.3,
+      "max_weight": 1.0,
+      "max_turnover": 0.4,
+      "risk_budget": 0.04,
+      "market_sensitivity": 0.7,
+      "text_sensitivity": 0.9,
+      "uncertainty_aversion": 0.1,
+      "confirmation_steps": 1,
+      "rebalance_interval": 1,
+      "min_trade_weight": 0.01
+    },
+    {
+      "name": "conservative",
+      "role": "conservative",
+      "initial_cash": 100000.0,
+      "base_weight": 0.2,
+      "max_weight": 0.55,
+      "max_turnover": 0.12,
+      "risk_budget": 0.008,
+      "market_sensitivity": 0.3,
+      "text_sensitivity": 0.25,
+      "uncertainty_aversion": 0.35,
+      "confirmation_steps": 2,
+      "rebalance_interval": 1,
+      "min_trade_weight": 0.02
+    },
+    {
+      "name": "institutional",
+      "role": "institutional",
+      "initial_cash": 100000.0,
+      "base_weight": 0.35,
+      "max_weight": 0.8,
+      "max_turnover": 0.15,
+      "risk_budget": 0.016,
+      "market_sensitivity": 0.5,
+      "text_sensitivity": 0.5,
+      "uncertainty_aversion": 0.2,
+      "confirmation_steps": 1,
+      "rebalance_interval": 3,
+      "min_trade_weight": 0.015
+    }
+  ],
+  "agent_parameter_basis": "Existing illustrative role assumptions, not empirical investor estimates.",
+  "replica_basis": "Four identical-resource accounts per role; not four independent observed investors.",
+  "core": {
+    "scenario_id": "decision_probe",
+    "feedback_mode": "endogenous",
+    "profile_mode": "homogeneous",
+    "order_mode": "hashed",
+    "inventory": [
+      500,
+      500,
+      500,
+      500
+    ]
+  },
+  "background": {
+    "case_id": "active_probe",
+    "mode": "active",
+    "participants": 12,
+    "initial_cash": 50000,
+    "initial_shares": 500,
+    "target_range_lots": 4,
+    "max_order_lots": 4,
+    "urgency_bps": 25
+  },
+  "feedback": {
+    "momentum_sessions": 5,
+    "volatility_sessions": 20
+  },
+  "portfolio_case": {
+    "case_id": "shared_institution35",
+    "cash_mode": "shared",
+    "institutional_asset_cap": 0.35
+  },
+  "venue": {
+    "price_start_minor": 10000,
+    "lot_size": 100,
+    "tick_minor": 1,
+    "fee_bps": 10,
+    "price_band_bps": 1000,
+    "quote_spread_bps": 25,
+    "quote_response_bps": 200
+  },
+  "context_catalog": "research/configs/policy_event_catalog_2018_2020.json",
+  "context_only_events": [
+    "asset_management_guidance_2018",
+    "wuhan_transport_restrictions_2020",
+    "sse_spring_festival_closure_extension_2020"
+  ],
+  "expected_counts": {
+    "paths": 60,
+    "portfolio_days": 1080,
+    "asset_calls": 3240,
+    "decision_explanations": 12960,
+    "asset_explanations": 38880,
+    "dense_asset_calls": 180,
+    "paired_conditions": 30
+  },
+  "runtime": {
+    "python": "3.12.14",
+    "platform": "Windows-11-10.0.26100-SP0"
+  },
+  "bindings": {
+    "research/MECHANISM_PROTOTYPE_SCOPE_2026.md": "8ec725f1ee7eb08c4c2a66ad2529123d9bb14af02549e388c0bae10c261e6bba",
+    "research/__init__.py": "3a9b28bae9951b5a46fd762b0a3d4e058a4819d8f488ebeef94b4377243c3fc9",
+    "research/baselines/__init__.py": "648206e895423299c87dbcfc7b6a72385835d52781733f2dc4c535a167b18867",
+    "research/baselines/event_study.py": "ab5a2c8b3ef2bf5cb692e44d2c1127535c8f61f6c83d106107973fc3ea0552d0",
+    "research/baselines/run_experiments.py": "39d2f1ec8525596d926041c9ba0062b3232d51c3f111f1a9bf331b95a814c8ad",
+    "research/configs/policy_event_catalog_2018_2020.json": "ab0a5ac09bf3df69be40fa2af0a03c353d663dee2a8c187468b3540a132b235c",
+    "research/configs/synthetic_stress_v1.json": "5e2f87d722e9a775987f93d70deaaf578518c10fac1c9a80f1648432feee00a8",
+    "research/data_pipeline/__init__.py": "4a4b2bc94b4ccaaa36cc2f87e74e6cd31e2bf57c0f996b97718bae7853a6c9c2",
+    "research/data_pipeline/aggregate_qa_features.py": "bcf0f633bd0a41cef9bc11c12aee12acd5bf54340837c23c8ce757d8bf45a081",
+    "research/data_pipeline/build_dataset.py": "4fccb442f76fa39ca5046d21dfe2e800480ccc7cf88ed4edff1b80c501e146e9",
+    "research/data_pipeline/common.py": "eb27d2b4c4ba8d51d864dbbad6480a0ac6c534ffd8a025a311cacb6e0257d400",
+    "research/data_pipeline/extract_financial.py": "84ea2bb9d4943cff09133d0e54c1fe03826169a3363881682c063832b459d24c",
+    "research/data_pipeline/market_data.py": "d62ee60c97e0969d546a72812b8fff24521c4e74c112af16df55c1cefe82d85e",
+    "research/data_pipeline/policy_events.py": "7efed950fc2dfa99200ba98d74ad5e3f01b4551a44d7fc86b8e7f8bb8a9f23d1",
+    "research/data_pipeline/provenance.py": "ac4dbb3a558f40e3207c5801b0e204f653eedc9b5f4f8278d65de11af37752a7",
+    "research/semantic/__init__.py": "64df3ba50e91a2785f32ae1f1724eac5b69e48e1df057a488db47bcbb0353bc4",
+    "research/semantic/agent_signal_adapter.py": "99b7095bbe19c7bb640b21be3cb1209afe0508be4c3ef07df17adf3a63d99b71",
+    "research/semantic/annotation_pack.py": "696eaf5d60304a309476805ad87f9df06e03dbbb5d4be43e1bb5c2026265b3b3",
+    "research/semantic/assistant_review.py": "9385072e4fc446a86fe53078363b11ef8a27037aace2d734bd996982ace57bff",
+    "research/semantic/event_snapshot.py": "e40ee7baaf16082bba87bd76ce45996b27e139f2dd00c9f27b7ac15dd107c72b",
+    "research/semantic/prompt_contract.py": "1645e841d42ca0920bfbd833474226621ee4a35d87ae2720331e5840da01393d",
+    "research/semantic/signal_validation.py": "15e24a7ff78a7790561afe9bd27eafd4f78da140a6a8d3c01ee9daaafdf28aca",
+    "research/simulation/__init__.py": "2967b8581124d4d6eb215268739af70a2514d0129496d322259afca9ae6577e3",
+    "research/simulation/agent_decision_trace.py": "c68edc28903a429c135ce0bd4b99016e49d33d27cae6a4bd299d98de63eed340",
+    "research/simulation/agents.py": "0fb9c7514336582068cef7b1d18b28700164423d2a9a05bf67d19a7f144d31f0",
+    "research/simulation/audit_auction.py": "e16ea446f5cfc9f42013f233370b5fa98bd21dac44bbe35a7c42926c74a7b470",
+    "research/simulation/audit_background.py": "81f777453414c2b68bc030d5ec0fefb22d0dd08c8b605009444a1d95ae974f71",
+    "research/simulation/audit_feedback.py": "59a7743f217c150f6a6acc7d64e1660628ac8eccc9d0456fddecd431cb0df4d4",
+    "research/simulation/background_experiment.py": "5c7017edfe026d20d9f2483ed7635d6356bb8ed365f1fb04936e2062985b473e",
+    "research/simulation/call_auction.py": "cb2cd0cdb4db8833390a6296665b12a1c62ea4432c94b58c1dab6b2c49d39186",
+    "research/simulation/feedback_auction.py": "5830fbd727c1d40de69a7da6706ec8d2efa624f7351b34fdaf2ec8c5c16327c4",
+    "research/simulation/feedback_experiment.py": "e8ed001c561666c48614ba119205b05f958690150edbee88a9d649783f08df53",
+    "research/simulation/historical_replay.py": "082038c7dc0f104eeabecd741ee9a2565fbf263570b0fef848ed9fe76982804d",
+    "research/simulation/participant_market.py": "1087408bf409c0095fb8d887243ab59674e4e1c1336d7ac4652cca1ac73dac3d",
+    "research/simulation/portfolio_auction.py": "05beb118d91932a99edf10eff03f73d6c592f3882e6211d4e2c94ba5fe4fc2ae",
+    "research/simulation/portfolio_audit.py": "345d9dda9e0bd08ddb42e20a11370d9a1b5336d4e113821ca9e741e8d9539680",
+    "research/simulation/portfolio_market.py": "05bda444ab40fda1d0623f80de9b7dd507818250b1291ebe549fb9c108e011fa",
+    "research/simulation/run_agent_decision_probes.py": "944c09cdb7abb985b77abc7ac97bb71842d24ca011f8866546576fe44f8c58d0",
+    "research/simulation/scenario_shocks.py": "ccde489069af43cab0d3e1f9bbd4ad461951d68b0e54b56151fab9c2fce5ff73",
+    "research/simulation/semantic_auction_experiment.py": "316bd31b134b231e625a3c9e4495b25c3a18094f2198c0e84290633410ba7b8d",
+    "research/simulation/semantic_historical_replay.py": "006bd67bae6301e863e614c334bff89ef57610ca892b593b6f3406e3bc0d4e25",
+    "research/simulation/semantic_memory_sensitivity.py": "dca0e08fcb50daa3cb2bd337df9c9dd8fab82975f2bdf1c1f1864f416a7fe1b2",
+    "research/simulation/semantic_replay.py": "6f65075b0e14975cb66845de9d8a13e518d9255af74f6510018546cb13471bd9",
+    "research/simulation/semantic_signal_join.py": "7825cb80f6dde15190bf61f131bcd59714f29e95428df92d7d11618be5360144",
+    "research_outputs/agent_decision_trace_target_tests_20261004_v1.json": "0fd36c7e94e191c32cbc51bd423367befc76358e8b0a21426b1dd927a3a7ed1b",
+    "research_outputs/agent_decision_trace_target_tests_20261004_v1.txt": "5a77f793b435b11ef4fd1e610e7f73c594f077d60a9f23bf87aebb3721856d0f",
+    "research_outputs/agent_decision_trace_target_tests_20261004_v2.json": "547ab2db62ff22ddd6300fab734ce5959858ea4006cb600dfe6faa9d5cba6110",
+    "research_outputs/agent_decision_trace_target_tests_20261004_v2.txt": "d60e2754a63f97ae953e9264b75179690d54822130003c7c085c744b3b7eda13",
+    "research_outputs/observed_2018/evidence/pbc_asset_management_2018.html": "55ba0b404c25c55dfa536e00e92f5c9096de3aca5710e87ab6c0bda443505601",
+    "research_outputs/observed_2020/evidence/sse_holiday_notice.md": "0a7a39089ac535f63fe56b053d205b3f62823a2d2f2feb088eec362a6a3b3d63",
+    "research_outputs/observed_2020/evidence/xinhua_wuhan_notice_timestamped.html": "24f5ba9e35552c3877aaed0f41f82b59d9ac2df3ceae7151e8ee07e4348be137",
+    "research_outputs/prepare_agent_decision_probes_20261004_v1.py": "0c99581b9c7ec0aabfef21415d0949b2514ac571d44b4b38ec67d270349459e2",
+    "tests/test_agent_decision_trace.py": "63ddbd1c6106e6a4b13faaaf9be5c91dc27e0e49ff0e5ad5bb6089d7f5917cab"
+  }
+}

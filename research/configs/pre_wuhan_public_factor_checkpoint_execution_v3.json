@@ -1,0 +1,50 @@
+{
+  "allow_numerical_protocol_change": false,
+  "allow_pdf_processing": false,
+  "frozen_at_utc": "2026-10-02T06:48:01.464632+00:00",
+  "historical_nonexecuted_binding": {
+    "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe": "3f2440140fef98ddd1ef0772a10d8e58dc3564a9b15a14b4611b5bbd5bdcd37f"
+  },
+  "inputs": {
+    "research/configs/pre_wuhan_public_factor_channels_2019.json": "ab26ab711e49cad458c39f64c63321a5d572fd7683b9343de015d9160ff2c46e",
+    "research/configs/pre_wuhan_public_factor_runtime_scope_2019_v2.json": "e2631696a71d9e18098b06811326fbcd3be138eccde5abcd42b39811def47bac",
+    "research/simulation/public_factor_condition_worker_v3.py": "c8f2451699b0fd604948aa56cb72e5fd5e3612c4ce82dda7f505864a29495c7a",
+    "research/simulation/public_factor_numeric_inputs_v3.py": "50aabfefb9dfa28cb13822fd376bcb3a9cf8d11e67e61e3e3f69e31495e2630f",
+    "research/simulation/public_factor_runtime_scope.py": "ba40cdfcb5254fd1b4b6b7a9c1eb21e5204e1f96e5d9d13a50dd4e19d7b7ce80",
+    "research/simulation/run_pre_wuhan_public_factor_channels_2019_v2.py": "1410ff116bb27ed9317b7430c506d9717761bd841ea6207eabb6155974e62e2c",
+    "research/simulation/run_public_factor_checkpoints_v3.py": "01c459dfd4314633cda90fae09244cea3e75efefa585d2749bf08d9e957b7a19",
+    "research/simulation/verify_pre_wuhan_public_factor_channels_2019_v2.py": "6f84431369a68bc0a80a4a6f9aa11c52f1bb0b571e94c7cb8642c282d604c190",
+    "research/simulation/verify_pre_wuhan_public_factor_channels_2019_v3.py": "40035bef5764eb76af52f9d852fd90ab104b70e4c5b487a63344497a3617fead",
+    "research_outputs/freeze_public_factor_runtime_scope_20261002.py": "a28e8adeff789a0990d0fe9f101d7e2c69a2ca57ebcfb1af7ee2056d7ff14f47",
+    "research_outputs/pre_wuhan_public_factor_durable_jobs_20261002.json": "4d48ffb2ae1e1b12265f39d92bd313a2de76fd59b26490682ce3ec70834c32f7",
+    "research_outputs/pre_wuhan_public_factor_durable_jobs_20261002_v2.json": "caa39c51a7c16cecb8b665c64a8aa27909a85354c286f9c56df25a7008919892",
+    "research_outputs/pre_wuhan_public_factor_durable_wrapper_stderr_20261002.txt": "b99a1fba0536df8d64f1fedf13bdf351603786d491d23c4c71eab6612ec284ba",
+    "research_outputs/pre_wuhan_public_factor_durable_wrapper_stdout_20261002.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "research_outputs/pre_wuhan_public_factor_interrupted_initial_20261002.json": "932e20f7291160a879d445d2deaa944389e460cbcd5717efff03948a33ec1f6c",
+    "research_outputs/pre_wuhan_public_factor_job_producer_initial_20261002.json": "93d012b3c4cf76aaaa274d90e865df17abeba5027b438272d087728eba2cd436",
+    "research_outputs/pre_wuhan_public_factor_job_producer_initial_20261002_v2.json": "f731d880d2aea49754cfaee75e7d482ccdb1fce072711ca2bfc3029cfd7214fa",
+    "research_outputs/pre_wuhan_public_factor_producer_log_20261002.txt": "2213b23935f946ece6df30419c80a18bbd51cbd5fc79b31356b4858a6c2fed31",
+    "research_outputs/pre_wuhan_public_factor_producer_log_20261002_v2.txt": "c726a111a389a00801fc3404378bbf0ef015ec2dbf871445414446d726b541ed",
+    "research_outputs/pre_wuhan_public_factor_producer_log_20261002_v3.txt": "84d4431480120e9a412074d8f41a3c83df6915af4ce76b988fd4945fdfb756d1",
+    "research_outputs/pre_wuhan_public_factor_second_interruption_20261002.json": "cf4a8819468e803a723e18fad4f77658977e732b91dca67d3910f6deffc1a153",
+    "research_outputs/run_public_factor_checkpoint_jobs_20261002_v3.py": "3c9fbbd556d183dd5aabb143bce6892737771fc1d0a0f04793011292dce8b021",
+    "research_outputs/run_public_factor_full_tests_20261002_v2.py": "16eced02c68454797c96fed97ee2015f3db476e9c448308d37d8fe8ecde1ffd9",
+    "research_outputs/run_public_factor_verified_jobs_20261002.py": "84644e6dc10773d92307299d795b6b1cb87886595306267d829185dbabf58a71",
+    "research_outputs/run_public_factor_verified_jobs_20261002_v2.py": "50407214a3152b7eb94a6ceda9626b76556771e7c2e472a584ab3a0671f19a0e",
+    "tests/test_public_factor_checkpoints_v3.py": "136645b7577fcb698d765e2be90bb2eefdda7c9e7b17d0299049466e933d3d4e",
+    "tests/test_public_factor_runtime_scope.py": "323416795e8aca0e4930fd304667fd04ad8eff332104c50a6346dbc7ffb4576e"
+  },
+  "nonexecuted_dependency_path": "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe",
+  "nonexecuted_scope": "Only the exact historical PDF renderer path is removed from current numerical inputs. Historical bytes and each prior failed runtime check remain evidence; this experiment never executes it. Other current source/code bytes must match. Source, formulas, seeds, windows and evaluation thresholds remain unchanged.",
+  "numerical_protocol_sha256": "ab26ab711e49cad458c39f64c63321a5d572fd7683b9343de015d9160ff2c46e",
+  "observed_runtime_change_at_freeze": [
+    {
+      "historical_sha256": "3f2440140fef98ddd1ef0772a10d8e58dc3564a9b15a14b4611b5bbd5bdcd37f",
+      "observed_sha256": "52ebf49e1694dcc4e5ea739720d26e3fc1c285247dedf0845908187b7ae110c8",
+      "path": "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe"
+    }
+  ],
+  "prior_numeric_bindings_verified": 1287,
+  "resume_rule": "Only complete per-condition checkpoints with exact identity/config and all file hashes may be reused. Cell computation body is AST-identical to original frozen v2 loop. Original 80-condition order, complete path objects, old baseline bridges, every private receipt and total coverage remain required. Incomplete stages are preserved but never reused as completed cells. A second independent checkpoint tree recomputes all cells for full production byte replay.",
+  "version": "public-factor-resumable-numeric-execution-v3"
+}

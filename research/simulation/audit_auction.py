@@ -11,12 +11,14 @@ from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR
 from pathlib import Path
 
 from ..data_pipeline.provenance import file_sha256
+from .call_auction import PRICE_TIE_BREAKS
 from .semantic_auction_experiment import _config, _read_config, load_auction_summary
 
 VERSION = "auction-trade-ledger-audit-v1"
 
 
-def audit_day(row: dict, previous: dict, settings: dict, session: int) -> dict:
+def audit_day(row: dict, previous: dict, settings: dict, session: int,
+              price_tie_break: str = "nearest_prior") -> dict:
     """Trades drive balances; saved orders and accounts are claims to be checked."""
     auction = row["auction"]
     before = {name: dict(account) for name, account in previous["accounts"].items()}
@@ -90,14 +92,33 @@ def audit_day(row: dict, previous: dict, settings: dict, session: int) -> dict:
     else:
         # Dense tick sweep is independent of the clearing engine's sparse candidate set.
         demand, supply, best = sum(buy_levels.values()), 0, None
+        if price_tie_break not in PRICE_TIE_BREAKS:
+            raise ValueError("unsupported dense auction tie-break rule")
+        pressure = sum(order["accepted_quantity"] * (1 if order["side"] == "buy" else -1)
+                       for order in orders.values())
+        evaluations = []
         for candidate in range(lower, upper + tick, tick):
             demand -= buy_levels[candidate - tick]
             supply += sell_levels[candidate]
-            key = (-min(demand, supply), abs(demand - supply), abs(candidate - prior), candidate)
-            if best is None or key < best:
-                best = key
-        if price != best[3] or volume != -best[0]:
-            raise ValueError("clearing price or volume differs from independent dense tick sweep")
+            evaluations.append((candidate, min(demand, supply), demand - supply))
+        if price_tie_break == "sse_midpoint":
+            best_score = min((-volume_at, abs(imbalance_at)) for _, volume_at, imbalance_at in evaluations)
+            tied_prices = [candidate for candidate, volume_at, imbalance_at in evaluations
+                           if (-volume_at, abs(imbalance_at)) == best_score]
+            first, last = min(tied_prices), max(tied_prices)
+            expected = ((first // tick + last // tick + 1) // 2) * tick
+            if price != expected or volume != -best_score[0]:
+                raise ValueError("clearing price or volume differs from independent SSE midpoint tick sweep")
+            key = None
+        else:
+            for candidate, volume_at, imbalance_at in evaluations:
+                key = ((-volume_at, abs(imbalance_at), -candidate if pressure > 0 else candidate,
+                        candidate) if price_tie_break == "accepted_order_pressure" and pressure else
+                       (-volume_at, abs(imbalance_at), abs(candidate - prior), candidate))
+                if best is None or key < best:
+                    best = key
+            if price != best[3] or volume != -best[0]:
+                raise ValueError("clearing price or volume differs from independent dense tick sweep")
     if (volume != auction["matched_volume"] or auction["accounts"] != balances
             or auction["fee_pool_minor"] != previous["fee_pool_minor"] + fees):
         raise ValueError("saved account or fee ledger differs from trade reconstruction")

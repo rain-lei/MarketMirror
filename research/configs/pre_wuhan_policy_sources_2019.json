@@ -1,0 +1,116 @@
+{
+  "additional_sources": [
+    {
+      "archive_name": "cfets_lpr_20190820.html",
+      "discovery_snapshot": {
+        "path": ".firecrawl/cfets-lpr-20190820.json",
+        "sha256": "714f90c5b9348cb8f3935e58fc4306267817b03eafe1b30b2d2042930281fd49"
+      },
+      "expected_html_title": "2019年8月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告_中国货币网",
+      "kind": "lpr",
+      "publication_date": "2019-08-20",
+      "source_id": "cfets_lpr_20190820",
+      "title": "2019年8月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告",
+      "url": "https://www.chinamoney.com.cn/chinese/rdgz/20190820/1365567.html"
+    },
+    {
+      "archive_name": "cfets_lpr_20190920.html",
+      "discovery_snapshot": {
+        "path": ".firecrawl/cfets-lpr-20190920.json",
+        "sha256": "cdfad8d4c825efc59ec3bbb40cb8de858cafd1b79a116bcd86cda59a57a70e43"
+      },
+      "expected_html_title": "2019年9月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告_中国货币网",
+      "kind": "lpr",
+      "publication_date": "2019-09-20",
+      "source_id": "cfets_lpr_20190920",
+      "title": "2019年9月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告",
+      "url": "https://www.chinamoney.com.cn/chinese/bklprmkn2/20190920/1397759.html"
+    },
+    {
+      "archive_name": "cfets_lpr_20191021.html",
+      "discovery_snapshot": {
+        "path": ".firecrawl/cfets-lpr-20191021.json",
+        "sha256": "050bfcdc6e12b6d1e84d86769ef72be65372a53af4b39be8263638520832c117"
+      },
+      "expected_html_title": "2019年10月21日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告_中国货币网",
+      "kind": "lpr",
+      "publication_date": "2019-10-21",
+      "source_id": "cfets_lpr_20191021",
+      "title": "2019年10月21日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告",
+      "url": "https://www.chinamoney.com.cn/chinese/rdgz/20191021/1423385.html"
+    },
+    {
+      "archive_name": "cfets_lpr_20191120.html",
+      "discovery_snapshot": {
+        "path": ".firecrawl/cfets-lpr-20191120.json",
+        "sha256": "a3745b9387f0e19e48e5acefc8eeb32c3e23fa5a41f1b4e440c5610d73428d3c"
+      },
+      "expected_html_title": "2019年11月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告_中国货币网",
+      "kind": "lpr",
+      "publication_date": "2019-11-20",
+      "source_id": "cfets_lpr_20191120",
+      "title": "2019年11月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告",
+      "url": "https://www.chinamoney.com.cn/chinese/rdgz/20191120/1456678.html"
+    },
+    {
+      "archive_name": "cfets_lpr_20191220.html",
+      "discovery_snapshot": {
+        "path": ".firecrawl/cfets-lpr-20191220.json",
+        "sha256": "72ff3b15a8c8abc8c585a92dc802982d8fa0fe06ea87abe077d4f1fe3655ee1f"
+      },
+      "expected_html_title": "2019年12月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告_中国货币网",
+      "kind": "lpr",
+      "publication_date": "2019-12-20",
+      "source_id": "cfets_lpr_20191220",
+      "title": "2019年12月20日全国银行间同业拆借中心受权公布贷款市场报价利率（LPR）公告",
+      "url": "https://www.chinamoney.com.cn/chinese/rdgz/20191220/1487729.html"
+    },
+    {
+      "archive_name": "rrr_government_republication_20190906.html",
+      "discovery_snapshot": {
+        "path": ".firecrawl/official-rrr-republication-20190906.json",
+        "sha256": "20942c41ef2703185fa04cc43af2e1b1d3871035a25dd93619c9cbd11bbde7c2"
+      },
+      "expected_html_title": "中国人民银行决定于2019年9月16日下调金融机构存款准备金率_中共广东省委金融委员会办公室",
+      "kind": "rrr_republication",
+      "publication_date": "2019-09-06",
+      "source_id": "rrr_government_republication_20190906",
+      "title": "中国人民银行决定于2019年9月16日下调金融机构存款准备金率",
+      "url": "https://www.gdjr.gov.cn/gdjr/jrzx/jryw/content/mpost_3889.html"
+    },
+    {
+      "archive_name": "rrr_legal_yinfa_2019_223.pdf",
+      "kind": "rrr_legal_pdf",
+      "publication_date": null,
+      "source_id": "rrr_legal_yinfa_2019_223",
+      "title": "中国人民银行关于下调金融机构存款准备金率的通知（银发〔2019〕223号）",
+      "url": "https://jinan.pbc.gov.cn/jinan/120967/120982/120951/3889734/2019091218244323761.pdf",
+      "use_policy": "corroboration_only_no_publication_clock"
+    }
+  ],
+  "earlier_omo": {
+    "archive_end_date": "2019-10-15",
+    "archive_start_date": "2019-09-16",
+    "discovery_indices": [
+      {
+        "path": ".firecrawl/pbc-omo-list90.json",
+        "sha256": "8b9b2cbf5734c2f2ae32c39ce463fef31b789a21919af8a1c21c052872052081",
+        "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-90.html"
+      },
+      {
+        "path": ".firecrawl/pbc-omo-list91.json",
+        "sha256": "aba21c33b47c2e500a841bd353efcc29b3562e59f04eaaadc30438fed380ec29",
+        "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-91.html"
+      }
+    ]
+  },
+  "expected_source_counts": {
+    "lpr": 5,
+    "omo": 20,
+    "rrr_legal_pdf": 1,
+    "rrr_republication": 1
+  },
+  "interpretation": "Extends original 57 dated OMO responses with all selected Sep16-Oct15 category notices and five original reform-era LPR publications. RRR government republication and official legal PDF corroborate scope and implementation schedule; unavailable original press-release URLs are not fabricated. Publication, effective date and net-liquidity accounting remain separate.",
+  "maximum_concurrent_requests": 2,
+  "version": "pre-wuhan-policy-source-extension-v1"
+}

@@ -20,10 +20,11 @@ from typing import Any
 
 from .signal_validation import load_pack
 from .prompt_contract import DEFAULT_PROMPT_VERSION, PROMPTS, prompt_path
+from .model_protocol import frozen_model_protocol
 from ..data_pipeline.provenance import file_sha256
 
 
-VERSION = "semantic-model-runner-v4"
+VERSION = "semantic-model-runner-v5"
 DEFAULT_BASE_URL = "http://aigw.dlut.edu.cn/v1"
 DEFAULT_MODEL = "DeepSeek-V4-Flash-0731-W8A8"
 PROMPT_VERSION = DEFAULT_PROMPT_VERSION
@@ -151,6 +152,16 @@ def run_model(pack_dir: Path, output_dir: Path, api_key: str, base_url: str = DE
               prompt_version: str = PROMPT_VERSION) -> dict[str, Any]:
     pack_dir, output_dir = pack_dir.resolve(), output_dir.resolve()
     items, pack_manifest = load_pack(pack_dir)
+    selected_prompt = prompt_path(prompt_version)
+    protocol = frozen_model_protocol(pack_manifest)
+    if protocol is not None and (
+            normalize_base_url(base_url) != protocol["provider_base_url"]
+            or model != protocol["model_id"]
+            or prompt_version != protocol["prompt_version"]
+            or file_sha256(selected_prompt) != protocol["prompt_sha256"]
+            or type(temperature) not in (int, float)
+            or temperature != protocol["temperature"]):
+        raise ValueError("model request differs from the annotation pack's frozen protocol")
     if not api_key.strip():
         raise ValueError("MARKETMIRROR_LLM_API_KEY is empty")
     if output_dir == pack_dir or pack_dir in output_dir.parents:
@@ -159,7 +170,6 @@ def run_model(pack_dir: Path, output_dir: Path, api_key: str, base_url: str = DE
         raise ValueError("limit must be positive")
     if output_dir.exists() and any(output_dir.iterdir()) and not resume:
         raise ValueError("use a new empty model output directory")
-    selected_prompt = prompt_path(prompt_version)
     prompt = selected_prompt.read_text(encoding="utf-8")
     selected = list(items.values())[:limit] if limit is not None else list(items.values())
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -216,7 +226,7 @@ def run_model(pack_dir: Path, output_dir: Path, api_key: str, base_url: str = DE
             "pack_experiment_id": pack_manifest["experiment_id"],
             "input_sha256": input_sha256,
             "code_sha256": {name: file_sha256(Path(__file__).with_name(name)) for name in
-                            ("run_model.py", "prompt_contract.py")},
+                            ("run_model.py", "prompt_contract.py", "model_protocol.py")},
             "requested_rows": len(selected), "model_rows": len(rows),
             "remaining_rows": len(selected) - len(rows),
             "request_failures": sum(_is_runner_failure(row) for row in rows),

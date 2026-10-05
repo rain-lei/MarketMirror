@@ -12,9 +12,9 @@ from research.data_pipeline.provenance import file_sha256
 from research.simulation.agents import AgentParameters
 from research.simulation.call_auction import AuctionAccount, CallAuction, LimitOrder
 from research.simulation.feedback_auction import simulate_feedback
-from research.simulation.participant_market import simulate_market, validate_background, background_demand
+from research.simulation.participant_market import simulate_market, validate_background, background_demand, initial_accounts
 from research.simulation.background_experiment import run_experiment, load_summary, experiment_inputs, strategy_signature
-from research.simulation.audit_background import audit_directory, load_audit, interval_price, reconstruct_day
+from research.simulation.audit_background import audit_directory, load_audit, interval_price, reconstruct_day, verify_background_demands
 from research.simulation.audit_auction import audit_day
 
 ROOT = Path(__file__).parents[1]
@@ -30,6 +30,39 @@ def run_case(case_index, steps=None, use_text=False, case=None):
 
 
 class BackgroundMarketTest(unittest.TestCase):
+    def test_stochastic_arrival_is_independent_of_inventory_and_audited(self):
+        case = {**CONFIG['background_cases'][3], 'mode': 'stochastic_arrival',
+                'target_range_lots': 0, 'arrival_rate_bps': 7500}
+        validate_background(case, VENUE['lot_size'])
+        result = run_case(3, case=case)
+        _, accounts, specs, _ = initial_accounts(AGENTS, CORE, case, VENUE['price_start_minor'])
+        prior = {'price_minor': VENUE['price_start_minor'],
+                 'accounts': {name: {'shares': account.shares} for name, account in accounts.items()}}
+        first = result['trace'][0]
+        verify_background_demands({'background_demands': first['background_demands'],
+                                   'auction': first['auction']}, prior, case, '000001', 0, VENUE, specs)
+        for session in range(5):
+            funded = background_demand('000001', session, 'background_000',
+                                       AuctionAccount(1000000, 500, 500), 10000,
+                                       (9000, 11000), VENUE, case)
+            empty = background_demand('000001', session, 'background_000',
+                                      AuctionAccount(0, 0, 0), 10000,
+                                      (9000, 11000), VENUE, case)
+            self.assertEqual({key: value for key, value in funded.items() if key != 'current_shares'},
+                             {key: value for key, value in empty.items() if key != 'current_shares'})
+            self.assertNotIn('target_shares', funded)
+        altered = copy.deepcopy(first)
+        name = next(iter(altered['background_demands']))
+        altered['background_demands'][name]['arrived'] = not altered['background_demands'][name]['arrived']
+        with self.assertRaisesRegex(ValueError, 'background demand differs'):
+            verify_background_demands({'background_demands': altered['background_demands'],
+                                       'auction': altered['auction']}, prior, case, '000001', 0, VENUE, specs)
+        for invalid in ({**case, 'arrival_rate_bps': 0},
+                        {**case, 'target_range_lots': 4},
+                        {key: value for key, value in case.items() if key != 'arrival_rate_bps'}):
+            with self.assertRaises(ValueError):
+                validate_background(invalid, VENUE['lot_size'])
+
     def test_zero_background_and_idle_resources_preserve_strategy_paths(self):
         for enabled in (False, True):
             old = simulate_feedback(sample_steps(), AGENTS, CORE, VENUE, FEEDBACK, enabled)

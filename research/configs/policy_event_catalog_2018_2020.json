@@ -1,0 +1,117 @@
+{
+  "catalog_id": "policy-and-market-calendar-context-2018-2020-v1",
+  "data_kind": "source_verified_context",
+  "events": [
+    {
+      "event_id": "asset_management_guidance_2018",
+      "event_class": "financial_regulation",
+      "title": "关于规范金融机构资产管理业务的指导意见",
+      "source": {
+        "source_kind": "official_primary",
+        "publisher": "中国人民银行",
+        "url": "https://www.pbc.gov.cn/jinrongwendingju/146766/146770/c2e228ad641d4a85acdc9142da4f955d/index.html",
+        "archive_path": "research_outputs/observed_2018/evidence/pbc_asset_management_2018.html",
+        "sha256": "55ba0b404c25c55dfa536e00e92f5c9096de3aca5710e87ab6c0bda443505601"
+      },
+      "publication": {
+        "date": "2018-04-27",
+        "precision": "exact_timestamp",
+        "timestamp": "2018-04-27T18:38:49+08:00"
+      },
+      "visibility": {
+        "time_status": "observed_exact_timestamp",
+        "anchor_rule": "source_timestamp_then_exchange_calendar",
+        "sensitivity_rules": [],
+        "note": "The archived page body carries the 2018 publication date and 18:38:49 timestamp. This is the page's stated time, not proof of the first public appearance across all channels; it is after the exchange close."
+      },
+      "effective_period": {
+        "from": null,
+        "through": null,
+        "note": "This catalog records the formal publication event only. Separate transition and implementation milestones are not encoded as a single effective date."
+      },
+      "scope": {
+        "jurisdiction": "China",
+        "direct_subjects": ["banks", "trust companies", "securities and fund managers", "futures managers", "insurance asset-management institutions"],
+        "issuer_codes": ["000001"],
+        "industry_codes": [],
+        "mapping_status": "partial",
+        "note": "The notice directly regulates financial institutions. A separate source audit maps only the three 2018 event-study pilot issuers and finds one direct institution-type match; the full listed-company universe and standardized industry codes remain unmapped. Do not broadcast a uniform company shock."
+      },
+      "use_policy": {"mode": "context_only", "agent_signal_enabled": false}
+    },
+    {
+      "event_id": "wuhan_transport_restrictions_2020",
+      "event_class": "regional_public_health",
+      "title": "武汉市新型冠状病毒感染的肺炎疫情防控指挥部交通管制通告",
+      "source": {
+        "source_kind": "news_report_of_official_notice",
+        "publisher": "新华社",
+        "url": "https://www.xinhuanet.com/politics/2020-01/23/c_1125495557.htm",
+        "archive_path": "research_outputs/observed_2020/evidence/xinhua_wuhan_notice_timestamped.html",
+        "sha256": "24f5ba9e35552c3877aaed0f41f82b59d9ac2df3ceae7151e8ee07e4348be137"
+      },
+      "publication": {
+        "date": "2020-01-23",
+        "precision": "exact_timestamp",
+        "timestamp": "2020-01-23T03:15:55+08:00"
+      },
+      "visibility": {
+        "time_status": "observed_exact_timestamp",
+        "anchor_rule": "source_timestamp_then_exchange_calendar",
+        "sensitivity_rules": ["effective_time_upper_bound_proxy"],
+        "note": "The preserved Xinhua full-text page displays a publication time of 03:15:55; the time is interpreted as China local time (UTC+08) for alignment because the page gives no offset. A later Wuhan municipal government retrospective says the city command issued the notice around 02:00; that approximate issuance time is not the exact page-publication time and neither source proves the first public appearance across all channels. The 10:00 effective time remains a separate sensitivity, not the publication time."
+      },
+      "effective_period": {
+        "from": "2020-01-23T10:00:00+08:00",
+        "through": null,
+        "note": "The reported measures suspended Wuhan public transport and closed outbound airport and railway channels from 10:00; restoration time was to be announced separately."
+      },
+      "scope": {
+        "jurisdiction": "Wuhan, Hubei, China",
+        "direct_subjects": ["Wuhan city buses", "Wuhan metro", "ferries", "long-distance passenger transport", "outbound airport and railway channels"],
+        "issuer_codes": [],
+        "industry_codes": [],
+        "mapping_status": "unmapped",
+        "note": "This source is a news report quoting the city command notice. Direct geographic and transport scope is recorded; listed-company exposure is not inferred."
+      },
+      "use_policy": {"mode": "context_only", "agent_signal_enabled": false}
+    },
+    {
+      "event_id": "sse_spring_festival_closure_extension_2020",
+      "event_class": "market_calendar",
+      "title": "关于调整2020年春节休市相关安排的公告",
+      "source": {
+        "source_kind": "official_exchange_notice",
+        "publisher": "上海证券交易所",
+        "url": "http://www.sse.com.cn/disclosure/announcement/general/c/c_20200127_4991582.shtml",
+        "archive_path": "research_outputs/observed_2020/evidence/sse_holiday_notice.md",
+        "sha256": "0a7a39089ac535f63fe56b053d205b3f62823a2d2f2feb088eec362a6a3b3d63"
+      },
+      "publication": {
+        "date": "2020-01-27",
+        "precision": "date_only",
+        "timestamp": null
+      },
+      "visibility": {
+        "time_status": "date_only_conservative",
+        "anchor_rule": "publication_date_then_exchange_calendar",
+        "sensitivity_rules": [],
+        "note": "The archived exchange notice gives the date but no verified time of day. Market availability must be aligned against the actual exchange calendar."
+      },
+      "effective_period": {
+        "from": "2020-01-27",
+        "through": "2020-02-02",
+        "note": "The SSE notice extended the Spring Festival closure through February 2 and stated February 3 would reopen. It also changed some business deadlines; these are not issuer-level return signals."
+      },
+      "scope": {
+        "jurisdiction": "Shanghai Stock Exchange market calendar",
+        "direct_subjects": ["SSE members", "listed issuers", "fund managers", "options operators", "SSE market participants"],
+        "issuer_codes": [],
+        "industry_codes": [],
+        "mapping_status": "unmapped",
+        "note": "This is an exchange operations and calendar event, not a market-wide economic shock estimate and not evidence for applying an identical return signal to all stocks."
+      },
+      "use_policy": {"mode": "context_only", "agent_signal_enabled": false}
+    }
+  ]
+}

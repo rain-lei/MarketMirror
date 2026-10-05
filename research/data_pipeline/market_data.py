@@ -59,7 +59,9 @@ def read_config(path: Path) -> dict[str, Any]:
         elif fmt == "returns":
             required = {f"{prefix}_return_unit", f"{prefix}_return_basis"}
             forbidden = {f"{prefix}_price_basis"}
-            bases = {"adjusted_price_return", "total_return"} if prefix == "stock" else {"price_index_return", "total_return_index_return"}
+            bases = {"adjusted_price_return", "total_return",
+                     "mixed_adjusted_and_unadjusted_price_return"} if prefix == "stock" else {
+                         "price_index_return", "total_return_index_return"}
             if settings.get(f"{prefix}_return_unit") not in {"decimal", "percent"}:
                 raise ValueError(f"{prefix} return unit must be decimal or percent")
             if settings.get(f"{prefix}_return_basis") not in bases:
@@ -215,6 +217,7 @@ def import_market(config_path: Path, output_dir: Path) -> dict[str, Any]:
             "Each stock must cover every supplied session between its first and last input date.",
             "A price series needs one warmup session; a stock may have its own listing or coverage start.",
             "Stock and benchmark return bases may differ; both are preserved for interpretation.",
+            "A mixed stock return basis must be declared explicitly and must not be interpreted as a single uniform adjustment series.",
         ],
     }
     output_dir.mkdir(parents=True, exist_ok=True)

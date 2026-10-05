@@ -1,0 +1,20 @@
+{
+  "diagnostic_protocol": "research/configs/extended_policy_market_diagnostic_2019_2020.json",
+  "expected_counts": {
+    "calendar_steps": 139,
+    "evaluation_steps": 43,
+    "lpr": 8,
+    "omo": 170,
+    "training_steps": 96
+  },
+  "inputs": {
+    "research/configs/extended_policy_market_diagnostic_2019_2020.json": "5b9a563313d73a08c8635db54b9df8b550adbc89c4bf2f71645a48d5dfc57519",
+    "research/configs/extended_policy_rate_sources_2019_2020.json": "8802050c75a4f43a9ad4d3a14293972511e9e6f131e4dd04c79433c2e610bfc5",
+    "research_outputs/extended_policy_rates_raw_2019_2020_v1/manifest.json": "477d61563c6527c78fca30cd310eed885c60be3ef38c9739df4ebb905dffa82e",
+    "research_outputs\\wuhan_pre_event_fresh_v3_holdout_market_download_2020_v2\\calendar_raw.csv": "f1801d62ac8197dddfd4e58b945e6af3e97ff30ee0c30ebeeae8d7744273a9f9",
+    "research_outputs\\wuhan_pre_event_fresh_v3_holdout_market_download_2020_v2\\sh_000300_raw.csv": "34dc59c4c6e2b2a0e7f5e7113d742dcb48e20f7332bc2d6cb7da25f0b521c74a"
+  },
+  "interpretation": "Source and calendar counts fixed before this diagnostic evaluates benchmark returns. Whole months of reform-era LPR are selected, not only cuts. Coefficients stay research diagnostics and are never copied into the market core.",
+  "raw_directory": "research_outputs/extended_policy_rates_raw_2019_2020_v1",
+  "version": "extended-rate-diagnostic-source-binding-v1"
+}

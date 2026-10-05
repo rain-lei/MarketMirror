@@ -9,6 +9,7 @@ from pathlib import Path
 from research.simulation.call_auction import AuctionAccount, CallAuction, LimitOrder
 from research.simulation.portfolio_auction import PortfolioAccount, PortfolioAuction
 from research.simulation.portfolio_audit import audit_portfolio_day
+from research.simulation.scenario_shocks import build_scenario_shocks
 from research.simulation.portfolio_market import initial_portfolio, simulate_portfolio, portfolio_decision
 from research.simulation.portfolio_experiment import run_experiment, load_summary
 from research.simulation.audit_portfolio import audit_directory, load_audit
@@ -129,6 +130,21 @@ class PortfolioMarketTest(unittest.TestCase):
                       'seller':PortfolioAccount({'A':0,'B':0},{'A':20,'B':20},{'A':20,'B':20})}
             audit_portfolio_day(record(damaged),prior(PortfolioAuction(accounts,['A','B'],settings)),settings,0)
 
+    def test_exchange_specific_tie_break_is_applied_and_audited_per_asset(self):
+        settings={**VENUE,'price_start_minor':1000,'lot_size':1,'fee_bps':0,'price_band_bps':2000}
+        accounts={
+            'buyer':PortfolioAccount({'shared':20000},{'A':0,'B':0},{'A':0,'B':0}),
+            'seller':PortfolioAccount({'shared':0},{'A':10,'B':10},{'A':10,'B':10})}
+        rules={'A':'sse_midpoint','B':'nearest_prior'}
+        venue=PortfolioAuction(accounts,['A','B'],settings,rules)
+        before=prior(venue)
+        books={asset:[LimitOrder(f'{asset}:buy','buyer','buy',10,1000,0),
+                      LimitOrder(f'{asset}:sell','seller','sell',5,901,1)] for asset in ('A','B')}
+        result=venue.clear(0,books,{'A':True,'B':True})
+        self.assertEqual({asset:call['price_after_minor']
+                          for asset,call in result['asset_calls'].items()},{'A':951,'B':1000})
+        self.assertEqual(prior(venue),audit_portfolio_day(record(result),before,settings,0,True,rules))
+
     def test_initial_cash_weights_are_exact_and_preserve_total_resources(self):
         agents=[AgentParameters(**p) for p in PARAMETERS]
         assets=['A','B','C']
@@ -212,6 +228,33 @@ class PortfolioMarketTest(unittest.TestCase):
         self.assertEqual(control,simulate_portfolio(changed,agents,CORE,bg,VENUE,FEEDBACK,case,False))
         changed=copy.deepcopy(joined);changed['000001'][-1]['text_signal']=-1
         self.assertEqual(result['trace'][:-1],simulate_portfolio(changed,agents,CORE,bg,VENUE,FEEDBACK,case,True)['trace'][:-1])
+
+    def test_predeclared_shocks_reach_beliefs_and_zero_path_preserves_market_dynamics(self):
+        steps=sample_steps()
+        joined={code:copy.deepcopy(steps) for code in ('000001','000002','000003')}
+        agents=[AgentParameters(**p) for p in PARAMETERS]
+        case={'case_id':'shared','cash_mode':'shared','institutional_asset_cap':0.35}
+        bg=CONFIG['background_cases'][3]
+        baseline=simulate_portfolio(joined,agents,CORE,bg,VENUE,FEEDBACK,case,False)
+        shock=build_scenario_shocks(sorted(joined),len(steps),'common_test',[1,2],[1,-1],0.3,0.1,'fixed-test')
+        result=simulate_portfolio(joined,agents,CORE,bg,VENUE,FEEDBACK,case,False,
+                                  scenario_shocks=shock)
+        zero=build_scenario_shocks(sorted(joined),len(steps),'zero_test',[1,2],[1,-1],0.0,0.0,'fixed-test')
+        zero_result=simulate_portfolio(joined,agents,CORE,bg,VENUE,FEEDBACK,case,False,
+                                       scenario_shocks=zero)
+        asset='000001';session=1
+        observation=result['trace'][session]['observations'][asset]
+        self.assertEqual(observation['common_shock'],0.3)
+        self.assertEqual(observation['scenario_shock'],0.3+shock['asset_specific'][asset][session])
+        strategy_name=next(name for name,spec in result['participant_specs'].items() if spec['kind']=='strategy')
+        spec=result['participant_specs'][strategy_name]
+        expected_market=max(-1.0,min(1.0,observation['market_signal']*spec['profile']['momentum_loading']
+                                    +spec['profile']['market_bias']+observation['scenario_shock']))
+        self.assertAlmostEqual(result['trace'][session]['decisions'][strategy_name]['beliefs'][asset],
+                               spec['parameters']['market_sensitivity']*expected_market)
+        for old_day,new_day in zip(baseline['trace'],zero_result['trace'],strict=True):
+            self.assertEqual(old_day['decisions'],new_day['decisions'])
+            self.assertEqual(old_day['portfolio_auction'],new_day['portfolio_auction'])
 
 
 if __name__=='__main__':unittest.main()

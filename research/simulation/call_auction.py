@@ -10,6 +10,19 @@ from dataclasses import asdict, dataclass
 from typing import Any
 
 VERSION = "finite-call-auction-v1"
+PRICE_TIE_BREAKS = frozenset({"nearest_prior", "accepted_order_pressure", "sse_midpoint"})
+
+
+def resolve_price_tie_breaks(assets: list[str], value: str | dict[str, str]) -> dict[str, str]:
+    """Resolve one declared rule or a complete per-asset rule map."""
+    if isinstance(value, str):
+        if value not in PRICE_TIE_BREAKS:
+            raise ValueError("unsupported auction price tie-break rule")
+        return {asset: value for asset in assets}
+    if (not isinstance(value, dict) or set(value) != set(assets)
+            or any(not isinstance(rule, str) or rule not in PRICE_TIE_BREAKS for rule in value.values())):
+        raise ValueError("auction tie-break map must name every asset with a supported rule")
+    return dict(value)
 
 
 def _integer(value: Any, lower: int, name: str) -> None:
@@ -48,20 +61,24 @@ class LimitOrder:
 class CallAuction:
     """One day-order call per session; buys become sellable next session.
 
-    Price maximizes executable volume, then minimizes absolute imbalance,
-    then distance to the last price, then the lower tick. Allocation uses
+    Price maximizes executable volume, then minimizes absolute imbalance.
+    Tie-breaks are explicit model choices: nearest prior, accepted-order net
+    pressure, or an SSE midpoint sensitivity. Allocation uses
     better limit price followed by explicit sequence, with no self-crossing
     because each owner can submit only one side per session.
     """
 
     def __init__(self, accounts: dict[str, AuctionAccount], price_minor: int,
-                 lot_size: int, tick_minor: int, fee_bps: int, price_band_bps: int):
+                 lot_size: int, tick_minor: int, fee_bps: int, price_band_bps: int,
+                 price_tie_break: str = "nearest_prior"):
         for value, minimum, name in ((price_minor, 1, "price_minor"), (lot_size, 1, "lot_size"),
                                       (tick_minor, 1, "tick_minor"), (fee_bps, 0, "fee_bps"),
                                       (price_band_bps, 0, "price_band_bps")):
             _integer(value, minimum, name)
         if fee_bps > 10000 or price_band_bps > 5000 or price_minor % tick_minor:
             raise ValueError("invalid fees, price band or initial tick")
+        if price_tie_break not in PRICE_TIE_BREAKS:
+            raise ValueError("unsupported auction price tie-break rule")
         if not accounts or any(not isinstance(name, str) or not name for name in accounts):
             raise ValueError("auction requires explicitly named accounts")
         for account in accounts.values():
@@ -69,6 +86,7 @@ class CallAuction:
         self.accounts = {name: AuctionAccount(**asdict(account)) for name, account in accounts.items()}
         self.price_minor, self.lot_size, self.tick_minor = price_minor, lot_size, tick_minor
         self.fee_bps, self.price_band_bps, self.session = fee_bps, price_band_bps, -1
+        self.price_tie_break = price_tie_break
         self.initial_cash_minor = sum(account.cash_minor for account in self.accounts.values())
         self.initial_shares = sum(account.shares for account in self.accounts.values())
         self.fee_pool_minor = 0
@@ -146,8 +164,30 @@ class CallAuction:
             supply = sum(order["accepted_quantity"] for order in accepted
                          if order["side"] == "sell" and order["limit_price_minor"] <= candidate)
             evaluations.append((candidate, min(demand, supply), demand - supply))
-        clearing_price, volume, imbalance = min(evaluations, key=lambda row: (
-            -row[1], abs(row[2]), abs(row[0] - self.price_minor), row[0]))
+        accepted_pressure = sum(row["accepted_quantity"] * (1 if row["side"] == "buy" else -1)
+                                for row in accepted)
+        if self.price_tie_break == "sse_midpoint":
+            best_score = min((-row[1], abs(row[2])) for row in evaluations)
+            tied_prices = [row[0] for row in evaluations
+                           if (-row[1], abs(row[2])) == best_score]
+            first, last = min(tied_prices), max(tied_prices)
+            # SSE rounds a midpoint outside the tick grid half up (2018 rule 3.6.4).
+            midpoint_units = ((first // self.tick_minor) + (last // self.tick_minor) + 1) // 2
+            clearing_price = midpoint_units * self.tick_minor
+            volume = -best_score[0]
+            demand = sum(order["accepted_quantity"] for order in accepted
+                         if order["side"] == "buy" and order["limit_price_minor"] >= clearing_price)
+            supply = sum(order["accepted_quantity"] for order in accepted
+                         if order["side"] == "sell" and order["limit_price_minor"] <= clearing_price)
+            imbalance = demand - supply
+            if min(demand, supply) != volume or abs(imbalance) != best_score[1]:
+                raise AssertionError("SSE midpoint left the optimal clearing-price interval")
+        elif self.price_tie_break == "accepted_order_pressure" and accepted_pressure:
+            clearing_price, volume, imbalance = min(evaluations, key=lambda row: (
+                -row[1], abs(row[2]), -row[0] if accepted_pressure > 0 else row[0]))
+        else:
+            clearing_price, volume, imbalance = min(evaluations, key=lambda row: (
+                -row[1], abs(row[2]), abs(row[0] - self.price_minor), row[0]))
         if volume == 0:
             clearing_price = self.price_minor  # No transaction cannot set a new price.
             imbalance = next(row[2] for row in evaluations if row[0] == self.price_minor)

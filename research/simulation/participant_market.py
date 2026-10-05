@@ -21,11 +21,15 @@ BG_FIELDS = {"case_id", "mode", "participants", "initial_cash", "initial_shares"
 
 
 def validate_background(background: dict, lot: int) -> None:
-    if not isinstance(background, dict) or set(background) != BG_FIELDS:
+    if not isinstance(background, dict):
+        raise ValueError("background case requires explicit resources and demand parameters")
+    stochastic = background.get("mode") == "stochastic_arrival"
+    expected_fields = BG_FIELDS | {"arrival_rate_bps"} if stochastic else BG_FIELDS
+    if set(background) != expected_fields:
         raise ValueError("background case requires explicit resources and demand parameters")
     if not isinstance(background["case_id"], str) or not re.fullmatch(r"[a-z][a-z0-9_]{0,63}", background["case_id"]):
         raise ValueError("invalid background case identifier")
-    if background["mode"] not in {"none", "idle", "active"}:
+    if background["mode"] not in {"none", "idle", "active", "stochastic_arrival"}:
         raise ValueError("unsupported background mode")
     for field, upper in (("participants", 100), ("initial_shares", 10**8), ("target_range_lots", 100),
                          ("max_order_lots", 100), ("urgency_bps", 1000), ("seed", 2**32 - 1)):
@@ -34,12 +38,17 @@ def validate_background(background: dict, lot: int) -> None:
     finite_range(background["initial_cash"], 0.0, 1e9, "background initial cash")
     if Decimal(str(background["initial_cash"])) * 100 != (Decimal(str(background["initial_cash"])) * 100).to_integral_value():
         raise ValueError("background cash must have at most two decimal places")
+    if stochastic and (type(background["arrival_rate_bps"]) is not int
+                       or not 1 <= background["arrival_rate_bps"] <= 10000
+                       or background["target_range_lots"] != 0):
+        raise ValueError("stochastic arrival needs an explicit probability and no inventory target range")
     if background["mode"] == "none":
         if any(background[field] for field in BG_FIELDS - {"case_id", "mode"}):
             raise ValueError("no-background control must declare zero resources and parameters")
     elif (background["participants"] < 2 or background["initial_cash"] < 1 or background["initial_shares"] < lot
           or background["initial_shares"] % lot or background["max_order_lots"] < 1
-          or background["target_range_lots"] < 1 or background["urgency_bps"] < 1):
+          or (not stochastic and background["target_range_lots"] < 1)
+          or background["urgency_bps"] < 1):
         raise ValueError("background participants require finite cash, whole-lot shares and explicit demand")
 
 
@@ -64,11 +73,28 @@ def initial_accounts(role_agents, scenario: dict, background: dict, price: int):
 
 def background_demand(stock: str, session: int, name: str, account: AuctionAccount,
                       price: int, bounds: tuple[int, int], venue_settings: dict, settings: dict) -> dict:
-    """Private inventory-target shocks; identical draws in text/no-text paths.
+    """Private background shocks; identical draws in text/no-text paths.
 
     No scenario ID, text flag, observed return or future data enters the draw.
     A common 64-bit uniform rank also couples different target-range settings.
     """
+    if settings["mode"] == "stochastic_arrival":
+        digest = hashlib.sha256(f"{settings['seed']}:{stock}:{session}:{name}".encode()).hexdigest()
+        arrived = int(digest[:16], 16) * 10000 // 2**64 < settings["arrival_rate_bps"]
+        side = ("buy" if int(digest[16:32], 16) < 2**63 else "sell") if arrived else "hold"
+        lots = 1 + int(digest[32:48], 16) * settings["max_order_lots"] // 2**64
+        quantity = lots * venue_settings["lot_size"] if arrived else 0
+        quote = None
+        if quantity:
+            sign = 1 if side == "buy" else -1
+            reservation = Decimal(price) * (1 + Decimal(sign * settings["urgency_bps"]) / 10000)
+            rounding = ROUND_FLOOR if side == "buy" else ROUND_CEILING
+            quote = int((reservation / venue_settings["tick_minor"]).to_integral_value(rounding=rounding)) * venue_settings["tick_minor"]
+            quote = max(bounds[0], min(bounds[1], quote))
+        return {"mode": "stochastic_arrival", "current_shares": account.shares,
+                "arrival_rate_bps": settings["arrival_rate_bps"], "arrived": arrived,
+                "requested_quantity": quantity, "side": side,
+                "limit_price_minor": quote, "shock_sha256": digest}
     if settings["mode"] != "active":
         return {"mode": "idle", "current_shares": account.shares, "target_shares": account.shares,
                 "requested_quantity": 0, "side": "hold", "limit_price_minor": None, "shock_sha256": None}

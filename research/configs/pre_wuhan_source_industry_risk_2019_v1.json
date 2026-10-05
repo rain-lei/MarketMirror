@@ -1,0 +1,44 @@
+{
+  "code_bindings": {
+    "research/simulation/source_industry_risk.py": "e664150287f34a24650aa54975b2ad70459b98af9d782cfa7c16cab528626b04",
+    "research_outputs/diagnose_public_factor_variance_budget_20261002_v2.py": "2c5e71c61b0c8d899467348eb709fef000d05edb6550970040b595a8a0ef48e1",
+    "research_outputs/diagnose_source_industry_risk_20261002_v1.py": "909dc10d9d3d3a00a031c48731dafe018e3e814c7f81f0ef432e2c6d3ebc23a2",
+    "research_outputs/run_source_industry_risk_jobs_20261002_v1.py": "8887ef4574e88f3a98979dbae7daf214ad7820a4d065598185643dfc3c6b16f3"
+  },
+  "company_count": 123,
+  "evaluation": "Use all 43 overlapping past windows and full 123-company cohort. Compare the same market-only covariance with independent sector factors and joint sector covariance, all with original marginal stock variance retained. Five size-preserving deterministic membership permutations are controls, not independent historical replications or p-values. Check own-company inclusion against leave-one-out sector exposure, exact group remainder sum identities, full matrices, positive semidefiniteness and unmodeled factors. No model/default selection.",
+  "expected_scope": {
+    "company_case_windows": 31734,
+    "independent_matrix_positions": 15613128,
+    "leave_one_out_positions": 31734,
+    "positive_semidefinite_matrices_checked": 1032,
+    "window_case_conditions": 258
+  },
+  "frozen_at_utc": "2026-10-02T08:59:25.436382+00:00",
+  "identities": "Own-sector OLS makes its own factor orthogonal to each fitted company remainder, not every other sector factor. Self-included sector means impose sum(gamma)=sector size and sum(remainders)=0. On modeled companies, full joint-sector covariance already carries the aggregate residual series, so adding independent company remainder diagonals raises portfolio variance by their sum divided by company count squared. This is a diagnostic of self-inclusion, not proof that real company risk is absent.",
+  "industry_count": 42,
+  "interpretation": "Exploratory source-only decomposition on the repeatedly consumed 2019 cohort selected retrospectively by 2020 QA activity. The 2019Q3 official classification was retrieved in 2026 and lacks certification of its original first-release bytes; date proxy is conservative, not a precise release time. Industry means include the target stock and joint industry covariance is high-dimensional relative to 20 observations. Numerical identities, covariance fit and shuffled-label comparisons do not establish causal sector shocks, forecast performance, unseen-period validation, real investor calibration, any new auction or semantic-gate release. Preserve all earlier failures and inactive exposures.",
+  "missingness": "Missing industry labels and zero benchmark variance fail. Singleton or zero-variance industry factor exposures and undefined leave-one-out exposures remain null; original market residual risk is explicitly retained for unmodeled factors in this source-only comparison. No coefficient is filled zero and no output may drive an agent.",
+  "numeric_execution_sha256": "2dcca8404d7dc7662ad2825285c004242e37f011ebfe4f1a6c5c1d8fa437a5c9",
+  "parameters": {
+    "allow_agent_signal": false,
+    "classification_visible_proxy_date": "2019-10-29",
+    "history_window": 20,
+    "minimum_industry_members": 2,
+    "null_membership_seeds": [
+      "101",
+      "211",
+      "307",
+      "401",
+      "503"
+    ]
+  },
+  "reference_bindings": {
+    "research_outputs/pre_wuhan_public_factor_variance_budget_20261002_v2.json": "4774ff7ecdcd9c314a07d1c16c1e7cddda6fae7a6a45f6efff7182ca33c04bc9",
+    "research_outputs/pre_wuhan_source_variance_budget_final_verification_20261002_v2.json": "082ed608f82c96b185e27ca22457f5088a414c90aa62d878005b62aed20b7a73"
+  },
+  "singleton_companies": 15,
+  "structural_min2_company_count": 108,
+  "version": "source-market-industry-risk-diagnostic-v1",
+  "window_count": 43
+}

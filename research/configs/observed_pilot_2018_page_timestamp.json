@@ -1,0 +1,23 @@
+{
+  "run_id": "asset_management_2018_page_timestamp_sensitivity",
+  "market_manifest": "../../research_outputs/observed_2018/prepared/market_manifest.json",
+  "data_kind": "observed",
+  "evidence_manifest": "../../research_outputs/observed_2018/evidence/evidence_manifest.json",
+  "stock_codes": ["000001", "000002", "600519"],
+  "windows": {
+    "estimation_window": 120,
+    "pre_event_gap": 5,
+    "window_before": 3,
+    "window_after": 5
+  },
+  "events": [
+    {
+      "event_id": "asset_management_guidance_page_timestamp",
+      "event_date": "2018-04-27",
+      "visible_at": "2018-04-27T18:38:49+08:00",
+      "event_type": "deleveraging_asset_management_regulation",
+      "evidence_source": "https://www.pbc.gov.cn/jinrongwendingju/146766/146770/c2e228ad641d4a85acdc9142da4f955d/index.html",
+      "description": "中国人民银行页面记录的文章发布时间。它是该官方页面的可核实发布时间，不主张它是全网首次公开时刻；时间晚于A股15:00收盘，按次日可见。与日期保守配置是同一政策节点的时间口径敏感性比较，不是独立事件。"
+    }
+  ]
+}

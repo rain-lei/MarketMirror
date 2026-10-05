@@ -1,0 +1,112 @@
+{
+  "additional_tail_pages": 1,
+  "agent_signal_enabled": false,
+  "inputs": {
+    "research_outputs/issuer_financial_states_2019q3_v1.json": "593e407f743399aebc3fddc3ca407f06d754fd930b53e5de82248abede22c77b"
+  },
+  "new_complete_balance_sheets": 3,
+  "previous_bank_review": "research/configs/issuer_q3_bank_balance_review_2019.json",
+  "reviewed_at_utc": "2026-10-01T03:31:29.349923+00:00",
+  "reviewer": "assistant_single_review_per_user_instruction",
+  "scope": "Three newly viewed complete balance statements and one tail page, selected numeric/missing anchors only. Does not claim 123 manually reviewed complete reports or independent human ground truth.",
+  "selected_numeric_or_missing_cells_checked": 26,
+  "sources": [
+    {
+      "complete_balance_sheet_pages_reviewed": true,
+      "current_missing": {},
+      "current_values": {
+        "assets": "383219538631.63",
+        "customer_deposits_in_money_funds": "54414453685.66",
+        "equity": "95013961912.09",
+        "liabilities": "288205576719.54",
+        "money_funds": "74995636311.41"
+      },
+      "notes": [
+        "Columns are current consolidated, current company, prior consolidated, prior company; continuation changes physical widths.",
+        "Total equity includes minority equity. Client deposits are inside money funds."
+      ],
+      "pages": [
+        11,
+        12
+      ],
+      "source_pdf_path": "research_outputs/issuer_q3_reports_raw_2019_v1/000776/run_1/attempt1.pdf",
+      "source_pdf_sha256": "58ccc04ed3fac1ab648d32be2a6e9c7d50de284b8949ddb1a619d5f796ba0edf",
+      "stock_code": "000776"
+    },
+    {
+      "complete_balance_sheet_pages_reviewed": true,
+      "current_missing": {},
+      "current_values": {
+        "assets": "12789927500.61",
+        "current_assets": "1539149497.90",
+        "current_liabilities": "4145069529.90",
+        "equity": "3348218342.82",
+        "lease_liabilities": "611399.40",
+        "liabilities": "9441709157.79",
+        "long_term_borrowings": "4827006469.76",
+        "money_funds": "531595047.47",
+        "noncurrent_liabilities_due_within_one_year": "691910887.13",
+        "short_term_borrowings": "2122085132.12"
+      },
+      "notes": [
+        "The unit/title are on page 8; actual table starts on page 9. Prior 2018-12-31 comparison is explicitly restated.",
+        "Parent statement starts below consolidated totals on page 10 and must be excluded."
+      ],
+      "pages": [
+        8,
+        9,
+        10
+      ],
+      "source_pdf_path": "research_outputs/issuer_q3_reports_raw_2019_v1/601330/run_1/attempt1.pdf",
+      "source_pdf_sha256": "abb2acd76efda69caab74f5d681932fc8f7295feb0b68452bbc2519168b8a37d",
+      "stock_code": "601330"
+    },
+    {
+      "complete_balance_sheet_pages_reviewed": true,
+      "current_missing": {
+        "bonds_payable": "REPORTED_BLANK",
+        "lease_liabilities": "REPORTED_BLANK",
+        "long_term_borrowings": "REPORTED_BLANK",
+        "noncurrent_liabilities_due_within_one_year": "REPORTED_BLANK",
+        "short_term_borrowings": "REPORTED_BLANK"
+      },
+      "current_values": {
+        "assets": "1656339652.00",
+        "equity": "1547557277.45",
+        "liabilities": "108782374.55",
+        "money_funds": "101114292.68"
+      },
+      "notes": [
+        "Blank borrowing rows are not explicit numeric zeros. The last balance-total label wraps around a separately positioned numeric row.",
+        "Trading financial assets are also reported at 1,226,574,174.14 yuan on page 12, outside the exported field set; money-funds share alone does not describe all liquid resources."
+      ],
+      "pages": [
+        12,
+        13,
+        14
+      ],
+      "source_pdf_path": "research_outputs/issuer_q3_reports_raw_2019_v1/688018/run_1/attempt1.pdf",
+      "source_pdf_sha256": "f62ba056d037251e15568b8eb6998ae479c506a3dcf0e9022efc5ff3f22935c6",
+      "stock_code": "688018"
+    },
+    {
+      "complete_balance_sheet_pages_reviewed": false,
+      "current_missing": {},
+      "current_values": {
+        "equity": "2535909834.43",
+        "liabilities_and_equity": "4056092163.48"
+      },
+      "notes": [
+        "Tail-page selected totals only. Date/scope mapping relies on the separately completed independent header audit, not a complete manual statement review.",
+        "Border finder fragments the final total into three rows. Parent statement starts below it."
+      ],
+      "pages": [
+        11
+      ],
+      "source_pdf_path": "research_outputs/issuer_q3_reports_raw_2019_v1/603803/run_1/attempt1.pdf",
+      "source_pdf_sha256": "b245f003693c8658443bda65958fe59f597ac330c373df0cd312216b97c98e8e",
+      "stock_code": "603803"
+    }
+  ],
+  "version": "assistant-single-visual-balance-layout-and-selected-field-review-v1"
+}

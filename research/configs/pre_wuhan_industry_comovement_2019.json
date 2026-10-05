@@ -1,0 +1,10 @@
+{
+  "version": "pre-wuhan-industry-comovement-description-v1",
+  "industry_directory": "../../research_outputs/pre_wuhan_industry_2019q3_v1",
+  "industry_catalog_sha256": "3fad4ce7a1423273e3d75e93a1407a29405c50a62df42f706813ad61a9c2fdfb",
+  "industry_provenance_sha256": "ebc3d0d1533d12a104c3ac416ea77501b990fb1f8bf5f164032c21b5989804f5",
+  "variants": ["strategy_only", "background_valuation", "background_liquidity_fade", "background_valuation_and_fade"],
+  "grouping": "official_category_letter_plus_two_digit_division",
+  "return_transforms": ["raw", "stock_minus_same_day_panel_mean"],
+  "interpretation": "Descriptive development diagnostic with historical industry labels; all same-day returns remain outcomes, never Agent inputs."
+}

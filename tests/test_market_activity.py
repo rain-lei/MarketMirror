@@ -35,6 +35,10 @@ class ActivitySDK:
     def query_trade_dates(self, **kwargs):
         return FakeResult(["calendar_date", "is_trading_day"], [["2020-01-02", "1"], ["2020-01-03", "1"]])
 
+    def query_stock_basic(self):
+        return FakeResult(["code", "code_name", "ipoDate", "outDate", "type", "status"],
+                          [["sz.000001", "Activity Fixture", "2000-01-01", "", "1", "1"]])
+
     def query_history_k_data_plus(self, symbol, fields, **kwargs):
         columns = fields.split(",")
         rows = []
