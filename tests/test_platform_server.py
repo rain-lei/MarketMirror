@@ -83,6 +83,40 @@ class PlatformStoreTest(unittest.TestCase):
             self.assertEqual(store.get(record['id'])['run_status'], 'failed')
             self.assertEqual(store.result(record['id']), result)
 
+    def test_failed_publication_keeps_previous_result_and_export_consistent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = PlatformStore(Path(tmp))
+            record = store.create(self.payload())
+            first_result = {'mode': 'synthetic_market', 'attempt': 1}
+            with patch('design.server.run_market', return_value=first_result):
+                previous = store.run(record['id'])
+            previous_id = store.get(record['id'])['result_id']
+
+            def fail_commit(path, value):
+                if path.name == 'experiment.json' and value.get('run_status') == 'completed':
+                    raise OSError('simulated publication failure')
+                atomic_json(path, value)
+
+            with patch('design.server.run_market', return_value={'mode': 'synthetic_market', 'attempt': 2}), \
+                    patch('design.server.atomic_json', side_effect=fail_commit), self.assertRaises(OSError):
+                store.run(record['id'])
+            exported = store.export(record['id'])['experiment']
+            self.assertEqual(exported['run_status'], 'failed')
+            self.assertEqual(exported['result_id'], previous_id)
+            self.assertEqual(exported['backendResult'], previous)
+            self.assertEqual(PlatformStore(Path(tmp)).result(record['id']), previous)
+            with patch('design.server.run_market', return_value={'mode': 'synthetic_market', 'attempt': 3}):
+                store.run(record['id'])
+            self.assertEqual(store.export(record['id'])['experiment']['backendResult']['attempt'], 3)
+
+    def test_legacy_result_remains_readable(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            store = PlatformStore(Path(tmp))
+            record = store.create(self.payload())
+            legacy = {'mode': 'synthetic_market', 'legacy': True}
+            atomic_json(Path(tmp) / record['id'] / 'result.json', legacy)
+            self.assertEqual(store.export(record['id'])['experiment']['backendResult'], legacy)
+
     def test_preview_is_explicitly_not_scientific(self):
         result = preview_run(validate_experiment(self.payload()))
         self.assertEqual(result["mode"], "platform_preview")
