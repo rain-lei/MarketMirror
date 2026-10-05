@@ -1,0 +1,24 @@
+{
+  "discovery_indices": [
+    {
+      "path": ".firecrawl/pbc-rate-predecessor-list94.json",
+      "sha256": "ad348ad10e72f22279098596893a97dfd572a138e02f734fcd6841521263d867",
+      "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-94.html"
+    },
+    {
+      "path": ".firecrawl/pbc-expanded-rates-list93.json",
+      "sha256": "6e1b5a1a4dcb288eabe3da54349609f8a7b8c0037d750c0c73b6496cc5af5051",
+      "source_url": "https://www.pbc.gov.cn/zhengcehuobisi/125207/125213/125431/125475/17081-93.html"
+    }
+  ],
+  "expected_source_counts": {
+    "omo": 34
+  },
+  "interpretation": "Earlier bounded OMO history selected to investigate the missing Sep19 14-day predecessor that causes unequal event support after four-clock common pairing. All ordinary-title notices in this period are collected, not rate-change pages selected using market outcomes. It is a source-completion amendment after observing the first contrast rank failure, not a new blind evaluation. Current HTTP bytes not certified unrevised historical snapshots.",
+  "lpr_sources": [],
+  "maximum_concurrent_requests": 2,
+  "reuse_manifests": [],
+  "source_end_date": "2019-07-31",
+  "source_start_date": "2019-06-14",
+  "version": "earlier-policy-rate-predecessor-selection-v1"
+}

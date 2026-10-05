@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "marketmirror://schema/industry_membership",
+  "title": "Historical official industry grouping without an inferred impact signal",
+  "type": "object",
+  "required": ["pipeline_version", "data_kind", "classification_period", "source", "coverage", "page_counts", "security_memberships", "cohort_memberships", "cohort_industry_counts", "limitations"],
+  "additionalProperties": false,
+  "properties": {
+    "pipeline_version": {"const": "pre-wuhan-official-industry-dictionary-v1"},
+    "data_kind": {"const": "historical_official_industry_membership"},
+    "classification_period": {"const": "2019Q3"},
+    "source": {
+      "type": "object", "additionalProperties": false,
+      "required": ["publisher", "release_page_url", "pdf_url", "pdf_sha256", "pdf_pages", "publication_date", "available_at_proxy", "date_basis", "retrieved_at", "pdf_extractor"],
+      "properties": {
+        "publisher": {"type": "string"}, "release_page_url": {"type": "string", "format": "uri"},
+        "pdf_url": {"type": "string", "format": "uri"}, "pdf_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "pdf_pages": {"type": "integer", "minimum": 1}, "publication_date": {"type": "string", "format": "date"},
+        "available_at_proxy": {"type": "string", "format": "date-time"}, "retrieved_at": {"type": "string", "format": "date-time"},
+        "date_basis": {"const": "official_page_date_next_day_conservative_proxy"}, "pdf_extractor": {"const": "pdfplumber==0.11.10"}
+      }
+    },
+    "coverage": {
+      "type": "object", "additionalProperties": false,
+      "required": ["security_rows", "security_rows_verified", "source_qc_rows", "cohort_companies", "cohort_verified", "cohort_unassigned", "industry_divisions_in_cohort", "earliest_signal_cutoff"],
+      "properties": {
+        "security_rows": {"type": "integer", "minimum": 1}, "security_rows_verified": {"type": "integer", "minimum": 0},
+        "source_qc_rows": {"type": "integer", "minimum": 0}, "cohort_companies": {"type": "integer", "minimum": 1},
+        "cohort_verified": {"type": "integer", "minimum": 0}, "cohort_unassigned": {"type": "integer", "minimum": 0},
+        "industry_divisions_in_cohort": {"type": "integer", "minimum": 0}, "earliest_signal_cutoff": {"type": "string", "format": "date-time"}
+      }
+    },
+    "page_counts": {
+      "type": "array", "minItems": 1, "items": {
+        "type": "object", "required": ["pdf_page", "security_rows"], "additionalProperties": false,
+        "properties": {"pdf_page": {"type": "integer", "minimum": 1}, "security_rows": {"type": "integer", "minimum": 1}}
+      }
+    },
+    "security_memberships": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/security"}},
+    "cohort_memberships": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/cohort"}},
+    "cohort_industry_counts": {"type": "object", "propertyNames": {"pattern": "^[A-S][0-9]{2}$"}, "additionalProperties": {"type": "integer", "minimum": 1}},
+    "limitations": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+  },
+  "$defs": {
+    "code": {"type": "string", "pattern": "^[0-9]{6}$"},
+    "industry": {"type": ["string", "null"], "pattern": "^[A-S][0-9]{2}$"},
+    "category": {"type": ["string", "null"], "pattern": "^[A-S]$"},
+    "division": {"type": ["string", "null"], "pattern": "^[0-9]{2}$"},
+    "location": {
+      "type": "object", "additionalProperties": false, "required": ["pdf_page", "table_index", "table_row", "column_bboxes"],
+      "properties": {
+        "pdf_page": {"type": "integer", "minimum": 1}, "table_index": {"const": 1}, "table_row": {"type": "integer", "minimum": 2},
+        "column_bboxes": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "number"}}}
+      }
+    },
+    "security": {
+      "type": "object", "additionalProperties": false,
+      "required": ["security_code", "historical_short_name", "category_code", "category_name", "division_code", "division_name", "industry_code", "status", "issues", "source_text", "source_location", "impact_direction", "impact_magnitude", "agent_signal_enabled"],
+      "properties": {
+        "security_code": {"$ref": "#/$defs/code"}, "historical_short_name": {"type": "string", "minLength": 1},
+        "category_code": {"$ref": "#/$defs/category"}, "category_name": {"type": ["string", "null"]},
+        "division_code": {"$ref": "#/$defs/division"}, "division_name": {"type": ["string", "null"]},
+        "industry_code": {"$ref": "#/$defs/industry"}, "status": {"enum": ["verified_table_label", "source_label_incomplete"]},
+        "issues": {"type": "array", "items": {"type": "string"}},
+        "source_text": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"type": "string"}},
+        "source_location": {"$ref": "#/$defs/location"},
+        "impact_direction": {"const": "unknown"}, "impact_magnitude": {"const": null}, "agent_signal_enabled": {"const": false}
+      },
+      "allOf": [
+        {"if": {"properties": {"status": {"const": "source_label_incomplete"}}}, "then": {"properties": {"category_code": {"const": null}, "category_name": {"const": null}, "industry_code": {"const": null}, "division_name": {"const": null}}}},
+        {"if": {"properties": {"status": {"const": "verified_table_label"}}}, "then": {"properties": {"category_code": {"type": "string"}, "category_name": {"type": "string", "minLength": 1}, "industry_code": {"type": "string"}, "division_name": {"type": "string", "minLength": 1}, "issues": {"maxItems": 0}}}}
+      ]
+    },
+    "cohort": {
+      "type": "object", "additionalProperties": false,
+      "required": ["stock_code", "historical_short_name", "industry_code", "category_code", "division_code", "division_name", "status", "source_location", "available_at_proxy", "earliest_signal_cutoff", "impact_direction", "impact_magnitude", "agent_signal_enabled"],
+      "properties": {
+        "stock_code": {"$ref": "#/$defs/code"}, "historical_short_name": {"type": ["string", "null"]},
+        "industry_code": {"$ref": "#/$defs/industry"}, "category_code": {"$ref": "#/$defs/category"},
+        "division_code": {"$ref": "#/$defs/division"}, "division_name": {"type": ["string", "null"]},
+        "status": {"enum": ["verified_table_label", "source_label_incomplete", "missing_official_security_row"]},
+        "source_location": {"anyOf": [{"$ref": "#/$defs/location"}, {"type": "null"}]},
+        "available_at_proxy": {"type": "string", "format": "date-time"}, "earliest_signal_cutoff": {"type": "string", "format": "date-time"},
+        "impact_direction": {"const": "unknown"}, "impact_magnitude": {"const": null}, "agent_signal_enabled": {"const": false}
+      }
+    }
+  }
+}

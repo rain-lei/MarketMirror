@@ -1,0 +1,1612 @@
+{
+  "analysis_period": [
+    "2021-01-01",
+    "2021-03-31"
+  ],
+  "bindings": {
+    ".firecrawl\\eastmoney-000001-new-period-source-probe-20261002-v3.md": "812634545524066787664e226ef56738cad43de77ddc914baa2bffc83965acc6",
+    ".firecrawl\\eastmoney-quote-adjustment-ui-20261002.md": "85c0bec409a6f1d1173bd0679a3b781d9c4f8afc873751fce0a9cd6a2fbab9e4",
+    ".firecrawl\\sse-2021-closed-calendar-20261002.md": "792f67bd1af942bf146339f1207e8071406f4668f884f0b5415f871561ccb593",
+    ".firecrawl\\temporal_risk_firecrawl_raw_2021_v3\\source_manifest.json": "46bf2c58bb7ce42f5956cfab36ba908665c18c066fc6de88701e8eeb9b2e5e15",
+    "research\\configs\\temporal_risk_firecrawl_raw_acquisition_2021_v3.json": "1ddeccf5c4ae0bd615475bd89354a629fe65ba3f1c802bcfef2c3eb40afe4e44",
+    "research\\configs\\temporal_risk_market_acquisition_2021_v1.json": "a76de679f651297037047e400a0c36d89b2695a688df6a8a9d75ff30981c4dcb",
+    "research\\configs\\temporal_risk_raw_acquisition_2021_v2.json": "5cf2b200694cd778c969292ef11217ec38679cbec6eb6a5450ca0bee03cfe615",
+    "research\\data_pipeline\\fetch_eastmoney_raw.py": "0912059e391f315dfb7f9ce4c4a1a2738f07d6f6489c810f8d4dd92f0fee75be",
+    "research\\data_pipeline\\market_data.py": "d62ee60c97e0969d546a72812b8fff24521c4e74c112af16df55c1cefe82d85e",
+    "research\\data_pipeline\\provenance.py": "ac4dbb3a558f40e3207c5801b0e204f653eedc9b5f4f8278d65de11af37752a7",
+    "research_outputs\\acquire_temporal_firecrawl_raw_20261002_v3.py": "2105b83057d506522ed6984a6d39ea365f7a4742dc6b17d010894c306907b41a",
+    "research_outputs\\acquire_temporal_firecrawl_raw_20261002_v4.py": "da82639be9735f680756b19ea6f675820cc4051f36f274789e842d5d59b61c94",
+    "research_outputs\\freeze_temporal_eastmoney_raw_20261002_v2.py": "8cea915013f8d13fe4f019fa86d7e813ee327f1e43f505f74399e00f7bf96c09",
+    "research_outputs\\freeze_temporal_firecrawl_raw_20261002_v3.py": "d7f884513816e67803efa8626a6656a6b45c67f6e9f27dfc8e9f55816a87c128",
+    "research_outputs\\observed_2020\\prepared\\market_manifest.json": "4e1685edad8c5b50b2aaa074ab22953e13a9a3cfe86f920bf3c6daf293122958",
+    "research_outputs\\prepare_temporal_firecrawl_rate_control_20261002_v4.py": "86feaba4dcda92059d8945fe3809e51fca8ff29ac4a4fc7565b15d7b40cec12f",
+    "research_outputs\\run_temporal_eastmoney_raw_20261002_v2.py": "079987e64d1fd8778a429da798ce67240bb97a4b7cb5f8e9ef300a74384aa110",
+    "research_outputs\\temporal_eastmoney_encoding_probe_20261002_v3.json": "e4c5096ba363013799932d22799785f2ec70fe391e56e03343298d8cc1e1a7cc",
+    "research_outputs\\temporal_eastmoney_raw_tests_5_20261002_v2.txt": "eb36c07c98784731fd93e6e4c779bfbd498f0943e053cd7542b06f7c9186a11a",
+    "research_outputs\\temporal_firecrawl_carrier_tests_3_20261002_v3.txt": "140030f5ebc46c56ed2f8c1ed0181a7301ebade70b206cbd236dc44d839f2fb3",
+    "research_outputs\\temporal_risk_eastmoney_raw_2021_v2\\raw_manifest.json": "46ce885806f98146f1d7eebf0b69f978b094d5f9e2b9f1b5e83826eb5d47818d",
+    "research_outputs\\temporal_risk_market_acquisition_process_20261002_v1.json": "9ca3f61ffd4f14d32d85400e7116f57e18a0e10e0e34a9e1add79ee45918445d",
+    "research_outputs\\temporal_risk_source_availability_20261002_v1.json": "8e08346cb53fe510e31415a4707a322ced2417e3036e6e711daa0dc61e24849f",
+    "research_outputs\\temporal_source_probe_eastmoney_qfq_known_2020_20261002_v1.bin": "77b52cafeaa210411ebb2da1946bd295bb52b6c67b30fb5f57e89e83c7ad1419",
+    "tests\\test_eastmoney_raw.py": "48ec7f2f30426cac36092fcd124fa4235c44b0b76529f73a5a61cb346e75b2e2",
+    "tests\\test_firecrawl_market_carrier.py": "aa7bba1b8637fd482f5658abf25f89b3725746bfee7654e84aed550e1fa46474"
+  },
+  "boundary_tests": {
+    "log_path": "research_outputs\\temporal_eastmoney_raw_tests_5_20261002_v2.txt",
+    "observed_child_exit_code": 0,
+    "tests": 5
+  },
+  "calendar_sources": [
+    "Existing BaoStock 2020 observed calendar for warmup.",
+    "SSE 2021 full-year closed-session notice, plus weekend exclusion, for Q1."
+  ],
+  "carrier_preflight": {
+    "known_overlap_all_fields_identical": true,
+    "known_overlap_rows_exact": 38,
+    "new_period_company_source_already_queried": "000001",
+    "new_period_model_effects_evaluated": false,
+    "observed_test_child_exit_code": 0,
+    "source_packet_inspection": {
+      "basis_verified_for_model_use": false,
+      "blank_numeric_fields": [],
+      "calendar_coverage_complete": true,
+      "explicit_trade_status_supplied": false,
+      "first_date": "2020-09-01",
+      "last_date": "2021-03-31",
+      "missing_expected_sessions": [],
+      "model_eligible": false,
+      "price_and_volume_units_verified": false,
+      "provider_code": "000001",
+      "provider_name": "平安银行",
+      "rows": 140,
+      "unexpected_sessions": [],
+      "zero_volume_dates_without_explicit_trade_status": []
+    },
+    "tests": 3
+  },
+  "carrier_process_timeout_seconds": 55,
+  "cli_entrypoint": "C:\\Users\\rain_\\AppData\\Roaming\\npm\\node_modules\\firecrawl-cli\\dist\\index.js",
+  "cli_version": "1.16.0",
+  "download_period": [
+    "2020-09-01",
+    "2021-03-31"
+  ],
+  "expected_inherited_successful_requests": 66,
+  "expected_session_dates": [
+    "2020-09-01",
+    "2020-09-02",
+    "2020-09-03",
+    "2020-09-04",
+    "2020-09-07",
+    "2020-09-08",
+    "2020-09-09",
+    "2020-09-10",
+    "2020-09-11",
+    "2020-09-14",
+    "2020-09-15",
+    "2020-09-16",
+    "2020-09-17",
+    "2020-09-18",
+    "2020-09-21",
+    "2020-09-22",
+    "2020-09-23",
+    "2020-09-24",
+    "2020-09-25",
+    "2020-09-28",
+    "2020-09-29",
+    "2020-09-30",
+    "2020-10-09",
+    "2020-10-12",
+    "2020-10-13",
+    "2020-10-14",
+    "2020-10-15",
+    "2020-10-16",
+    "2020-10-19",
+    "2020-10-20",
+    "2020-10-21",
+    "2020-10-22",
+    "2020-10-23",
+    "2020-10-26",
+    "2020-10-27",
+    "2020-10-28",
+    "2020-10-29",
+    "2020-10-30",
+    "2020-11-02",
+    "2020-11-03",
+    "2020-11-04",
+    "2020-11-05",
+    "2020-11-06",
+    "2020-11-09",
+    "2020-11-10",
+    "2020-11-11",
+    "2020-11-12",
+    "2020-11-13",
+    "2020-11-16",
+    "2020-11-17",
+    "2020-11-18",
+    "2020-11-19",
+    "2020-11-20",
+    "2020-11-23",
+    "2020-11-24",
+    "2020-11-25",
+    "2020-11-26",
+    "2020-11-27",
+    "2020-11-30",
+    "2020-12-01",
+    "2020-12-02",
+    "2020-12-03",
+    "2020-12-04",
+    "2020-12-07",
+    "2020-12-08",
+    "2020-12-09",
+    "2020-12-10",
+    "2020-12-11",
+    "2020-12-14",
+    "2020-12-15",
+    "2020-12-16",
+    "2020-12-17",
+    "2020-12-18",
+    "2020-12-21",
+    "2020-12-22",
+    "2020-12-23",
+    "2020-12-24",
+    "2020-12-25",
+    "2020-12-28",
+    "2020-12-29",
+    "2020-12-30",
+    "2020-12-31",
+    "2021-01-04",
+    "2021-01-05",
+    "2021-01-06",
+    "2021-01-07",
+    "2021-01-08",
+    "2021-01-11",
+    "2021-01-12",
+    "2021-01-13",
+    "2021-01-14",
+    "2021-01-15",
+    "2021-01-18",
+    "2021-01-19",
+    "2021-01-20",
+    "2021-01-21",
+    "2021-01-22",
+    "2021-01-25",
+    "2021-01-26",
+    "2021-01-27",
+    "2021-01-28",
+    "2021-01-29",
+    "2021-02-01",
+    "2021-02-02",
+    "2021-02-03",
+    "2021-02-04",
+    "2021-02-05",
+    "2021-02-08",
+    "2021-02-09",
+    "2021-02-10",
+    "2021-02-18",
+    "2021-02-19",
+    "2021-02-22",
+    "2021-02-23",
+    "2021-02-24",
+    "2021-02-25",
+    "2021-02-26",
+    "2021-03-01",
+    "2021-03-02",
+    "2021-03-03",
+    "2021-03-04",
+    "2021-03-05",
+    "2021-03-08",
+    "2021-03-09",
+    "2021-03-10",
+    "2021-03-11",
+    "2021-03-12",
+    "2021-03-15",
+    "2021-03-16",
+    "2021-03-17",
+    "2021-03-18",
+    "2021-03-19",
+    "2021-03-22",
+    "2021-03-23",
+    "2021-03-24",
+    "2021-03-25",
+    "2021-03-26",
+    "2021-03-29",
+    "2021-03-30",
+    "2021-03-31"
+  ],
+  "external_runtime_bindings": {
+    "C:\\Program Files\\nodejs\\node.exe": "47cd67453da180a39cdf5daedb89862667b8e627e60c116607874633450cd30d",
+    "C:\\Users\\rain_\\AppData\\Roaming\\npm\\node_modules\\firecrawl-cli\\dist\\index.js": "080a87f5fdaebb69b360b3ffe16016e9f2d82da7bd94a8b24ba56875800e1333",
+    "C:\\Users\\rain_\\AppData\\Roaming\\npm\\node_modules\\firecrawl-cli\\package.json": "7b1fd90640b0dc260aa51f331442a4192a9c42c5d98cae9504cf96b9689d28dd"
+  },
+  "frozen_at_utc": "2026-10-02T13:03:36.162880+00:00",
+  "full_model_validation_protocol_frozen": false,
+  "inherited_protocol_sha256": "1ddeccf5c4ae0bd615475bd89354a629fe65ba3f1c802bcfef2c3eb40afe4e44",
+  "inherited_source_root": ".firecrawl\\temporal_risk_firecrawl_raw_2021_v3",
+  "limitations": [
+    "Raw vendor request parameters fqt=0 and fqt=1 are archived; return-basis and price/volume-unit eligibility remain unverified.",
+    "The vendor endpoint has no explicit daily tradestatus field. Neither a missing row nor zero volume is filled or certified as a suspension.",
+    "All 123 companies remain in the request grid; failed and missing sessions enter QC without replacements.",
+    "This is a provider amendment after verified BaoStock connection failure. It is not a revised model, threshold, sample or evaluation period.",
+    "Full source/clock/basis QC and the complete model protocol must precede any new-period effect evaluation.",
+    "Current provider vintage is not an archived point-in-time feed; the 2020-Q&A-selected cohort limits generalization.",
+    "The carrier contains a rendered JSON response, not original HTTP wire bytes; both materials are retained.",
+    "A preflight has queried one 2021 company source; no model effects have been evaluated and no external blinded independence is claimed.",
+    "The known 2020 overlap of 38 rows matches the earlier direct HTTP response field-for-field. This is a carrier check, not full return-basis certification.",
+    "The prior 181 failed source requests remain preserved. Rate-limited failures do not establish missing market observations.",
+    "Only 66 individually checked successful source receipts are inherited; all other declared requests remain required. New dispatches use an eight-second interval and any server retry-after delay."
+  ],
+  "max_attempts": 2,
+  "max_workers": 2,
+  "minimum_request_interval_seconds": 8.0,
+  "node_executable": "C:\\Program Files\\nodejs\\node.exe",
+  "outcome_analysis_enabled": false,
+  "output_root": ".firecrawl/temporal_risk_firecrawl_raw_2021_v4",
+  "requests": [
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000001"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000001"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000062"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000062"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000505"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000505"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000506"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000506"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000599"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000599"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000698"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000698"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000758"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000758"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000761"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000761"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000762"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000762"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000776"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000776"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000777"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000777"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000802"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000802"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000810"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000810"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000861"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000861"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000895"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000895"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000906"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000906"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000917"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000917"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000926"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000926"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.000950"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.000950"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002009"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002009"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002093"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002093"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002098"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002098"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002105"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002105"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002126"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002126"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002133"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002133"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002153"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002153"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002160"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002160"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002191"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002191"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002194"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002194"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002274"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002274"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002331"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002331"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002350"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002350"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002360"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002360"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002376"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002376"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002385"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002385"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002393"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002393"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002474"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002474"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002521"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002521"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002527"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002527"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002562"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002562"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002594"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002594"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002615"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002615"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002631"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002631"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002727"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002727"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002775"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002775"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002819"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002819"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002827"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002827"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002828"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002828"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002837"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002837"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002906"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002906"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002936"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002936"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.002945"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.002945"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300086"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300086"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300091"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300091"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300119"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300119"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300133"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300133"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300139"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300139"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300213"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300213"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300215"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300215"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300225"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300225"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300230"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300230"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300286"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300286"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300289"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300289"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300296"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300296"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300306"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300306"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300308"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300308"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300318"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300318"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300331"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300331"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300370"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300370"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300422"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300422"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300476"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300476"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300479"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300479"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300513"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300513"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300575"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300575"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300619"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300619"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300634"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300634"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300664"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300664"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300667"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300667"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300684"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300684"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300691"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300691"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300722"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300722"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300772"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300772"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "0.300778"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "0.300778"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600037"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600037"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600129"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600129"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600196"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600196"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600256"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600256"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600278"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600278"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600323"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600323"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600448"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600448"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600459"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600459"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600489"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600489"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600546"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600546"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600565"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600565"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600594"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600594"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600706"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600706"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600733"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600733"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600794"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600794"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600814"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600814"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.600824"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.600824"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.601010"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.601010"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.601020"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.601020"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.601038"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.601038"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.601330"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.601330"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.601339"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.601339"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603010"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603010"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603040"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603040"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603127"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603127"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603156"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603156"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603197"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603197"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603316"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603316"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603335"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603335"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603496"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603496"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603517"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603517"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603677"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603677"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603697"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603697"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603711"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603711"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603789"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603789"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603803"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603803"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603839"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603839"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603880"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603880"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.603959"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.603959"
+    },
+    {
+      "fqt": 0,
+      "kind": "stock",
+      "secid": "1.688018"
+    },
+    {
+      "fqt": 1,
+      "kind": "stock",
+      "secid": "1.688018"
+    },
+    {
+      "fqt": 0,
+      "kind": "benchmark",
+      "secid": "1.000300"
+    }
+  ],
+  "requests_needing_new_acquisition": 181,
+  "semantic_gate_enabled": false,
+  "sse_calendar_url": "https://www.sse.com.cn/disclosure/announcement/general/c/c_20201224_5286949.shtml",
+  "stock_codes": [
+    "000001",
+    "000062",
+    "000505",
+    "000506",
+    "000599",
+    "000698",
+    "000758",
+    "000761",
+    "000762",
+    "000776",
+    "000777",
+    "000802",
+    "000810",
+    "000861",
+    "000895",
+    "000906",
+    "000917",
+    "000926",
+    "000950",
+    "002009",
+    "002093",
+    "002098",
+    "002105",
+    "002126",
+    "002133",
+    "002153",
+    "002160",
+    "002191",
+    "002194",
+    "002274",
+    "002331",
+    "002350",
+    "002360",
+    "002376",
+    "002385",
+    "002393",
+    "002474",
+    "002521",
+    "002527",
+    "002562",
+    "002594",
+    "002615",
+    "002631",
+    "002727",
+    "002775",
+    "002819",
+    "002827",
+    "002828",
+    "002837",
+    "002906",
+    "002936",
+    "002945",
+    "300086",
+    "300091",
+    "300119",
+    "300133",
+    "300139",
+    "300213",
+    "300215",
+    "300225",
+    "300230",
+    "300286",
+    "300289",
+    "300296",
+    "300306",
+    "300308",
+    "300318",
+    "300331",
+    "300370",
+    "300422",
+    "300476",
+    "300479",
+    "300513",
+    "300575",
+    "300619",
+    "300634",
+    "300664",
+    "300667",
+    "300684",
+    "300691",
+    "300722",
+    "300772",
+    "300778",
+    "600037",
+    "600129",
+    "600196",
+    "600256",
+    "600278",
+    "600323",
+    "600448",
+    "600459",
+    "600489",
+    "600546",
+    "600565",
+    "600594",
+    "600706",
+    "600733",
+    "600794",
+    "600814",
+    "600824",
+    "601010",
+    "601020",
+    "601038",
+    "601330",
+    "601339",
+    "603010",
+    "603040",
+    "603127",
+    "603156",
+    "603197",
+    "603316",
+    "603335",
+    "603496",
+    "603517",
+    "603677",
+    "603697",
+    "603711",
+    "603789",
+    "603803",
+    "603839",
+    "603880",
+    "603959",
+    "688018"
+  ],
+  "transport_rule": "Same 247 vendor requests and dates via Firecrawl CLI. Preserve rendered markdown and extracted JSON, observe actual subprocess exits, and retain all failed attempts. Reuse only exact protocol-bound completed receipts; never promote an unknown exit.",
+  "version": "temporal-risk-firecrawl-raw-acquisition-2021-v4"
+}

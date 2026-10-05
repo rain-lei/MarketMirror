@@ -1,0 +1,22 @@
+{
+  "runs": [
+    {
+      "run_id": "semantic_holdout_h2_2020_raw_model",
+      "manifest": "../../research_outputs/semantic_holdout_h2_2020_model/model_run_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "54c9a2e79b2abc7475e4e71614633dcfa571b247e150991d18b9a25d2d70880a"
+    },
+    {
+      "run_id": "semantic_holdout_h2_2020_normalized",
+      "manifest": "../../research_outputs/semantic_holdout_h2_2020_normalized/normalization_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "2d84befecee21aa43361839b11691a8751367fb8540778b3b9ccf76b594badf1"
+    },
+    {
+      "run_id": "semantic_holdout_h2_2020_diagnostics",
+      "manifest": "../../research_outputs/semantic_holdout_h2_2020_diagnostics/diagnostics_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "056322e104c28fd33773cb60349843905e3484a774936c55e609500e079697dd"
+    }
+  ]
+}

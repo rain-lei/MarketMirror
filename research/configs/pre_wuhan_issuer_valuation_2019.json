@@ -1,0 +1,24 @@
+{
+  "version": "pre-wuhan-lagged-risk-private-issuer-valuation-v1",
+  "reference_directory": "../../research_outputs/pre_wuhan_industry_response_2019_v1",
+  "reference_results_sha256": "b4c85c8539d136cb949f94fbfe1fd10eea892e1ab563a4ac73b08068c168d71b",
+  "reference_manifest_sha256": "7da1646e0ebf8cfd93e4e9221adf17f258612a9b93bae9e2d3014be16012e8bd",
+  "reference_portfolio_source": "../../research_outputs/pre_wuhan_issuer_reference_source_2019_v1/portfolio_market.py",
+  "reference_portfolio_source_sha256": "ea8d823a2b8ba57b3b86ddbfb7cba26ac1bc9a7650c22acb81c4214bd63246fa",
+  "shared_variant": "common_plus_industry_grouped",
+  "parameters": {
+    "history_window": 20,
+    "belief_scale_bps": 1000,
+    "max_shift_bps": 500,
+    "innovation_seed": "marketmirror-issuer-risk-innovation-v1",
+    "information_seed": "marketmirror-issuer-information-coverage-v1"
+  },
+  "variants": [
+    {"name": "industry_reference", "risk_multiplier": null, "information_probability_bps": null},
+    {"name": "issuer_quarter_sigma_full", "risk_multiplier": 0.25, "information_probability_bps": 10000},
+    {"name": "issuer_quarter_sigma_half", "risk_multiplier": 0.25, "information_probability_bps": 5000},
+    {"name": "issuer_one_sigma_full", "risk_multiplier": 1.0, "information_probability_bps": 10000},
+    {"name": "issuer_one_sigma_half", "risk_multiplier": 1.0, "information_probability_bps": 5000}
+  ],
+  "interpretation": "Synthetic daily issuer innovations and information coverage sensitivity on consumed 2019 development data. Historical t-2 volatility scales risk only; hash signs, response magnitude and receipt probabilities are hypotheses. This does not identify company news, calibrate parameters or demonstrate historical forecasts."
+}

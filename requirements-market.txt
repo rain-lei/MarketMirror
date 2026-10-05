@@ -1,0 +1,2 @@
+# Optional public-data connector; research computation remains in the stdlib.
+baostock==0.9.4

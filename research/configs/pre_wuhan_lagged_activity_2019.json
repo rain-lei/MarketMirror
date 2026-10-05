@@ -1,0 +1,15 @@
+{
+  "policy_id": "pre_wuhan_lagged_activity_increment_v1",
+  "period_start": "2019-11-01",
+  "period_end": "2019-12-31",
+  "companies": 123,
+  "sessions": 43,
+  "training_sessions": 30,
+  "test_sessions": 13,
+  "activity_lookback_sessions": 20,
+  "information_rule": "for return observation t, use activity through t-2; compare the t-2 log amount with the median log amount over the prior 20 sessions ending t-3",
+  "outcome": "absolute_stock_return_on_t",
+  "baseline_features": ["realized_volatility_through_t_minus_2", "absolute_market_momentum_through_t_minus_2"],
+  "incremental_feature": "log_amount_t_minus_2_minus_median_log_amount_prior_20_sessions",
+  "split_rule": "chronological first 30 sessions train, final 13 sessions test; no random row split"
+}

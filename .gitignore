@@ -37,6 +37,7 @@ build/
 # 环境变量
 .env
 .env.local
+.secrets/
 
 # IDE
 .vscode/
@@ -48,3 +49,10 @@ Thumbs.db
 
 # 日志
 *.log
+
+# 研究运行产物和本地数据
+research_outputs/
+.firecrawl/
+data/raw/
+data/staged/
+data/curated/

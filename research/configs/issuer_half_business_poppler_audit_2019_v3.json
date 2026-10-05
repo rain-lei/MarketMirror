@@ -1,0 +1,29 @@
+{
+  "agent_signal_enabled": false,
+  "business_exposure_values_verified": false,
+  "diagnostic_rule": "Inspect the whole cohort. Keep every reader diagnostic or comparison failure by issuer; source missingness is expected, diagnostics require QC and are never clean PASS. No per-company fallback or suppression, all economic exposure gates stay off.",
+  "frozen_at_utc": "2026-10-01T07:17:56.688196+00:00",
+  "index_config_path": "research/configs/issuer_half_business_evidence_2019.json",
+  "index_path": "research_outputs/issuer_half_business_evidence_2019_v1.json",
+  "inputs": {
+    "research/configs/issuer_half_business_evidence_2019.json": "e60a9eeb6cc01b0a893f364742131b59521340139e73b682ccab5b6cc3d53da2",
+    "research/configs/issuer_half_business_poppler_audit_2019.json": "eeaf757f73fb6b5806c4b04deaa908a817c5247d9a0cb3d0c00b16537e037b05",
+    "research/configs/issuer_half_business_poppler_audit_2019_v2.json": "d3bcf0866173c7755adbf20bab071f79685f641b6ec7996704a86e5dfc67805a",
+    "research_outputs/issuer_disclosure_inventory_raw_2019_2020_v1/inventory.json": "b4b011a671096ceda96e8e4120bc04e9edf2a82bf9658b430b181b2d512f0a26",
+    "research_outputs/issuer_half_business_audit_failed_v1.json": "4e5af695414ae561c0cff6a805466be9f1509aa334401abd1f2575b1e94691e2",
+    "research_outputs/issuer_half_business_audit_failed_v1_source.py": "4559920f01109134e4292f2f2979b649faf9d4ff01f6af953fb0f2b9221c90dc",
+    "research_outputs/issuer_half_business_audit_failed_v2.json": "f49400e93caf63bb531f68fce0729d708145ad1f7760712827b0b3e6e4d444ee",
+    "research_outputs/issuer_half_business_audit_failed_v2_source.py": "49c025affdad3eaccb8e796352c6e7117209fe04cc7d88c225fedb5ec5217816",
+    "research_outputs/issuer_half_business_evidence_2019_v1.json": "865b10637319934b50d90501eee70194a83d04a0d8f772738017b22b36717c8c",
+    "research_outputs/issuer_half_reports_raw_2019_v1/manifest.json": "2092907d4fc3e5554bde18aac0221613805000af51aaa90e52cf65aebaf15007"
+  },
+  "inventory_path": "research_outputs/issuer_disclosure_inventory_raw_2019_2020_v1/inventory.json",
+  "maximum_parallel_reads": 2,
+  "pdftotext_path": "C:\\Program Files\\MiKTeX\\miktex\\bin\\x64\\pdftotext.exe",
+  "pdftotext_sha256": "c6e5549a29ec911dc0c2ba292af986999c396d1ccec7f37eedcc18558e507f6b",
+  "pdftotext_version": "23.13.0",
+  "raw_manifest_path": "research_outputs/issuer_half_reports_raw_2019_v1/manifest.json",
+  "reading_mode": "raw",
+  "reading_rule": "Content-order output joins printed same-cell wrapped names; layout output interleaves neighboring columns. Raw mode fixed for the whole cohort before the revised audit, without per-company fallback. Keep exact literal page comparisons and explicit anchor QC. This is not verification of economic or numeric exposure.",
+  "version": "pre-wuhan-half-Poppler-independent-literal-audit-v3"
+}

@@ -1,0 +1,19 @@
+{
+  "version": "pre-wuhan-industry-shared-response-dose-grid-v1",
+  "industry_directory": "../../research_outputs/pre_wuhan_industry_2019q3_v1",
+  "industry_catalog_sha256": "3fad4ce7a1423273e3d75e93a1407a29405c50a62df42f706813ad61a9c2fdfb",
+  "industry_provenance_sha256": "ebc3d0d1533d12a104c3ac416ea77501b990fb1f8bf5f164032c21b5989804f5",
+  "reference_directory": "../../research_outputs/pre_wuhan_background_response_2019_v1",
+  "reference_results_sha256": "d1d65652ab352d1b753d17f8ae76de35f47aca4943d316e1b7daa035710242fe",
+  "reference_manifest_sha256": "20ee5cd90f5a7d2f2d6903ee7043c1bd37b0fc6c5bf2f6791bfa82a8c34245d1",
+  "reference_portfolio_source": "../../research_outputs/pre_wuhan_industry_reference_source_2019_v1/portfolio_market.py",
+  "reference_portfolio_source_sha256": "bcb3e1dcae9afa8758556881342f51b0db2b1dc656f4fc3b79ba1351c0fd2598",
+  "pulse_sessions": [10, 11, 26, 27],
+  "pulse_polarities": [1, 1, -1, -1],
+  "total_cross_stock_rms": 0.20,
+  "industry_seed": "marketmirror-industry-shared-stress-v1",
+  "permutation_seed": "marketmirror-industry-permutation-control-v1",
+  "background_response": {"valuation_response_bps": 200, "pulse_participation_bps": 10000},
+  "variants": ["uniform_common", "industry_only_grouped", "industry_only_permuted", "common_plus_industry_grouped", "common_plus_industry_permuted"],
+  "interpretation": "Frozen synthetic mechanism comparison on consumed development data. Official industry membership is real; industry signs, pulse timing and response coefficients are declared hypotheses, not historical policy exposure or fitted predictive signals."
+}

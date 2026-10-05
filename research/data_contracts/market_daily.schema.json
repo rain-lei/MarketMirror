@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "marketmirror://schema/market_daily",
+  "title": "MarketMirror daily market observation",
+  "type": "object",
+  "required": ["trade_date", "stock_code", "benchmark_id", "stock_return", "market_return", "stock_price", "benchmark_price"],
+  "properties": {
+    "trade_date": {"type": "string", "format": "date"},
+    "stock_code": {"type": "string", "pattern": "^[0-9]{6}$"},
+    "benchmark_id": {"type": "string", "minLength": 1},
+    "stock_return": {"type": "number", "minimum": -1, "description": "Simple decimal return; basis is declared in market_manifest.json."},
+    "market_return": {"type": "number", "minimum": -1},
+    "stock_price": {"type": ["number", "null"], "exclusiveMinimum": 0},
+    "benchmark_price": {"type": ["number", "null"], "exclusiveMinimum": 0}
+  },
+  "additionalProperties": false
+}

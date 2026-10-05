@@ -1,0 +1,16 @@
+{
+  "protocol": "wuhan-independent-company-ai-review-v3",
+  "sample_role": "independent_company_validation",
+  "reviewer_kind": "single_ai_assistant",
+  "review_before_v3_model_outputs": true,
+  "human_gold_ready": false,
+  "review_rule": "Read each complete visible question and company reply before seeing any v3 model response. Record a unique item-specific reason. Confirm only a concrete new company fact, current implementation or specific measurable forecast in the reply; exclude question-only claims, routine shareholder counts, old disclosure dates, static capabilities, other entities' plans and conditional approvals. Every event must use an exact reply-only quote. No future prices or unseen disclosures.",
+  "event_types": ["regulation", "liquidity", "earnings", "governance", "other"],
+  "thresholds": {
+    "max_parse_error_rate": 0.05,
+    "min_event_detection_f1": 0.7,
+    "min_supported_type_macro_f1": 0.6,
+    "must_not_underperform_keyword": true
+  },
+  "score_interpretation": "Agreement with one AI reviewer on an independent company cohort, not human-ground-truth accuracy or market predictive validity."
+}

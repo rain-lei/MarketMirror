@@ -1,0 +1,31 @@
+{
+  "approved_decimal_aliases": {
+    "O.5": "0.5"
+  },
+  "document_id": "银发〔2019〕223号",
+  "page_count": 4,
+  "publication_timestamp": null,
+  "rendered_pages": [
+    {
+      "page": 1,
+      "path": "research_outputs/pre_wuhan_rrr_pdf_review_2019_v1/rrr-1.png",
+      "sha256": "447052f2ac0bea72a0802454ba1c9d721db9978cf881772145119ad5da271384"
+    },
+    {
+      "page": 2,
+      "path": "research_outputs/pre_wuhan_rrr_pdf_review_2019_v1/rrr-2.png",
+      "sha256": "075616f4824040ccae4343f55877304b38d7b4afd286cb6dcca1c773b55ba333"
+    }
+  ],
+  "review_note": "The first two rendered source pages state 0.5 percentage point cuts on Sep16, Oct15 and Nov15; the embedded OCR layer yields O.5 for the first two. This alias is authorized only for these source bytes. Province-only city-commercial-bank scope and three excluded institution types were visually checked. This is a single assistant source review, not an independent human gold standard.",
+  "reviewed_at_utc": "2026-09-30T21:05:14.283833+00:00",
+  "reviewer_kind": "single_assistant",
+  "source_path": "research_outputs/pre_wuhan_policy_raw_2019_v2/rrr_legal_yinfa_2019_223.pdf",
+  "source_sha256": "b9fe65c7387917e68b009c0de83f839c59bdb86d07b4e1f92aa070fe323be487",
+  "use_policy": "corroboration_only_no_publication_clock",
+  "version": "rrr-legal-source-single-assistant-visual-review-v1",
+  "visually_inspected_pages": [
+    1,
+    2
+  ]
+}

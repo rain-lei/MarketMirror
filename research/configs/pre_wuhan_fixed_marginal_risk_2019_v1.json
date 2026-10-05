@@ -1,0 +1,213 @@
+{
+  "code_bindings": {
+    "research/simulation/audit_fixed_marginal_risk.py": "70d6cef76cf7b592660f51da9ce9b8e4b5b67617d790c5f8c139b7db179f75fe",
+    "research/simulation/audit_fixed_risk_study.py": "531ffb9ec1d6aa942d05f9b8a429e1f1dbb47a4446008764397efe17b897acd0",
+    "research/simulation/fixed_marginal_risk.py": "360e4e99f047d5dfd260729d1d184f9d0b2602a1d7990591fd90f23f0aabe9a5",
+    "research/simulation/fixed_risk_study.py": "ff125ba2560a4a809d3745e83d15ef1655b169a5d4f3ad957c5d2179920db450",
+    "research/simulation/portfolio_fixed_marginal_risk.py": "d6e8c9a8de26877025bf2ce250c4871ed372208057835d39ad81053149d558da",
+    "research/simulation/run_fixed_risk_study.py": "e7bee92a324b922ecda914f6f752b107f21183ee34b234ce306cde3855207d99",
+    "research_outputs/preflight_fixed_risk_inputs_20261002_v1.py": "329d0f088d37473424ca01fc44fcb6f76d1ad9c759a16160b4e440e1a6a7fe0c",
+    "research_outputs/run_fixed_risk_full_jobs_20261002_v1.py": "b6247a73f3943766940de54b07b2d5cc3d225743e2a6981a4f513fad9820a23a",
+    "research_outputs/run_fixed_risk_full_tests_20261002_v1.py": "0378d78d7920715e73c81819ff16b4648d2e4e365862d4b86181e7519e97bb08",
+    "research_outputs/run_fixed_risk_preflight_jobs_20261002_v1.py": "919f304a2b30aa770fd341a4d970538cbbe8b6dbd831304cbf51d068045ea447",
+    "research_outputs\\freeze_fixed_risk_full_study_20261002_v1.py": "089274f40831a12d333d3136fd74c1151a8dcbe8399d5873a130bca52d1d31af",
+    "research_outputs\\freeze_fixed_risk_preflight_20261002_v1.py": "a316cb77f6ea0c43286279ab20ea596d556d68e92d91e8fdcd125e5dc27e87ea",
+    "tests/test_fixed_marginal_risk.py": "29e63c3acf2c72d918cee570a9c33ca2a28126fcff571fa4a4500c9d16d93c61"
+  },
+  "dense_audit_sessions": [
+    0,
+    10
+  ],
+  "derived_expected_coverage": {
+    "asset_calls": 317340,
+    "complete_wealth_drawdown_risk_accounts": 118080,
+    "conditions": 60,
+    "dense_asset_calls": 14760,
+    "full_path_ledger_records": 105780,
+    "independently_rebuilt_budget_rows": 52890,
+    "legacy_complete_paths_matched": 820,
+    "legacy_daily_records_matched": 35260,
+    "paths": 2460,
+    "strategy_allocation_checks": 1269360,
+    "strict_private_receipt_positions": 7616160
+  },
+  "execution": "All 60 conditions and 2460 complete paths produced, independent source and raw ledger audit, then all conditions produced in a separate tree with exact gzip/JSON hashes, and all independent statistics rebuilt byte-identically. Two seed chains at most. Saved partial and failed artifacts are retained. Full and rebuilt checkpoints must be hash-validated before reuse.",
+  "frozen_at_utc": "2026-10-02T10:53:26.931600+00:00",
+  "hypothesis": "Does market coupling improve joint price dynamics when each synthetic company-message marginal risk and information coverage are held fixed?",
+  "interpretation": "Let s be original issuer amplitude, q the lagged OLS explained variance fraction, e the unchanged company innovation and z a standardized uniform auxiliary innovation. Both matched cells deliver s*sqrt(1-q)*e + sign(beta)*s*sqrt(q)*z, behind the unchanged original private receipt mask, then apply the same combined cap. Independent cell draws z by stock/date; shared cell shares z by date. They have equal declared one-stock latent/conditionally received pre-cap variance and the same theoretical clipped marginal law, not equal realized finite-path variance or endogenous auction volatility. Legacy single-uniform bridge remains exact. This does not test universally delivered public information, identify missing residual industry factors, fit gains, center finite draws, calibrate investors, release semantic signals or validate a new period. Historical common/industry shock paths, price feedback and finite resources remain as before; the fixed budget applies to the synthetic company-message component, not total endogenous returns or every existing shock. All 43 days and 123 retrospectively selected companies are consumed development data. Report all five market checks and all paired effects, retaining finite innovation means and cap frequencies. No gains or thresholds are fitted after outcomes; no causal policy/industry surprise or real investor calibration is claimed.",
+  "joint_limits": {
+    "mean_return_gap_max": 0.005,
+    "portfolio_volatility_ratio_max": 2.0,
+    "portfolio_volatility_ratio_min": 0.5,
+    "stock_correlation_gap_max": 0.1,
+    "volatility_ratio_max": 2.0,
+    "volatility_ratio_min": 0.5,
+    "zero_return_fraction_gap_max": 0.1
+  },
+  "no_new_parameter_default": true,
+  "per_seed_audit_scope": {
+    "asset_calls": 63468,
+    "complete_wealth_drawdown_risk_accounts": 23616,
+    "conditions": 12,
+    "dense_asset_calls": 2952,
+    "full_path_ledger_records": 21156,
+    "independently_rebuilt_budget_rows": 10578,
+    "legacy_complete_paths_matched": 164,
+    "legacy_daily_records_matched": 7052,
+    "paths": 492,
+    "strategy_allocation_checks": 253872,
+    "strict_private_receipt_positions": 1523232
+  },
+  "preflight_completion": "research_outputs\\pre_wuhan_fixed_risk_preflight_completion_20261002_v1.json",
+  "primary_pair": "market_shared minus market_independent within seed, inventory anchor and own-price feedback setting; all 20 pairs retained.",
+  "prior_outcome_consumption": "The original 2019 cohort and public/industry diagnostics have been consumed. Fixed-risk input preflight included 12 first-basket/first-seed real paths across all four anchor/feedback groups, without computing full-market effects. No unused-period claim.",
+  "reference_bindings": {
+    "research\\configs\\pre_wuhan_fixed_risk_input_preflight_2019_v1.json": "278b4a669f5e4bdc47f7b74832d43d6b94a116e6360a6360701504094d107942",
+    "research_outputs\\pre_wuhan_fixed_risk_full_suite_876_20261002_v1.txt": "7cb2d2c37cbc6785a83a32158b33a9ee9bb13e71fe06fde544f07d19c6ee254a",
+    "research_outputs\\pre_wuhan_fixed_risk_input_byte_rebuild_20261002_v1.txt": "de3153825f821b38c0f850f0a3f86776a9ef8b0ea537f1edb8fe7c9fe5991886",
+    "research_outputs\\pre_wuhan_fixed_risk_input_preflight_2019_v1.json": "04672d65c16256f00c17af33170503dbef0c3f3b7975bee50679a0764de28bdd",
+    "research_outputs\\pre_wuhan_fixed_risk_input_producer_20261002_v1.txt": "1610846bcaba5a01a7bc8d1efde9bcc37ae842683b8d579c0869be700de10f53",
+    "research_outputs\\pre_wuhan_fixed_risk_preflight_completion_20261002_v1.json": "83aa56641f173f756a3316c58959766e20ab00dd9561f595c7f5884a5b13cf16",
+    "research_outputs\\pre_wuhan_fixed_risk_risk_unit_8_20261002_v1.txt": "6ab0457806acd3ea5d02289d9f461f63639b966d6fb403090400e7785da4f831",
+    "research_outputs\\pre_wuhan_fixed_risk_test_environment_20261002_v1.json": "090c96f79449babe3996888952faff0bf577edab5f913c38ffca888b5cfa7e66",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_0_0.jsonl.gz": "2d8b7f96cf85dba1243af59e55d4244de92968ecf5c141a9f1fb725071bafecb",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_0_12.jsonl.gz": "63ae2c7a1de3b40f55e6d72b36002e4e920d111efe5a2e2b3b90d9a9aff66320",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_0_4.jsonl.gz": "09ac9715dc5bf3b76faae59a0f2805d07be2a1444cf30da610f1ee24cbd54f00",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_0_8.jsonl.gz": "cbcd5e9c469a8b4a21446ffa7cf980af0956ef1c5c36afb90e90770f4da20963",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_1_0.jsonl.gz": "7b42499219f74e786393d13c6c23aab3eadcd40245b68076247785be3c20d879",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_1_12.jsonl.gz": "d287db9271723c38c1af6be976da9cb11ef8a863780b9463c0327a4941e076bc",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_1_4.jsonl.gz": "f4244861f2bbdaa4debf67f487c6f4fac9b98ddd78a2fa166504b15a00ed653f",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_1_8.jsonl.gz": "40be422239247a41db2926ffebf78ed94549ae6c226b2ba2f1727dd3449cdc4b",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_2_0.jsonl.gz": "3ae44f6c25716c11c0f05eb9545fe9da2a50fb3247573e7b382bb5e35d969264",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_2_12.jsonl.gz": "3fdabe35208c97603e9d977bb3bf4294f1344cc77c3570fb6da69af78e02e37c",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_2_4.jsonl.gz": "2cfbb5517f005fdb30f72261b6976c1c0cff852562e3dc666825f2eb9b4130ff",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_2_8.jsonl.gz": "1abcad6003b5b9b2887e1b6da6092c6e8ed152e1c8f8f7d3fbe504f95a37a257",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_3_0.jsonl.gz": "b430fb4674ff34bcac313aee7861dde71aeeb0d15c12d8e822acb222f26bf0a7",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_3_12.jsonl.gz": "7204f604e72b3be03facb87994687860046595b96751275f7125d35d215a56ed",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_3_4.jsonl.gz": "41a0aed0455f51709e86b081e0fc9a577bb56fa220586b394bdfaf0644f2b60c",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_3_8.jsonl.gz": "11ee97a3f55960a07d4de41d6fadffc2d0412975c8cc449f2c98ce48b088b948",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_4_0.jsonl.gz": "e14f09858ad046ceecf257948fcdde103d4faaaa8b67df69be1743c13b917e98",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_4_12.jsonl.gz": "8817c613d961eca0eb2407ab38081ec6a1edeeecfeb5bdb26404daf0151c28fa",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_4_4.jsonl.gz": "64c74f2bff3c5774c84f1432f49ee2bb763affac34159b4220fe545dca3eba9c",
+    "research_outputs\\pre_wuhan_public_factor_checkpoints_v3\\prepared\\legacy_4_8.jsonl.gz": "4b39c279fafc621544aa126016b4fd5f052f1ce7a31db3d47c03bd634fbd2250",
+    "research_outputs\\pre_wuhan_public_factor_final_verification_20261002_v3.json": "34a548fce59a26d6b0b95193d7db9b65f9825d0761ab2344653630ecd210e1cf",
+    "research_outputs\\pre_wuhan_source_industry_risk_final_verification_20261002_v1.json": "a596b5ceb49a85ab1b4793e689535fc743edb22a65d2c2e38e67c1fc0b05f688"
+  },
+  "secondary_pairs": [
+    "market_independent minus legacy",
+    "market_shared minus legacy"
+  ],
+  "seeds": [
+    {
+      "arrival_seed": 7,
+      "background_seed": 7,
+      "information_seed": "marketmirror-issuer-information-coverage-v1",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1",
+      "seed_id": "reference_seed7"
+    },
+    {
+      "arrival_seed": 11,
+      "background_seed": 11,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:11",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:11",
+      "seed_id": "replicate_seed11"
+    },
+    {
+      "arrival_seed": 23,
+      "background_seed": 23,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:23",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:23",
+      "seed_id": "replicate_seed23"
+    },
+    {
+      "arrival_seed": 47,
+      "background_seed": 47,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:47",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:47",
+      "seed_id": "replicate_seed47"
+    },
+    {
+      "arrival_seed": 89,
+      "background_seed": 89,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:89",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:89",
+      "seed_id": "replicate_seed89"
+    }
+  ],
+  "semantic_gate_enabled": false,
+  "variants": [
+    {
+      "background_anchor": "initial_inventory",
+      "feedback_scale": 1.0,
+      "name": "initial_inventory_feedback_full_risk_legacy",
+      "risk_mode": "legacy"
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "feedback_scale": 1.0,
+      "name": "initial_inventory_feedback_full_risk_market_independent",
+      "risk_mode": "market_independent"
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "feedback_scale": 1.0,
+      "name": "initial_inventory_feedback_full_risk_market_shared",
+      "risk_mode": "market_shared"
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "feedback_scale": 0.0,
+      "name": "initial_inventory_feedback_both_off_risk_legacy",
+      "risk_mode": "legacy"
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "feedback_scale": 0.0,
+      "name": "initial_inventory_feedback_both_off_risk_market_independent",
+      "risk_mode": "market_independent"
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "feedback_scale": 0.0,
+      "name": "initial_inventory_feedback_both_off_risk_market_shared",
+      "risk_mode": "market_shared"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "feedback_scale": 1.0,
+      "name": "current_inventory_feedback_full_risk_legacy",
+      "risk_mode": "legacy"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "feedback_scale": 1.0,
+      "name": "current_inventory_feedback_full_risk_market_independent",
+      "risk_mode": "market_independent"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "feedback_scale": 1.0,
+      "name": "current_inventory_feedback_full_risk_market_shared",
+      "risk_mode": "market_shared"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "feedback_scale": 0.0,
+      "name": "current_inventory_feedback_both_off_risk_legacy",
+      "risk_mode": "legacy"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "feedback_scale": 0.0,
+      "name": "current_inventory_feedback_both_off_risk_market_independent",
+      "risk_mode": "market_independent"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "feedback_scale": 0.0,
+      "name": "current_inventory_feedback_both_off_risk_market_shared",
+      "risk_mode": "market_shared"
+    }
+  ],
+  "version": "fixed-marginal-received-risk-complete-study-v1"
+}

@@ -1,0 +1,22 @@
+{
+  "runs": [
+    {
+      "run_id": "historical_participation_2018_h1",
+      "manifest": "../../research_outputs/observed_2018/participation_replay_v2/participation_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "5b68b9f8b908f39051a3c5a326d749da8eb802f6355ea214d8ff7d7f7dc8e57a"
+    },
+    {
+      "run_id": "historical_participation_2020_q1",
+      "manifest": "../../research_outputs/observed_2020/participation_replay_q1_v2/participation_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "1f369bcd1c233bb5e0f52b2dd80309246e8321c308ce53d687212cf5f2259b31"
+    },
+    {
+      "run_id": "historical_participation_2020_later",
+      "manifest": "../../research_outputs/observed_2020/participation_replay_later_v2/participation_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "3b3fbbbaaf8bdb676440ca567310f28a269a5a9be99084e50db5c7fe41edb566"
+    }
+  ]
+}

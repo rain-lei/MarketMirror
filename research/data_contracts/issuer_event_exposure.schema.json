@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "marketmirror://schema/issuer_event_exposure",
+  "title": "Issuer exposure mapping for a policy event",
+  "type": "object",
+  "required": ["catalog_id", "data_kind", "event_id", "as_of_date", "policy_source_sha256", "sources", "issuers"],
+  "properties": {
+    "catalog_id": {"type": "string", "minLength": 1},
+    "data_kind": {"const": "exploratory_pre_event_exposure_mapping"},
+    "event_id": {"type": "string", "minLength": 1},
+    "as_of_date": {"type": "string", "format": "date"},
+    "policy_source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "sources": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source"}},
+    "issuers": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/issuer"}}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": ["source_id", "source_kind", "publisher", "url", "archive_path", "sha256", "available_by", "date_basis", "role"],
+      "properties": {
+        "source_id": {"type": "string", "minLength": 1},
+        "source_kind": {"enum": ["policy_source", "issuer_report", "issuer_product_disclosure", "provider_identity_crosswalk"]},
+        "publisher": {"type": "string", "minLength": 1},
+        "url": {"type": "string", "format": "uri"},
+        "archive_path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "available_by": {"type": "string", "format": "date"},
+        "date_basis": {"enum": ["document_body", "official_archive_path", "provider_retrieval"]},
+        "role": {"enum": ["event_scope", "issuer_business", "issuer_identity"]}
+      },
+      "additionalProperties": false
+    },
+    "issuer": {
+      "type": "object",
+      "required": ["issuer_code", "issuer_name", "business_description", "industry_code", "industry_code_status", "direct_scope_match", "rationale", "secondary_channels", "evidence_source_ids", "impact_direction", "impact_magnitude", "agent_signal_enabled"],
+      "properties": {
+        "issuer_code": {"type": "string", "pattern": "^[0-9]{6}$"},
+        "issuer_name": {"type": "string", "minLength": 1},
+        "business_description": {"type": "string", "minLength": 1},
+        "industry_code": {"type": ["string", "null"]},
+        "industry_code_status": {"enum": ["source_described_no_standard_code", "verified_standard_code"]},
+        "direct_scope_match": {"enum": ["yes", "no"]},
+        "rationale": {"type": "string", "minLength": 1},
+        "secondary_channels": {"type": "array", "items": {"type": "string"}},
+        "evidence_source_ids": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "impact_direction": {"const": "unknown"},
+        "impact_magnitude": {"const": "unknown"},
+        "agent_signal_enabled": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  }
+}

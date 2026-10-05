@@ -1,0 +1,14 @@
+{
+  "sources": [
+    {
+      "url": "https://www.pbc.gov.cn/jinrongwendingju/146766/146770/c2e228ad641d4a85acdc9142da4f955d/index.html",
+      "path": "../../research_outputs/observed_2018/source_cache/pbc_asset_management_2018.html",
+      "filename": "pbc_asset_management_2018.html"
+    },
+    {
+      "url": "https://www.baostock.com/mainContent?file=pythonAPI.md",
+      "path": "../../research_outputs/observed_2018/source_cache/baostock_api.md",
+      "filename": "baostock_api.md"
+    }
+  ]
+}

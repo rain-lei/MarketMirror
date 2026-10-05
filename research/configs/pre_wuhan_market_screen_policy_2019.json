@@ -1,0 +1,22 @@
+{
+  "policy_id": "pre_wuhan_market_development_screen_v1",
+  "period_start": "2019-11-01",
+  "period_end": "2019-12-31",
+  "companies": 123,
+  "sessions": 43,
+  "pairs_per_variant": 5289,
+  "volatility_ratio_min": 0.5,
+  "volatility_ratio_max": 2.0,
+  "p95_absolute_return_ratio_min": 0.5,
+  "p95_absolute_return_ratio_max": 2.0,
+  "zero_return_fraction_gap_max": 0.1,
+  "mean_return_gap_max": 0.005,
+  "same_day_return_correlation_min": 0.2,
+  "require_company_day_trace_for_advancement": true,
+  "archives": [
+    "pre_wuhan_market_calibration_2019_v1.json",
+    "pre_wuhan_price_tie_sensitivity_2019_v1.json",
+    "pre_wuhan_order_arrival_sensitivity_2019_v1.json",
+    "pre_wuhan_strategy_inventory_sensitivity_2019_v1.json"
+  ]
+}

@@ -1,0 +1,157 @@
+{
+  "agent_signal_enabled": false,
+  "inputs": {
+    "research_outputs/issuer_q3_reports_raw_2019_v1/manifest.json": "dfd5d638881b3209efd1af2ba5450943e61c2eaca81816501e1e9dfa76532f98"
+  },
+  "limitations": [
+    "Two reviewed bank statements are parser/review anchors, not a full-cohort financial feature dataset.",
+    "Ping An heading does not state consolidation, so no consolidation label is inferred.",
+    "Bank total liabilities include deposits and do not define nonfinancial corporate borrowing or distress.",
+    "No financial ratio, stock direction or Agent coefficient is exported.",
+    "Current official PDF bytes are not certified as unchanged historical snapshots."
+  ],
+  "raw_field_labels": {
+    "assets": "资产总计",
+    "equity": "股东权益合计",
+    "liabilities": "负债合计"
+  },
+  "reviewed_at_utc": "2026-10-01T02:05:17.672148+00:00",
+  "snapshot_at": "2020-01-22T23:59:59+08:00",
+  "sources": [
+    {
+      "agent_signal_enabled": false,
+      "columns_reviewed_left_to_right": [
+        {
+          "period_end": "2019-09-30",
+          "scope": "issuer_balance_sheet_as_stated_not_assumed_consolidated"
+        },
+        {
+          "period_end": "2018-12-31",
+          "scope": "issuer_balance_sheet_as_stated_not_assumed_consolidated"
+        }
+      ],
+      "currency": "CNY",
+      "field_pages": {
+        "assets": 29,
+        "equity": 29,
+        "liabilities": 29
+      },
+      "historical_short_name": "平安银行",
+      "report_metadata": {
+        "agent_signal_enabled": false,
+        "announcement_id": "1206997843",
+        "archive_date": "2019-10-22",
+        "attachment_url": "https://static.cninfo.com.cn/finalpage/2019-10-22/1206997843.PDF",
+        "availability_basis": "agreement_of_provider_calendar_date_and_official_archive_date_next_midnight",
+        "available_at_proxy": "2019-10-23T00:00:00+08:00",
+        "eligibility_reason": "eligible_report_metadata",
+        "eligible": true,
+        "financial_values_verified": false,
+        "org_id": "gssz0000001",
+        "provider_announcement_time_ms": 1571673600000,
+        "provider_announcement_timestamp": "2019-10-22T00:00:00+08:00",
+        "publication_precision_used": "date",
+        "report_end_date": "2019-09-30",
+        "report_form": "full_text",
+        "report_period_key": "2019_q3",
+        "revision_marked_in_title": false,
+        "stock_code": "000001",
+        "title": "2019年第三季度报告全文"
+      },
+      "reported_unit": "百万元",
+      "reported_values_reviewed": {
+        "assets": [
+          "3707683",
+          "3418592"
+        ],
+        "equity": [
+          "288073",
+          "240042"
+        ],
+        "liabilities": [
+          "3419610",
+          "3178550"
+        ]
+      },
+      "review_basis": "Assistant single visual review of complete balance-sheet pages, date and scope column headers, unit statements, totals and signature/continuation context.",
+      "source_pdf_path": "research_outputs/issuer_q3_reports_raw_2019_v1/000001/run_1/attempt1.pdf",
+      "source_pdf_sha256": "b0cced02997b823f2e67bf7ae4706210a2117d1d1940227421bf82028a051db6",
+      "stock_code": "000001"
+    },
+    {
+      "agent_signal_enabled": false,
+      "columns_reviewed_left_to_right": [
+        {
+          "period_end": "2019-09-30",
+          "scope": "consolidated_group"
+        },
+        {
+          "period_end": "2018-12-31",
+          "scope": "consolidated_group"
+        },
+        {
+          "period_end": "2019-09-30",
+          "scope": "parent_bank"
+        },
+        {
+          "period_end": "2018-12-31",
+          "scope": "parent_bank"
+        }
+      ],
+      "currency": "CNY",
+      "field_pages": {
+        "assets": 15,
+        "equity": 17,
+        "liabilities": 16
+      },
+      "historical_short_name": "郑州银行",
+      "report_metadata": {
+        "agent_signal_enabled": false,
+        "announcement_id": "1207029855",
+        "archive_date": "2019-10-29",
+        "attachment_url": "https://static.cninfo.com.cn/finalpage/2019-10-29/1207029855.PDF",
+        "availability_basis": "agreement_of_provider_calendar_date_and_official_archive_date_next_midnight",
+        "available_at_proxy": "2019-10-30T00:00:00+08:00",
+        "eligibility_reason": "eligible_report_metadata",
+        "eligible": true,
+        "financial_values_verified": false,
+        "org_id": "9900011028",
+        "provider_announcement_time_ms": 1572278400000,
+        "provider_announcement_timestamp": "2019-10-29T00:00:00+08:00",
+        "publication_precision_used": "date",
+        "report_end_date": "2019-09-30",
+        "report_form": "full_text",
+        "report_period_key": "2019_q3",
+        "revision_marked_in_title": false,
+        "stock_code": "002936",
+        "title": "2019年第三季度报告全文"
+      },
+      "reported_unit": "千元",
+      "reported_values_reviewed": {
+        "assets": [
+          "492793859",
+          "466142418",
+          "477454470",
+          "449272997"
+        ],
+        "equity": [
+          "40668136",
+          "37863499",
+          "39228742",
+          "36562495"
+        ],
+        "liabilities": [
+          "452125723",
+          "428278919",
+          "438225728",
+          "412710502"
+        ]
+      },
+      "review_basis": "Assistant single visual review of complete balance-sheet pages, date and scope column headers, unit statements, totals and signature/continuation context.",
+      "source_pdf_path": "research_outputs/issuer_q3_reports_raw_2019_v1/002936/run_1/attempt1.pdf",
+      "source_pdf_sha256": "e5da8c799afda3a34639637aa8c04890101b8f8f25ee282d3ba5a9eb1c8cfd3c",
+      "stock_code": "002936"
+    }
+  ],
+  "version": "assistant-reviewed-bank-balance-unit-and-scope-anchors-v1"
+}

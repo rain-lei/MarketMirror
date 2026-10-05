@@ -1,0 +1,13 @@
+{
+  "version": "pre-wuhan-issuer-quote-side-state-reset-v1",
+  "source_directory": "../../research_outputs/pre_wuhan_issuer_valuation_2019_v1",
+  "source_results_sha256": "28c273c950e930e0e2a04c00ac00e8835b0db20f980c9dd937b7762e4f1990a1",
+  "source_manifest_sha256": "132767f64da6cf6dbb0f20ab967260969777263fea4de8c2e988518aea799d64",
+  "source_variants": ["issuer_quarter_sigma_half", "issuer_one_sigma_half"],
+  "cases": ["frozen_half_book", "inform_unreceived_buyers", "inform_unreceived_sellers", "inform_unreceived_both"],
+  "quantity_policy": "freeze_submitted_side_quantity_identity_and_priority; reapply_wallet_and_inventory_acceptance",
+  "state_policy": "reset_every_session_to_original_source_state; never_feed_counterfactual_state_into_later_sessions",
+  "price_policy": "deliver_only_current_company_message_to_selected_originally_unreceived_submitted_orders",
+  "dense_audit_sessions": [0, 10],
+  "interpretation": "Post-hoc quote-channel intervention on consumed development ledgers. This isolates single-step quotes at fixed submitted orders and original state. It does not re-run portfolio decisions, identify real information effects, or form a coherent multi-day counterfactual price path."
+}

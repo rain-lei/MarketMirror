@@ -1,0 +1,15 @@
+{
+  "run_id": "semantic_h2_2020_own_price_feedback",
+  "auction_config": "semantic_auction_all126_2020.json",
+  "feedback_parameters": {"momentum_sessions": 5, "volatility_sessions": 20, "volatility_floor": 0.01},
+  "quote_response_bps": [200, 500],
+  "scenarios": [
+    {"scenario_id": "conditioned_base", "feedback_mode": "conditioned", "profile_mode": "homogeneous", "order_mode": "forward", "seed": 0, "inventory": [0, 300, 800, 1600]},
+    {"scenario_id": "endogenous_homogeneous", "feedback_mode": "endogenous", "profile_mode": "homogeneous", "order_mode": "forward", "seed": 0, "inventory": [0, 300, 800, 1600]},
+    {"scenario_id": "endogenous_cohort_forward", "feedback_mode": "endogenous", "profile_mode": "fixed_cohort_v1", "order_mode": "forward", "seed": 0, "inventory": [0, 300, 800, 1600]},
+    {"scenario_id": "endogenous_cohort_reverse", "feedback_mode": "endogenous", "profile_mode": "fixed_cohort_v1", "order_mode": "reverse", "seed": 0, "inventory": [0, 300, 800, 1600]},
+    {"scenario_id": "endogenous_cohort_seed7", "feedback_mode": "endogenous", "profile_mode": "fixed_cohort_v1", "order_mode": "hashed", "seed": 7, "inventory": [0, 300, 800, 1600]},
+    {"scenario_id": "endogenous_cohort_seed19", "feedback_mode": "endogenous", "profile_mode": "fixed_cohort_v1", "order_mode": "hashed", "seed": 19, "inventory": [0, 300, 800, 1600]},
+    {"scenario_id": "endogenous_balanced_seed7", "feedback_mode": "endogenous", "profile_mode": "fixed_cohort_v1", "order_mode": "hashed", "seed": 7, "inventory": [600, 700, 700, 700]}
+  ]
+}

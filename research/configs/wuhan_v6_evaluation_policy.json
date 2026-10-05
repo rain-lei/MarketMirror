@@ -1,0 +1,28 @@
+{
+  "protocol": "wuhan-sixth-company-source-first-evaluation-v6",
+  "sample_role": "sixth_disjoint_company_evaluation",
+  "sample_size": 250,
+  "selection_rule": "visible_question_topic_pair_sha256_after_excluding_five_cohorts",
+  "reviewer_kind": "single_ai_assistant",
+  "review_before_model_outputs": true,
+  "model_outputs_previously_seen": false,
+  "human_gold_ready": false,
+  "external_preregistration": false,
+  "review_rule": "Read every complete pre-event question and company reply before any sixth-cohort model output. Use only company-confirmed facts and the frozen v6 ontology. Preserve incomplete states and reject question-only rumors, routine counts, static capabilities and stale disclosures. Each event needs a unique exact quote from the reply and each item an individual substantive reason. Do not use future prices, unseen disclosures or sixth-cohort model outputs.",
+  "event_types": ["regulation", "liquidity", "earnings", "governance", "other"],
+  "thresholds": {
+    "max_parse_error_rate": 0.05,
+    "min_event_detection_f1": 0.7,
+    "min_supported_type_macro_f1": 0.6,
+    "must_not_underperform_keyword": true,
+    "min_reference_positive_replies": 30,
+    "min_reference_replies_per_event_type": 5
+  },
+  "bootstrap": {
+    "unit": "company",
+    "replicates": 5000,
+    "seed": 20260927,
+    "interpretation": "Descriptive paired resampling of the fixed sixth company sample, not a population confidence interval."
+  },
+  "score_interpretation": "Agreement with one AI source-first review on a sixth company-disjoint, answer-visible, question-topic-enriched sample. This is not human-ground-truth accuracy, natural event prevalence, market prediction or regulatory-warning validity. Insufficient positive reference support blocks a five-type research signal even if observed F1 is high."
+}

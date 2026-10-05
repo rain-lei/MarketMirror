@@ -1,0 +1,18 @@
+{
+  "stock_input": "../../research_outputs/wuhan_pre_event_fresh_v3_holdout_market_download_2020_v2/stock_returns.csv",
+  "benchmark_input": "../../research_outputs/wuhan_pre_event_fresh_v3_holdout_market_download_2020_v2/benchmark_prices.csv",
+  "calendar_input": "../../research_outputs/wuhan_pre_event_fresh_v3_holdout_market_download_2020_v2/calendar.csv",
+  "benchmark_id": "sh.000300",
+  "stock_format": "returns",
+  "benchmark_format": "prices",
+  "stock_value_column": "stock_return_pct",
+  "benchmark_value_column": "close",
+  "stock_return_unit": "percent",
+  "stock_return_basis": "mixed_adjusted_and_unadjusted_price_return",
+  "benchmark_price_basis": "price_index",
+  "stock_data_source": "Mixed observed sources: BaoStock SDK 0.9.4 adjusted pctChg for 125 symbols; Sina daily close-to-close price returns for sz.200468 with no adjustment parameter; see the composite download manifest and source hashes.",
+  "benchmark_data_source": "BaoStock SDK 0.9.4; index flag=3; https://www.baostock.com/mainContent?file=pythonAPI.md; see the composite download manifest",
+  "calendar_data_source": "BaoStock query_trade_dates open-day flags; https://www.baostock.com/mainContent?file=pythonAPI.md; see the composite download manifest",
+  "data_kind": "observed",
+  "return_type": "simple"
+}

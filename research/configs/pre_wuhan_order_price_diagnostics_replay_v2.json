@@ -1,0 +1,30 @@
+{
+  "allow_new_pdf_parsing_or_rendering": false,
+  "allow_new_simulation": false,
+  "cause_verified": false,
+  "changes": "Replay-only successor verifies every historical input except one exactly named, non-executed native renderer whose old and current hashes are both fixed. Every other numerical/source/code binding is still required. No prices, messages, wallets, parameters, algorithms, cohorts or gates change. The source manifest must rebuild byte-identically with its historical input hashes retained as historical metadata. A new independent v2 receipt binds the actual current renderer and declares the exception; all v1 numerical fields must match.",
+  "frozen_at_utc": "2026-10-02T00:35:23.095948+00:00",
+  "historical_sha256": "aac096ff054753776e9efe804a3480e3fadeaff1e08c7c4d22e4b87dbbce025e",
+  "history": "The first independent v1 run and production replay exited successfully before the runtime drift. Initial unobserved independent replay handle is now absent and left unknown; resumed v1 replay failed on the renderer hash. All original successful/failed evidence remains. Same reported renderer version does not establish identical bytes or updater cause.",
+  "inputs": {
+    "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe": "3f2440140fef98ddd1ef0772a10d8e58dc3564a9b15a14b4611b5bbd5bdcd37f",
+    "research/configs/pre_wuhan_order_price_diagnostics_2019.json": "d42ca68e71fee0201824220d141f6651106248a6f3aaca4dcfb43015791f0e9f",
+    "research/simulation/run_pre_wuhan_order_price_diagnostics_replay_v2.py": "e4dafe09d8fe301d9970f219d54e33be78f52bd526c49b9ed90c0ae0acba1b26",
+    "research/simulation/verify_pre_wuhan_order_price_diagnostics_2019_v2.py": "4fd3cc72866aac0aaf4aaf625bfd4201835989f21dd961b97f3476db83560c24",
+    "research_outputs/pre_wuhan_order_price_diagnostics_2019_v1/books.jsonl.gz": "445236039cc208296817bf098503641a02e97a04e157777a983780a4271926aa",
+    "research_outputs/pre_wuhan_order_price_diagnostics_2019_v1/manifest.json": "4cd4b5f3a4d7b7ab0a1b98a1a3706359a2c59fb8b40af258a3fb454f0f0d85b0",
+    "research_outputs/pre_wuhan_order_price_diagnostics_2019_v1/summary.json": "e7ba69990c24a47cce738ce1c1e87e8cfb79a77d7503bd5bcf0a711dd320ba42",
+    "research_outputs/pre_wuhan_order_price_independent_rebuild_resume_20261002.txt": "5683872569dc555ac3414529e4a8807ee66604b3b86f7740f98e76e6c4174e55",
+    "research_outputs/pre_wuhan_order_price_runtime_binding_failure_20261002.json": "ee6051a766b0237e01aefe08095ac656091b9a317d31a865c07574d4fe69aadf",
+    "research_outputs/pre_wuhan_order_price_statistics_2019_v1.json": "f103571b86f4d554d48f512272423c1c137464c271b428e1544c1ff99824f642",
+    "research_outputs/pre_wuhan_price_feedback_channels_final_verification_20261002.json": "c75dcafe24c6df5d25141d9ed51fa6b46d4c7168d4a0f7ddebca488dbb5bdc7f",
+    "research_outputs/run_order_price_full_tests_20261002_v3.py": "2d38e0eaa8a5d5dcc19fdbb267ec1d8bb2521333fea4866251c4b6d046f6bfeb",
+    "tests/test_order_price_diagnostics_replay_v2.py": "2f5daa3ad22de305bb10c4d02965f36354306e2caff9b1ecfbd5e9aca8e5ae9e"
+  },
+  "interpretation": "Previously inspected diagnostics, scope repair only. No PDF reparsing, rendering or historical PDF-environment conformance claim. The old source-PDF QC and previous renderer discrepancy remain unresolved historical evidence, not overwritten.",
+  "observed_sha256": "3f2440140fef98ddd1ef0772a10d8e58dc3564a9b15a14b4611b5bbd5bdcd37f",
+  "observed_version_string": "26.07.0",
+  "renderer_path": "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe",
+  "scope": "JSON_AND_GZIP_DIAGNOSTIC_REPLAY_ONLY",
+  "version": "accepted-book-replay-nonexecuted-renderer-scope-v2"
+}

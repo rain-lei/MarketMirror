@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>MarketMirror · 研究工作台</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="mark">M</span><span>MarketMirror <small>研究工作台</small></span></div>
+    <span class="top-label">本机研究 · 探索性</span>
+  </header>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">REPRODUCIBLE RESEARCH / 2018 + 2020 PILOTS</p>
+        <h1>从证据到结果，<br><em>每一步都能复核。</em></h1>
+        <p class="lead">本地已核验的问答、行情、事件研究与 Agent 规则回放。页面只展示筛选后的汇总数据；原始文本和个人路径不会写入页面。</p>
+        <div class="hero-actions"><a href="#experiments" class="button primary">查看实验结果 <span>↘</span></a><a href="#provenance" class="button secondary">核对证据链</a><a href="report.md" download class="button secondary">下载摘要报告</a></div>
+      </div>
+      <aside class="hero-note"><span class="signal-dot"></span><strong>研究状态</strong><p>可复现性已通过本机核验。文本增益、投资者行为参数和价格冲击机制尚无充分验证。</p></aside>
+    </section>
+
+    <section class="metrics" id="metrics" aria-label="研究概况"></section>
+
+    <section class="section" id="experiments">
+      <div class="section-head"><div><p class="eyebrow">01 / EVIDENCE</p><h2>历史事件窗口</h2><p>2018 资管新规与 2020 武汉通告；武汉通告的两种对齐属于同一事件。</p></div><span class="section-tag">3 只股票 · 2 个历史节点</span></div>
+      <div class="grid two">
+        <article class="card chart-card"><div class="card-head"><div><h3>异常收益路径</h3><p>市场模型 CAR：日异常收益之和</p></div><label class="field-label">事件口径<select id="event-select"></select></label></div><div id="event-chart" class="chart" role="img" aria-label="异常收益路径图"></div><p id="event-caption" class="note"></p></article>
+        <article class="card"><div class="card-head"><div><h3>股票对照</h3><p>CAR 与事件日成交额 / 基期中位数</p></div></div><div id="event-table"></div><div class="callout"><span>日期诊断</span><p id="placebo-summary"></p></div></article>
+      </div>
+      <article class="card"><h3>第二行情源口径敏感性</h3><p class="note">原 BaoStock 事件研究使用 adjustflag=1，东方财富当前历史快照使用 fqt=0 不复权日涨跌幅。两种 CAR 的差混合了显示舍入与调整基准差异，不能当作同口径独立复现。</p><div id="independent-quote-table"></div><p class="note">九组事件窗口逐日收益差均在 0.0052 个百分点内；2020 年核对区间三只股票各有一处更大差异，仅万科 A 的 2019-08-15 进入两种武汉对齐口径的估计窗口。该快照不是 2018/2020 当时留存的数据。</p></article>
+    </section>
+
+    <section class="section" id="prediction">
+      <div class="section-head"><div><p class="eyebrow">02 / BASELINE</p><h2>文本增量预测</h2><p>固定测试期的纯行情模型与行情加文本模型对照。</p></div><span class="section-tag">时间切分 · 收盘后预测</span></div>
+      <div class="grid two">
+        <article class="card"><h3>测试误差</h3><div id="prediction-bars" class="bar-list"></div><p id="prediction-interval" class="note"></p></article>
+        <article class="card contrast"><span class="card-kicker">结论边界</span><h3>文本改善尚未确认</h3><p>误差差值的区间包含零。问答公开时点仍采用来源时间代理，无法从这次小样本结果推断稳定的预测增益。</p><div class="contrast-rule"></div><p class="small">预测目标是下一交易日简单收益；没有使用未经确认的财务快照或公司违规标签。</p></article>
+      </div>
+      <article class="card"><h3>问答公开时间假设敏感性</h3><p class="note">对同一三股试验，分别把提问和回复的来源可见时间再后移 0、1、3、7 个自然日。0 日必须复现原实验；纯行情对照保持不变。</p><div id="visibility-lag-table"></div><p class="note">延迟是假设，缺少首次公开日志。表中的区间都包含零；扫描结果不能反推出真实时刻或证明文本有稳定预测增益。</p></article>
+    </section>
+
+    <section class="section" id="financial-dictionary">
+      <div class="section-head"><div><p class="eyebrow">03 / DATA CONTRACT</p><h2>财务字段口径</h2><p>把已观察到的字段结构与尚未核实的经济含义分开查看。</p></div><span class="section-tag">68 个字段 · 全部待核对</span></div>
+      <div class="grid two">
+        <article class="card"><h3>字段状态</h3><div id="financial-summary" class="semantic-status"></div><div id="financial-unresolved" class="unresolved-list"></div></article>
+        <article class="card"><h3>使用边界</h3><p class="note">这些统计来自原始财务列的结构扫描，不代表单位、报告期、公告时间或计算公式已经确认。</p><div id="financial-boundaries" class="boundary-list"></div></article>
+      </div>
+      <article class="card financial-table-card"><div class="card-head"><div><h3>逐字段统计</h3><p>缺失率、数值形态和当前核对状态；不会展示问答正文。</p></div><span id="financial-source-note" class="section-tag"></span></div><div id="financial-fields-table"></div></article>
+    </section>
+
+    <section class="section" id="agents">
+      <div class="section-head"><div><p class="eyebrow">04 / MECHANISM</p><h2>Agent 规则诊断</h2><p>三类示意投资者的历史收益回放、文本消融与有限市场机制检验。</p></div><span class="section-tag">三类角色 · 三段时期</span></div>
+      <div class="card"><h3>126 公司语义信号对照</h3><p id="semantic-ablation-summary" class="note"></p><div id="semantic-ablation-table"></div><p class="note">两条路径共用真实收益、交易成本和停牌限制。方向未知的事件可以通过不确定性影响持仓；无事件记录不施加风险惩罚。Agent 参数未校准，文本按累计可见条目均值保留，末值差不证明文本预测能力。</p></div>
+      <div class="card"><h3>文本记忆与公开延迟</h3><p id="semantic-memory-summary" class="note"></p><div id="semantic-memory-table"></div><p class="note">每个均值覆盖全部 126 家公司。滚动窗口保留首个可见交易日起 N 个交易日；指数半衰期按交易日计，单条事件的幅度确实随时间衰减。延迟按自然日计。全部情景采用相同无文本逐日对照，累计零延迟复现原回放；未用本表选择最佳参数。</p></div>
+      <div class="card"><h3>有限资金与持仓的集合竞价</h3><p id="semantic-auction-summary" class="note"></p><div id="semantic-auction-table"></div><p class="note">每家公司是独立的模型资产市场，初始归一化价格为 100。价格由实际双边成交形成，没有成交则不变；未成交订单到期，资金与库存有限。真实收益没有直接推进模拟价格。报价响应与持仓均为假设，仍缺少真实行为校准和跨资产组合约束。</p></div>
+      <div class="card"><h3>模拟价格反馈与主体差异</h3><p id="semantic-feedback-summary" class="note"></p><div id="semantic-feedback-table"></div><p id="semantic-feedback-diagnosis" class="note"></p><p class="note">内生情景只从自己已经生成且截至 t-2 的价格计算动量和波动率，缺失冷启动收益按零补齐。主体信念、风险预算和文本响应差异均为固定假设；均衡库存保持总股票供给不变。正反顺序及两个种子检验同价配给敏感性，不构成置信区间。日期、停牌代理和问答仍来自历史数据；尚无真实行为校准与多资产组合。</p></div>
+      <div class="card"><h3>有限背景交易需求</h3><p id="semantic-background-summary" class="note"></p><div id="semantic-background-table"></div><p class="note">背景账户按固定种子的库存目标再平衡，每个账户的现金和股票有限；日订单上限、报价主动程度和需求幅度均为假设。每个资金配置都有同资金、同库存的闲置对照。策略成交率只以策略自身已接受订单量为分母，背景之间的成交另列；总成交量增加不等于真实市场流动性已校准。</p></div>
+      <div class="card"><div class="filters"><label class="field-label">时期<select id="period-select"></select></label><label class="field-label">股票<select id="stock-select"></select></label><span class="filter-note">期末财富 / 初始现金；1.000 为现金基准</span></div><div id="replay-table"></div><p class="note">归一化收益指数并非实际成交价。订单假定在参考收盘价全部成交，不改变历史价格；角色参数未用真实投资者交易校准。</p></div>
+      <div class="card"><h3>资金规模与容量情景</h3><p class="note">每类 Agent 在每只股票分别假设 10 亿元。事后比例用同日实际总成交额；容量约束只用决策前已知的成交额设 1% 情景上限。六项容量运行已独立重跑。</p><div id="capacity-table"></div><p class="note">1% 不是从盘口估计的可成交深度；财富差异不证明策略改善或监管预测能力。</p></div>
+      <div class="card"><div class="card-head"><div><h3>已观察收益上的假设价格冲击</h3><p>同一事件的有/无情景信号配对；三种冲击系数。</p></div><label class="field-label">历史节点<select id="counterfactual-select"></select></label></div><p id="counterfactual-assumptions" class="note"></p><div id="counterfactual-table"></div><p class="note">仅平安银行。事件方向、流动性和冲击系数均为手设；实际收益已包含真实交易运动，叠加冲击可能重复计入。价格指数差不是预测或历史拟合。</p></div>
+      <div class="card"><h3>滞后成交额冲击敏感性</h3><p id="lagged-impact-summary" class="note"></p><div id="lagged-impact-table"></div><p class="note">容量预算和冲击分母分别取决策前 t-2 的历史双向总成交额。1%/5% 比例、线性冲击和事件信号均为手设；总成交额不是可执行盘口深度。末值差异随假设变化，不代表历史价格拟合或监管预警。</p></div>
+    </section>
+
+    <section class="section" id="provenance">
+      <div class="section-head"><div><p class="eyebrow">05 / PROVENANCE</p><h2>运行与证据</h2><p>先核对固定清单，再从当前本地输入重新执行。</p></div><span class="section-tag">本机文件版本</span></div>
+      <div class="grid two">
+        <article class="card"><h3>运行核验</h3><div id="run-list" class="run-list"></div><div id="run-details" class="run-details"></div></article>
+        <article class="card"><h3>证据来源与标注状态</h3><div id="semantic-status" class="semantic-status"></div><div id="model-run-status" class="semantic-status"></div><div id="holdout-model-status" class="semantic-status"></div><div id="review-readiness-status" class="semantic-status"></div><div id="agent-signal-gate-status" class="semantic-status"></div><div id="evidence-links" class="evidence-links"></div><p class="note">外部网页链接用于来源复核；本地缓存与 SHA-256 留在研究产物中。</p></article>
+      </div>
+    </section>
+
+    <section class="section" id="rerun">
+      <div class="section-head"><div><p class="eyebrow">06 / REEXECUTION</p><h2>受控重跑</h2><p>选择固定清单中的一项，重新执行并与已存档产物比较。</p></div><span class="section-tag">仅本机 · 一次一项</span></div>
+      <div class="grid two">
+        <article class="card"><h3>选择运行</h3><p class="note">上方的事件和股票筛选只改变摘要显示；这里使用已固定的完整实验配置、输入版本和执行版本。页面只能提交服务端已核验的版本组合。</p><div class="run-controls"><label class="field-label">固定运行<select id="rerun-select" disabled></select></label><label class="field-label">数据版本<select id="data-version-select" disabled></select></label><label class="field-label">执行版本<select id="model-version-select" disabled></select></label><button id="rerun-button" class="button primary" type="button" disabled>开始重跑</button></div><p id="rerun-status" class="run-status" role="status">正在检查本地执行服务…</p></article>
+        <article class="card"><h3>本机运行记录</h3><div id="rerun-history" class="run-history"><p class="note">尚未连接执行服务。</p></div><p class="note">每次运行保存所选配置、固定清单哈希、逐产物比较结果和独立目录。这里仅显示状态摘要。</p></article>
+      </div>
+    </section>
+
+    <section class="limits"><p class="eyebrow">RESEARCH LIMITS</p><h2>阅读这些结果前</h2><ul id="limitations"></ul></section>
+  </main>
+  <footer><span>MarketMirror · Research rebuild</span><span>本地摘要与固定实验重跑</span></footer>
+  <script src="data.js"></script><script src="app.js"></script>
+</body>
+</html>

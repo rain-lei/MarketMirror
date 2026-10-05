@@ -1,0 +1,19 @@
+{
+  "protocol": "assistant_review_v1",
+  "reviewer_kind": "ai_assistant",
+  "required_reviewers": 1,
+  "requires_adjudicator": false,
+  "independent_reference": false,
+  "model_outputs_previously_seen": true,
+  "sample_role": "exploratory_development_after_review_protocol_change",
+  "question_rule": "Only company-confirmed events feed this experiment; question-only claims remain empty and are explained individually.",
+  "reply_rule": "Decide each item from visible reply text, with an individual rationale and exact reply evidence. Denial overrides the question. No future prices or unseen replies.",
+  "score_interpretation": "Agreement with one AI reviewer, not independently measured semantic accuracy.",
+  "thresholds": {
+    "max_parse_error_rate": 0.05,
+    "min_event_detection_f1": 0.70,
+    "min_supported_type_macro_f1": 0.60,
+    "must_not_underperform_keyword": true
+  },
+  "authorization": "2026-09-27 user requested removing the dual-review step and having the assistant carefully review the samples."
+}

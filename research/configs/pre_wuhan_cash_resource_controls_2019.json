@@ -1,0 +1,214 @@
+{
+  "agent_signal_enabled": false,
+  "cash_transfer_rule": "For each separated asset wallet, B background cash, S strategy cash, odds multiplier m is 2/5, 1, or 4. New background group total is floor((B+S)*m*B/(S+m*B)), zero if B+S=0. Transfer only the difference: donors pay proportional to current cash via largest remainder/name ties, recipients receive uniformly/name remainder. Initial equal cash gives specified half/original/double background amounts; full paths transfer at initialization only. Funding-only probes transfer on each factual prior snapshot but are never executed. Zero group odds stay zero; zero recipient wallets can receive when the group has positive odds.",
+  "dense_audit_sessions": [
+    0,
+    10
+  ],
+  "derived_expected_coverage": {
+    "asset_calls": 317340,
+    "baseline_funding_records_audited": 35260,
+    "conditions": 60,
+    "dense_asset_calls": 14760,
+    "full_path_ledger_records": 105780,
+    "initial_resource_receipts_audited": 1640,
+    "legacy_complete_paths_matched": 820,
+    "legacy_daily_records_matched": 35260,
+    "paired_private_receipt_values": 6981480,
+    "paths": 2460,
+    "same_state_funding_records": 70520,
+    "strategy_allocation_checks": 1269360
+  },
+  "frozen_at_utc": "2026-10-02T01:09:23.192869+00:00",
+  "hypothesis": "Per-asset total cash and shares fixed. Initial group cash odds shifts alone vary background holdings from 25k to 50k to 100k yuan per owner, and strategy holdings from 125k to 100k to 50k per asset. Compare both inventory anchors and original/all-off price feedback, all five seeds; retain all outcomes. Same-state funding-only probes keep every factual submitted order fixed and recompute finite escrows/acceptance, without hypothetical fills or prices.",
+  "inputs": {
+    "research/configs/pre_wuhan_price_feedback_channels_2019.json": "6ae7c811a30b4d3203f35d4440684b01d3020ce70cc8bdd499a4ee73d73777c4",
+    "research/configs/wuhan_pre_event_pit_portfolio_no_text_2020.json": "097012736f5a1b51d60a5de4af8e304d8619a20bb7c92556dd3872555eae6b1f",
+    "research/simulation/audit_cash_resource_controls.py": "21778de6a9e552d71cb0ddc8f668a7cdd58be9b661820bdc04271942ba9beff7",
+    "research/simulation/cash_resource_controls.py": "f7b8dd6baba88f4c38bdd72a5615d98b3fd03c414ed1886edf7ebdad0a910e50",
+    "research/simulation/cash_resource_metrics.py": "cc0cc0814555dae066ed1f4c41766504305d53445ac66c8bf8e0d25514db2084",
+    "research/simulation/portfolio_cash_resource_controls.py": "3810d963be694a633c1f013ebd184639d50971851be7be21c8cd89138dfbee9c",
+    "research/simulation/run_pre_wuhan_cash_resource_controls_2019.py": "d2dfcbc61cdc71d52f888ebdfcf8d0b8e7369516ebd03e79d73e8f868e20a51e",
+    "research/simulation/verify_pre_wuhan_cash_resource_controls_2019.py": "fcc3279153e7c7710580e022bc6d7c58db09bbd9458e372508ab1861970473b1",
+    "research_outputs/pre_wuhan_cash_resource_lineage_20261002.json": "60b69a29663483c537b808a97db12c5bad7a650e85d0e379259ef6b14a2d4fb5",
+    "research_outputs/pre_wuhan_order_price_final_verification_20261002.json": "f53687561a7b065ccf3c251d326ab862675c692e8be86496fa11419a5c43bfac",
+    "research_outputs/pre_wuhan_price_feedback_channel_statistics_2019_v2.json": "71c89bca31bec7096276d478430053dd0cf9e55e688e149447ad889ef38f56c4",
+    "research_outputs/pre_wuhan_price_feedback_channels_2019_v1/ledger.jsonl.gz": "cb2b458945dee7401702a703aab436d2a89ec7a37431a5b31d19860603f50f43",
+    "research_outputs/pre_wuhan_price_feedback_channels_2019_v1/manifest.json": "d5c07996b3e9e4ac4f4d8bbf787445d5612061b4b8f55eebd782eaee87c35d54",
+    "research_outputs/pre_wuhan_price_feedback_channels_2019_v1/results.json": "28af5d3fc6852f9c7ef09b09eebcc24abfdaac76e986b8db64bdb587e421d53e",
+    "tests/test_cash_resource_controls.py": "e2f4bbeff4c9fa43b4b4381fcce800e3fdcaa79b9a86528214fbbbff40c129cf",
+    "tests/test_cash_resource_metrics.py": "3f064d700bd5d7c40c84e1f146e042f5102a0713ae4d01023892ff2365001652"
+  },
+  "interpretation": "Previous split-channel and all-book diagnostics were inspected before this freeze; small implementation fixtures also inspected. This is further mechanism development on consumed, retrospectively selected 2019 companies, not blind historic validation. Cash allocation is an internal finite resource hypothesis, not observed fund flow or investor calibration. Same-state funding-only rows describe acceptance under fixed requests, never executed prices or causal filled shares. No issuer balance-sheet field is used as investor cash; no new text/economic signal or gate is opened. The earlier declared non-executed renderer difference and source-PDF QC remain. No new PDF parsing/rendering is needed.",
+  "joint_limits": {
+    "mean_return_gap_max": 0.005,
+    "portfolio_volatility_ratio_max": 2.0,
+    "portfolio_volatility_ratio_min": 0.5,
+    "stock_correlation_gap_max": 0.1,
+    "volatility_ratio_max": 2.0,
+    "volatility_ratio_min": 0.5,
+    "zero_return_fraction_gap_max": 0.1
+  },
+  "legacy_bridge": "All four original-cash anchor/feedback cells across five seeds must match every source summary/spec and all 35,260 original daily objects, 820 full paths. No projection removes resource or trading differences.",
+  "metadata": "Nonbaseline daily and summary records declare applied initial cash-resource rational control, and path saves full initial transfer receipt. Original resource group adds no such metadata in simulated objects. Strategy initial_cash parameters remain the original initialization input; actual initial wealth/wallets come from the audited cash transfer, never from issuer financial cash.",
+  "seeds": [
+    {
+      "arrival_seed": 7,
+      "background_seed": 7,
+      "information_seed": "marketmirror-issuer-information-coverage-v1",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1",
+      "seed_id": "reference_seed7"
+    },
+    {
+      "arrival_seed": 11,
+      "background_seed": 11,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:11",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:11",
+      "seed_id": "replicate_seed11"
+    },
+    {
+      "arrival_seed": 23,
+      "background_seed": 23,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:23",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:23",
+      "seed_id": "replicate_seed23"
+    },
+    {
+      "arrival_seed": 47,
+      "background_seed": 47,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:47",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:47",
+      "seed_id": "replicate_seed47"
+    },
+    {
+      "arrival_seed": 89,
+      "background_seed": 89,
+      "information_seed": "marketmirror-issuer-information-coverage-v1:feedback-replicate:89",
+      "innovation_seed": "marketmirror-issuer-risk-innovation-v1:feedback-replicate:89",
+      "seed_id": "replicate_seed89"
+    }
+  ],
+  "variants": [
+    {
+      "background_anchor": "initial_inventory",
+      "cash_control": {
+        "denominator": 1,
+        "numerator": 1
+      },
+      "cash_name": "original_cash",
+      "feedback_scale": 1.0,
+      "name": "initial_inventory_feedback_full_cash_original_cash"
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "cash_control": {
+        "denominator": 5,
+        "numerator": 2
+      },
+      "cash_name": "less_background",
+      "feedback_scale": 1.0,
+      "name": "initial_inventory_feedback_full_cash_less_background"
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "cash_control": {
+        "denominator": 1,
+        "numerator": 4
+      },
+      "cash_name": "more_background",
+      "feedback_scale": 1.0,
+      "name": "initial_inventory_feedback_full_cash_more_background"
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "cash_control": {
+        "denominator": 1,
+        "numerator": 1
+      },
+      "cash_name": "original_cash",
+      "feedback_scale": 0.0,
+      "name": "initial_inventory_feedback_both_off_cash_original_cash"
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "cash_control": {
+        "denominator": 5,
+        "numerator": 2
+      },
+      "cash_name": "less_background",
+      "feedback_scale": 0.0,
+      "name": "initial_inventory_feedback_both_off_cash_less_background"
+    },
+    {
+      "background_anchor": "initial_inventory",
+      "cash_control": {
+        "denominator": 1,
+        "numerator": 4
+      },
+      "cash_name": "more_background",
+      "feedback_scale": 0.0,
+      "name": "initial_inventory_feedback_both_off_cash_more_background"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "cash_control": {
+        "denominator": 1,
+        "numerator": 1
+      },
+      "cash_name": "original_cash",
+      "feedback_scale": 1.0,
+      "name": "current_inventory_feedback_full_cash_original_cash"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "cash_control": {
+        "denominator": 5,
+        "numerator": 2
+      },
+      "cash_name": "less_background",
+      "feedback_scale": 1.0,
+      "name": "current_inventory_feedback_full_cash_less_background"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "cash_control": {
+        "denominator": 1,
+        "numerator": 4
+      },
+      "cash_name": "more_background",
+      "feedback_scale": 1.0,
+      "name": "current_inventory_feedback_full_cash_more_background"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "cash_control": {
+        "denominator": 1,
+        "numerator": 1
+      },
+      "cash_name": "original_cash",
+      "feedback_scale": 0.0,
+      "name": "current_inventory_feedback_both_off_cash_original_cash"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "cash_control": {
+        "denominator": 5,
+        "numerator": 2
+      },
+      "cash_name": "less_background",
+      "feedback_scale": 0.0,
+      "name": "current_inventory_feedback_both_off_cash_less_background"
+    },
+    {
+      "background_anchor": "current_inventory",
+      "cash_control": {
+        "denominator": 1,
+        "numerator": 4
+      },
+      "cash_name": "more_background",
+      "feedback_scale": 0.0,
+      "name": "current_inventory_feedback_both_off_cash_more_background"
+    }
+  ],
+  "version": "pre-wuhan-fixed-total-group-cash-five-seed-v1"
+}

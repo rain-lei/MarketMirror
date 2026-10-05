@@ -1,0 +1,71 @@
+{
+  "agent_signal_enabled": false,
+  "classification_priority": [
+    "halted",
+    "no_match",
+    "prior_optimal",
+    "volume_requires_move",
+    "imbalance_requires_move"
+  ],
+  "dense_check_sessions": [
+    0,
+    10
+  ],
+  "expected_coverage": {
+    "asset_books": 211560,
+    "basket_days": 70520,
+    "conditions": 40,
+    "paths": 1640
+  },
+  "frozen_at_utc": "2026-10-01T17:30:41.567821+00:00",
+  "hypothesis": "Explain all existing price movements through accepted-book maximum volume, minimum absolute imbalance, and nearest-prior tick selection. Keep requested, accepted, eligible and filled quantities distinct; retain all roles, private-receipt groups, profiles, branches, phases and conditions. This reader submits no orders and forms no new prices.",
+  "independence": "Production diagnostics use a signed-event interval sweep. Independent verification directly enumerates order eligibility at breakpoints, reconstructs all daily real separated wallets with the frozen rational audit, and compares the full tick grid for every asset at sessions 0 and 10. Independent totals, contexts, conditional return masses and seed medians do not call production aggregation.",
+  "inputs": {
+    "research/configs/pre_wuhan_price_feedback_channels_2019.json": "6ae7c811a30b4d3203f35d4440684b01d3020ce70cc8bdd499a4ee73d73777c4",
+    "research/configs/pre_wuhan_price_feedback_channels_verifier_v2.json": "8856a633761b28d23219f043b76b70fa34c4d62bb7e83c1a1477ec9b792f205a",
+    "research/configs/wuhan_pre_event_pit_portfolio_no_text_2020.json": "097012736f5a1b51d60a5de4af8e304d8619a20bb7c92556dd3872555eae6b1f",
+    "research/simulation/order_price_diagnostics.py": "ba668c3b18b484386d973efd72783484288a5eaff6faa9a5cc138f7d9a33d249",
+    "research/simulation/run_pre_wuhan_order_price_diagnostics_2019.py": "645ca05bf1024f81bac044fc9efe3a3e65349ea4dc86296142b1edbe30a84ee0",
+    "research/simulation/verify_pre_wuhan_order_price_diagnostics_2019.py": "b8c8177281801b4c45758cb9d0d59af243a9f16c64e9fb7547e9a746547d0b84",
+    "research_outputs/pre_wuhan_price_feedback_channel_statistics_2019_v2.json": "71c89bca31bec7096276d478430053dd0cf9e55e688e149447ad889ef38f56c4",
+    "research_outputs/pre_wuhan_price_feedback_channels_2019_v1/ledger.jsonl.gz": "cb2b458945dee7401702a703aab436d2a89ec7a37431a5b31d19860603f50f43",
+    "research_outputs/pre_wuhan_price_feedback_channels_2019_v1/manifest.json": "d5c07996b3e9e4ac4f4d8bbf787445d5612061b4b8f55eebd782eaee87c35d54",
+    "research_outputs/pre_wuhan_price_feedback_channels_2019_v1/results.json": "28af5d3fc6852f9c7ef09b09eebcc24abfdaac76e986b8db64bdb587e421d53e",
+    "research_outputs/pre_wuhan_price_feedback_channels_2019_v1/same_state_orders.jsonl.gz": "41d6418129905ded22393d9b4383258b964c4c3cd69447ceda8274008f293149",
+    "research_outputs/pre_wuhan_price_feedback_channels_final_verification_20261002.json": "c75dcafe24c6df5d25141d9ed51fa6b46d4c7168d4a0f7ddebca488dbb5bdc7f",
+    "tests/test_order_price_diagnostics.py": "6b89ac0d2d00668c26b4b8c241de29bd63ca260582f93d98885ca76803d440bc"
+  },
+  "interpretation": "All source factorial outcomes and early source-book examples were inspected before this diagnostic freeze. This is post-outcome mechanism development on the consumed, retrospectively selected 2019 cohort, not a blind experiment or empirical market validation. Accepted-book objectives explain the saved internal clearing rule; conditional return contributions and marginal eligibility are descriptive arithmetic, not causal market shares or sole determining trader claims. Synthetic issuer messages are not observed company news. There are no new sources, calibration, policy effects or validation/release thresholds. Per-asset escrow residual is not the participant whole-wallet balance. Source prices, fills, parameters, text gate and failures remain frozen.",
+  "order_diagnostic_fields": [
+    "owner",
+    "role",
+    "profile",
+    "branch",
+    "received",
+    "side",
+    "requested",
+    "accepted",
+    "filled",
+    "quote_minus_prior_minor",
+    "eligible_at_prior",
+    "eligible_at_clear",
+    "cash_clipped",
+    "inventory_clipped"
+  ],
+  "price_tie_break": "nearest_prior",
+  "session_phases": {
+    "initial": [
+      0,
+      0
+    ],
+    "later_10_42": [
+      10,
+      42
+    ],
+    "warmup_1_9": [
+      1,
+      9
+    ]
+  },
+  "version": "accepted-book-order-to-price-diagnostics-v1"
+}

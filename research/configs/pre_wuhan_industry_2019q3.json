@@ -1,0 +1,15 @@
+{
+  "version": "pre-wuhan-official-industry-dictionary-v1",
+  "source_directory": "../../research_outputs/csrc_industry_2019q3_raw_v1",
+  "release_page_sha256": "b178d5dd1150755f552968d12295bd58d42c9d09a2496a05f1e2e847a6fbe8a4",
+  "pdf_sha256": "5d6599b2e99c04acbc8f5258380e3464e9d64284bff5288192fd0a8230700d78",
+  "expected_pdf_pages": 89,
+  "expected_security_rows": 3702,
+  "classification_period": "2019Q3",
+  "publication_date": "2019-10-28",
+  "source_available_at_proxy": "2019-10-29T00:00:00+08:00",
+  "development_archive": "../../research_outputs/pre_wuhan_background_response_2019_v1/results.json",
+  "development_archive_sha256": "d1d65652ab352d1b753d17f8ae76de35f47aca4943d316e1b7daa035710242fe",
+  "development_manifest_sha256": "20ee5cd90f5a7d2f2d6903ee7043c1bd37b0fc6c5bf2f6791bfa82a8c34245d1",
+  "interpretation": "Official historical table retrieved in 2026; date-eligible development grouping, not a certified unchanged 2019 snapshot or a policy impact coefficient."
+}

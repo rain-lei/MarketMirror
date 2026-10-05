@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "marketmirror://schema/event_definition",
+  "title": "MarketMirror event definition",
+  "type": "object",
+  "required": ["event_id", "event_date", "event_type", "evidence_source"],
+  "oneOf": [{"required": ["visible_date"], "not": {"required": ["visible_at"]}}, {"required": ["visible_at"], "not": {"required": ["visible_date"]}}],
+  "properties": {
+    "event_id": {"type": "string", "minLength": 1},
+    "event_date": {"type": "string", "format": "date"},
+    "visible_date": {"type": "string", "format": "date"},
+    "visible_at": {"type": "string", "format": "date-time"},
+    "event_type": {"type": "string", "minLength": 1},
+    "description": {"type": "string"},
+    "evidence_source": {"type": "string", "minLength": 1}
+  },
+  "additionalProperties": false
+}

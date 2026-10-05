@@ -1,0 +1,16 @@
+{
+  "protocol": "wuhan-fourth-company-source-first-review-v4",
+  "sample_role": "fourth_disjoint_company_evaluation",
+  "reviewer_kind": "single_ai_assistant",
+  "review_before_model_outputs": true,
+  "human_gold_ready": false,
+  "review_rule": "Read every complete visible question and company reply before any v4 model response exists. Confirm only a concrete new company fact, current implementation or specific measurable forecast in the reply; exclude question-only claims, routine shareholder counts, old disclosure dates, static capabilities, other entities' plans and conditional approvals. Apply the v4 operational definitions for regulation, liquidity, earnings, governance and other. Every event needs an exact reply-only quote. Record a unique item-specific reason. Do not use future prices or unseen disclosures.",
+  "event_types": ["regulation", "liquidity", "earnings", "governance", "other"],
+  "thresholds": {
+    "max_parse_error_rate": 0.05,
+    "min_event_detection_f1": 0.7,
+    "min_supported_type_macro_f1": 0.6,
+    "must_not_underperform_keyword": true
+  },
+  "score_interpretation": "Agreement with a single AI source-first review on a disjoint company sample, not human-ground-truth accuracy or market predictive validity."
+}

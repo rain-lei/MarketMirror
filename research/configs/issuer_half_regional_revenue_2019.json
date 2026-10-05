@@ -1,0 +1,18 @@
+{
+  "adjacent_pages": 2,
+  "agent_signal_enabled": false,
+  "business_exposure_values_verified": false,
+  "expected_companies": 123,
+  "frozen_at_utc": "2026-10-01T08:16:34.892616+00:00",
+  "index_path": "research_outputs/issuer_half_business_evidence_2019_v1.json",
+  "inputs": {
+    "research/configs/issuer_half_business_visual_review_2019.json": "54fa8b64635a04bbd769670a9becc331266b5dedcea33cf3aae81bd38403ad97",
+    "research_outputs/issuer_half_business_evidence_2019_v1.json": "865b10637319934b50d90501eee70194a83d04a0d8f772738017b22b36717c8c",
+    "research_outputs/issuer_half_business_evidence_audit_2019_v3.json": "d71bcd9c2775c8816f3bb0a5653e6f8f72eec43a9e431618099bb2675ac3fc43"
+  },
+  "interpretation": "All 123 issuers retained. Physical bordered cells around every fixed geographic anchor, current header roles and explicit unit evidence. Reported totals, full composition, material/main-business subsets, mixed parent/subsidiary hierarchy, missing values and incomplete tables stay distinct. Ratios only to explicitly printed positive totals with exact arithmetic closure; no partial-table normalization, finer Wuhan/Hubei inference, source-QC bypass or target returns. Independent numeric review still required.",
+  "literal_audit_path": "research_outputs/issuer_half_business_evidence_audit_2019_v3.json",
+  "pymupdf_version": "1.27.2.3",
+  "source_period_end": "2019-06-30",
+  "version": "half-year-regional-revenue-bordered-source-cells-v1"
+}

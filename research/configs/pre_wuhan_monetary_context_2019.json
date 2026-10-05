@@ -1,0 +1,7 @@
+{
+  "version": "pre-wuhan-pbc-omo-point-in-time-context-v1",
+  "raw_directory": "research_outputs/pre_wuhan_pbc_omo_raw_2019_v1",
+  "raw_manifest_sha256": "e380e3b050e94c966b026f1f8ef5ede0cc4f0b761b5b3ea5c2d03a3cd13fe97e",
+  "acquisition_config_sha256": "0dd8d40c8f52cdd91dac72576de6ae63e4aab6220909b2b1c2ebd87c3ad1dea4",
+  "interpretation": "Source-backed factual development context covering all selected OMO-category bulletins, including no-reverse-repo declarations, domestic MLF and repo tender observations, and Hong Kong central-bank bills separately. The OMO category does not cover every monetary announcement (including LPR, RRR, CBS and full maturities). Gross amounts are not net liquidity. Latest observed rates are not certified standing rates. Current retrieval is not a certified historical unrevised snapshot; no company shock or price effect is assigned."
+}

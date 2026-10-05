@@ -1,0 +1,20 @@
+{
+  "agent_signal_enabled": false,
+  "business_exposure_values_verified": false,
+  "frozen_at_utc": "2026-10-01T07:03:22.635040+00:00",
+  "index_config_path": "research/configs/issuer_half_business_evidence_2019.json",
+  "index_path": "research_outputs/issuer_half_business_evidence_2019_v1.json",
+  "inputs": {
+    "research/configs/issuer_half_business_evidence_2019.json": "e60a9eeb6cc01b0a893f364742131b59521340139e73b682ccab5b6cc3d53da2",
+    "research_outputs/issuer_disclosure_inventory_raw_2019_2020_v1/inventory.json": "b4b011a671096ceda96e8e4120bc04e9edf2a82bf9658b430b181b2d512f0a26",
+    "research_outputs/issuer_half_business_evidence_2019_v1.json": "865b10637319934b50d90501eee70194a83d04a0d8f772738017b22b36717c8c",
+    "research_outputs/issuer_half_reports_raw_2019_v1/manifest.json": "2092907d4fc3e5554bde18aac0221613805000af51aaa90e52cf65aebaf15007"
+  },
+  "inventory_path": "research_outputs/issuer_disclosure_inventory_raw_2019_2020_v1/inventory.json",
+  "maximum_parallel_reads": 2,
+  "pdftotext_path": "C:\\Program Files\\MiKTeX\\miktex\\bin\\x64\\pdftotext.exe",
+  "pdftotext_sha256": "c6e5549a29ec911dc0c2ba292af986999c396d1ccec7f37eedcc18558e507f6b",
+  "pdftotext_version": "23.13.0",
+  "raw_manifest_path": "research_outputs/issuer_half_reports_raw_2019_v1/manifest.json",
+  "version": "pre-wuhan-half-Poppler-independent-literal-audit-v1"
+}

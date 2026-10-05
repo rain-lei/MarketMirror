@@ -1,0 +1,30 @@
+{
+  "agent_signal_enabled": false,
+  "business_exposure_values_verified": false,
+  "expected_companies": 123,
+  "expected_selected_reports": 122,
+  "frozen_at_utc": "2026-10-01T06:49:07.966436+00:00",
+  "header_report_token": "2019年半年度报告",
+  "inputs": {
+    "research/configs/issuer_disclosures_pre_wuhan_2019_2020.json": "097487b9bd0c1a762f17af3b083ef7491c212ecf312e6bb9590b62bde23ead4e",
+    "research_outputs/issuer_disclosure_inventory_audit_2019_2020_v1.json": "b0446adac09528222671874c2ac23d0d81d2fab133d7d8199f46b64eeaa72954",
+    "research_outputs/issuer_disclosure_inventory_raw_2019_2020_v1/inventory.json": "b4b011a671096ceda96e8e4120bc04e9edf2a82bf9658b430b181b2d512f0a26",
+    "research_outputs/issuer_disclosure_inventory_raw_2019_2020_v1/manifest.json": "a2091634bc064622b129845237dd6e05577531cc0d2690249d61992616322384"
+  },
+  "inventory_path": "research_outputs/issuer_disclosure_inventory_raw_2019_2020_v1/inventory.json",
+  "limitations": [
+    "The retrospective 123-company mechanism cohort and development dates were already inspected, not new blind validation.",
+    "Current official archives are not certified unchanged historical bytes; date-only next-midnight availability remains a proxy.",
+    "No eligible half-year metadata remains missing; later disclosures and Q3 text are not silently substituted.",
+    "Narrative region mention, registered office, subsidiary address and actual regional revenue are different evidence types; unknown quantities remain null."
+  ],
+  "maximum_attempts_per_report": 3,
+  "maximum_parallel_requests": 2,
+  "maximum_pdf_bytes": 60000000,
+  "report_end_date": "2019-06-30",
+  "report_period_key": "2019_half",
+  "selection_rule": "Acquire all unique selected 2019 half-year originals from the already independently audited 123-company official inventory. Preserve missing cohort members. Do not select by returns, Q&A labels, region or financial availability. Revisions use their own source dates.",
+  "snapshot_at": "2020-01-22T23:59:59+08:00",
+  "stage_scope": "Original PDF bytes, container facts and business-exposure evidence indexing. No verified regional revenue, debt constraints, causal exposures or Agent coefficients at acquisition.",
+  "version": "pre-wuhan-half-original-business-source-selection-v1"
+}

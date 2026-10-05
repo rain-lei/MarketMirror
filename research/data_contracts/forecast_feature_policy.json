@@ -1,0 +1,14 @@
+{
+  "version": "qa-asof-v1",
+  "window": "window_start <= question_available_at <= as_of; replies additionally require reply_available_at <= as_of",
+  "source_timezone_assumption": "+08:00",
+  "timestamp_basis": "Source question/reply time is a visibility proxy, not a verified publication log.",
+  "allowed_inputs": ["stock_code", "question_available_at", "question_text", "reply_available_at", "reply_text"],
+  "reply_gate": "Confirmed replied status, usable text, valid timestamp at or after question time; question must also be eligible.",
+  "date_only_reply_rule": "Available from the following midnight at +08:00; this is a conservative upper bound, not an observed publication time. Bound must be strictly after question time.",
+  "question_features": ["question_count", "question_length_mean", "question_keyword_counts_and_shares"],
+  "reply_features": ["known_reply_count", "no_visible_reply_count", "known_reply_share", "reply_length_mean", "reply_keyword_counts_and_shares"],
+  "excluded": ["company_violation_label", "source_quarter", "financial_snapshot", "p", "p/e", "eventual_reply_status_counts", "full_quarter_features", "user_name", "user_type", "company_name"],
+  "duplicate_policy": "Keep and count source occurrences; separately audit equal normalized question-content fingerprints.",
+  "keyword_method": "Literal keyword matching; no sentiment, semantic interpretation or causal claim."
+}

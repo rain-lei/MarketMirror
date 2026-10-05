@@ -1,0 +1,16 @@
+{
+  "runs": [
+    {
+      "run_id": "lagged_impact_2018",
+      "manifest": "../../research_outputs/observed_2018/lagged_impact_v1/lagged_impact_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "0dcb55b08a6113f31ede8f400ffba454c07c6c06e47bf4a090492701c15adc53"
+    },
+    {
+      "run_id": "lagged_impact_2020",
+      "manifest": "../../research_outputs/observed_2020/lagged_impact_v1/lagged_impact_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "fbeadd0e66655b7932c6d0ffe65a0ca995afdbb56ccae5f1557e021e9a69bbc3"
+    }
+  ]
+}

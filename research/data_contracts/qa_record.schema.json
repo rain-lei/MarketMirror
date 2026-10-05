@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "marketmirror://schema/qa_record",
+  "title": "MarketMirror Q&A record",
+  "type": "object",
+  "required": ["qa_id", "stock_code", "question_time", "question_text"],
+  "properties": {
+    "qa_id": {"type": "string", "minLength": 16},
+    "source": {"type": ["string", "null"]},
+    "stock_code": {"type": ["string", "null"], "pattern": "^[0-9]{6}$"},
+    "company_name": {"type": ["string", "null"]},
+    "user_type": {"type": ["string", "null"]},
+    "user_name": {"type": ["string", "null"]},
+    "question_time": {"type": ["string", "null"], "format": "date-time"},
+    "question_text": {"type": ["string", "null"]},
+    "reply_status": {"type": ["string", "null"]},
+    "reply_time": {"type": ["string", "null"], "format": "date-time"},
+    "reply_text": {"type": ["string", "null"]},
+    "question_length_source": {"type": ["number", "null"]},
+    "reply_length_source": {"type": ["number", "null"]},
+    "label_company_violation": {"type": ["integer", "null"], "enum": [0, 1, null]},
+    "fiscal_quarter": {"type": ["integer", "string", "null"]}
+  },
+  "additionalProperties": true
+}

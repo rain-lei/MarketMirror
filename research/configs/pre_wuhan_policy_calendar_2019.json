@@ -1,0 +1,21 @@
+{
+  "acquisition_config_sha256": "82f2a5d83258870fe42a03973efdcd798866a0c6119e9fbf7dcdc207b7a51962",
+  "availability_rule": "Original second PBC clocks retained; minute-level LPR and government republication clocks use the end of the stated minute. All clocks interpreted as +08:00. Neither current retrieval nor legal-document imprint is used as historical publication time.",
+  "event_rule": "First calendar step is inherited state, not a new shock. Subsequent steps separate newly visible source announcements, predecessor-backed observed rate changes and implementation of a previously announced RRR schedule. No equity direction, response coefficient, issuer exposure or net liquidity is inferred.",
+  "expected_counts": {
+    "calendar_steps": 43,
+    "earlier_omo": 20,
+    "legacy_omo": 57,
+    "legal_documents": 1,
+    "lpr_announcements": 5,
+    "rrr_announcements": 1
+  },
+  "interpretation": "Development-only source context. Extended bounded OMO history and complete selected Aug-Dec reform-era LPR monthly announcements, plus one RRR government republication corroborated by its official legal PDF. Does not cover every monetary policy, every tool predecessor or full maturities. Current retrieval is not a certified unrevised historical snapshot; this consumed stock/date window is not a new holdout.",
+  "legacy_context_manifest_path": "research_outputs/pre_wuhan_monetary_context_2019_v1/manifest.json",
+  "legacy_context_manifest_sha256": "ab13f97f9ccae3c0882b038148d26c6238a7d0ea564dc7cdb6cee0d2277391e5",
+  "legal_review_path": "research/configs/rrr_legal_review_2019_223.json",
+  "legal_review_sha256": "a2f5182301ae7451cae4068f7fb4d1e0e318d0db596ce8a68f3bbc6c8dd300c9",
+  "raw_directory": "research_outputs/pre_wuhan_policy_raw_2019_v2",
+  "raw_manifest_sha256": "6e9ce9aa47aeeef6dad395eff1672a6c24cc5b666e954c38272176788de7a6c7",
+  "version": "pre-wuhan-expanded-monetary-policy-calendar-v1"
+}

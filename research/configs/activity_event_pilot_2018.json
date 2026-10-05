@@ -1,0 +1,7 @@
+{
+  "run_id": "observed_asset_management_activity_pilot_2018",
+  "data_kind": "observed",
+  "activity_manifest": "../../research_outputs/observed_2018/activity/activity_manifest.json",
+  "event_results": "../../research_outputs/observed_2018/results/event_results.json",
+  "minimum_estimation_sessions": 20
+}

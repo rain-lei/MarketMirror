@@ -1,0 +1,81 @@
+{
+  "actual_complete_page_observations": {
+    "000950": {
+      "limitations": [
+        "Only these six complete pages were visually reviewed; no full-PDF manual certification, unrestricted cash, economic coefficient or predictive gain."
+      ],
+      "observations": [
+        "Complete June consolidated balance and following parent statement were reviewed. Current group money funds 2096519905.12, assets 23878804702.27, short borrowing 4677758753.54, due-within-year noncurrent liability 69901650.16, long borrowing 1394800000.00 and minority-inclusive totals match accepted source facts.",
+        "The earlier financial-statement/note presentation explicitly declares RMB yuan; note 7 is consolidated. Restricted money funds 668202278.68 refer to note 7(1), whose same source amount and component details are visible. Single printed restriction row fraction is 0.318719739816519..., not certified total spendable cash.",
+        "Page 146 separately prints cash/cash-equivalent balance 1462632705.78. This is not adopted here and is not treated as money-funds-minus-restriction. Real zero and blank restricted noncash cells are visible and remain distinct."
+      ],
+      "pdf_pages": [
+        48,
+        49,
+        50,
+        51,
+        103,
+        146
+      ]
+    },
+    "600565": {
+      "limitations": [
+        "Only these six complete pages were visually reviewed; no complete source restrictions or source economic meaning certification."
+      ],
+      "observations": [
+        "Complete current/comparison consolidated balance and following parent header were reviewed, including printed 附注 column and explicit RMB yuan. June group money funds 6706901682.94 and assets 74114216784.11 match accepted cells.",
+        "Short borrowing 3416700000.00, due-within-year noncurrent liability 5076300000.00 and long borrowing 6463980200.00 are separate printed components, not certified complete interest-bearing debt.",
+        "Consolidated note scope and restricted-money-fund row 1867863511.86 with presale-supervision/bill-margin reason were reviewed. Single reported row fraction is 0.278498716719105..., using June group rather than parent 447623659.00.",
+        "Noncash collateral, blank restricted receivable-bill/intangible rows, table total 26440523200.43 and following foreign-currency section remain separate. Cash/cash-equivalent balance 4839038171.08 is a different printed definition and not a new trading cash claim."
+      ],
+      "pdf_pages": [
+        48,
+        49,
+        50,
+        106,
+        153,
+        154
+      ]
+    }
+  },
+  "agent_signal_enabled": false,
+  "inputs": {
+    "research_outputs/issuer_half_balance_sheet_audit_2019_v2.json": "d83c9194a033b761aa5ba2d2e5092c89e6d382fedf7d3efdaecc8e98ef7822d5",
+    "research_outputs/issuer_half_balance_sheet_candidates_2019_v3.json": "33974a19cf224d6da569db085ef2c737223bcd118ca12ad00e5196e89ec9739e",
+    "research_outputs/issuer_half_financing_state_audit_2019_v1.json": "bbc5e6f0eeaa0ce59a27ca86504f1553c4ea3004d56d0908975f9998dd6658ba",
+    "research_outputs/issuer_half_financing_states_2019_v1.json": "aa13fd8d76787b3fe7e2ded7d63168b2310f8deaf4e864b563924a60823420ba",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/000950_pdf_page_103.png": "8e605585e05fef2a704657206d1fab2303e7b100b9e651f9dd4a528e84c5de31",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/000950_pdf_page_103_stderr.txt": "6b76dedf9fefb6759a7c6ef6ed89ea38f6b993e297a0acdcbd6c6c84b47b8b17",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/000950_pdf_page_146.png": "d1ba941faa4466419711cbbea2cc1081803516ffa244a9c6206054a08b20cfb8",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/000950_pdf_page_146_stderr.txt": "6b76dedf9fefb6759a7c6ef6ed89ea38f6b993e297a0acdcbd6c6c84b47b8b17",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/000950_pdf_page_48.png": "ae91555b3c252950738208a30274a95b0c3c74a06d9e5c1df1418ac9e5f674d1",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/000950_pdf_page_48_stderr.txt": "6b76dedf9fefb6759a7c6ef6ed89ea38f6b993e297a0acdcbd6c6c84b47b8b17",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/000950_pdf_page_49.png": "dd8fa15c88de5b02766cc7dacff84e8ec55472acb5893e52e923447be71a7a08",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/000950_pdf_page_49_stderr.txt": "6b76dedf9fefb6759a7c6ef6ed89ea38f6b993e297a0acdcbd6c6c84b47b8b17",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/000950_pdf_page_50.png": "8244412fd19318aa7d53c7d5544e8ce7659d4216d46f27ef1e8091831b4cceff",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/000950_pdf_page_50_stderr.txt": "6b76dedf9fefb6759a7c6ef6ed89ea38f6b993e297a0acdcbd6c6c84b47b8b17",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/000950_pdf_page_51.png": "1124b81ec4e5b26bb16820ed2bfdbe1dfbd90d17d8437e85d3c703c63ef9a831",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/000950_pdf_page_51_stderr.txt": "6b76dedf9fefb6759a7c6ef6ed89ea38f6b993e297a0acdcbd6c6c84b47b8b17",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/600565_pdf_page_106.png": "b3ce3d4805e684828b732027801d643c13102a7710506684fe97a861225ea643",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/600565_pdf_page_106_stderr.txt": "6b76dedf9fefb6759a7c6ef6ed89ea38f6b993e297a0acdcbd6c6c84b47b8b17",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/600565_pdf_page_153.png": "1a405ba21c05b28a00c17d9b5cb216d9c88348a6dba8fad75404d3d8c653d035",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/600565_pdf_page_153_stderr.txt": "6b76dedf9fefb6759a7c6ef6ed89ea38f6b993e297a0acdcbd6c6c84b47b8b17",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/600565_pdf_page_154.png": "dd9b9d3071af27135dde32ec212397f97c598856686639e3dec2a1e250dde892",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/600565_pdf_page_154_stderr.txt": "6b76dedf9fefb6759a7c6ef6ed89ea38f6b993e297a0acdcbd6c6c84b47b8b17",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/600565_pdf_page_48.png": "54f9a28f3d5ac984d1ee5c4f426b69070dc25897e776f035df9ec506b5a04554",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/600565_pdf_page_48_stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/600565_pdf_page_49.png": "252ee0b307cf5f3686ceaf0e1e62f6a968892bb7b75672c5e213f50306d77c2a",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/600565_pdf_page_49_stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/600565_pdf_page_50.png": "580b49e4c4e702a231953f81316f3556311efed0f8a8ccf7bc63f5f5e6a37878",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/600565_pdf_page_50_stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "research_outputs/issuer_half_financing_visual_review_2019_v1/render_manifest.json": "8fa21ae35c0c1f5321eb4b8f8c982f676eb9ee0cb75356fc2b668a6d147b380f",
+    "research_outputs/issuer_half_reports_raw_2019_v1/000950/run_1/attempt1.pdf": "49d51afb11088e54d16205ec49b8b53fe8b152a3b58b73354bb33e320621d2bb",
+    "research_outputs/issuer_half_reports_raw_2019_v1/600565/run_1/attempt1.pdf": "8f2b79caea4d7ef8a0f0efeb841a25b3f680990f68173e50e987a8bcd259f7d1"
+  },
+  "renderer_warning_pages": 9,
+  "reviewed_at_utc": "2026-10-01T11:57:57.372746+00:00",
+  "reviewed_pages": 12,
+  "single_assistant_development_review": true,
+  "version": "half-year-financing-twelve-complete-page-visual-review-v1",
+  "visual_result": "Selected Chinese titles, date/unit/scope headers, amounts and blanks are readable. Source documents and original render manifest unchanged; renderer diagnostics retained."
+}

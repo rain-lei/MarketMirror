@@ -1,0 +1,11 @@
+{
+  "run_id": "wuhan_pre_event_fresh_v3_holdout_2020_v1",
+  "qa_database": "../../research_outputs/unified/dataset.sqlite",
+  "qa_source_sha256": "a3a1b0afa2cd13b25a56c89393178d93960cd8867a46a7c469fd567bf82ac812",
+  "universe_config": "wuhan_qna_fresh_v3_holdout_universe_2020.json",
+  "event_config": "observed_pilot_2020.json",
+  "event_id": "wuhan_date_only_conservative",
+  "question_window_start": "2020-01-01",
+  "snapshot_as_of": "2020-01-22T23:59:59.999999+08:00",
+  "selection_rule": "latest_company_confirmed_reply_per_asset_before_cutoff"
+}

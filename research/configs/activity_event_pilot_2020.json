@@ -1,0 +1,7 @@
+{
+  "run_id": "observed_wuhan_activity_pilot_2020",
+  "data_kind": "observed",
+  "activity_manifest": "../../research_outputs/observed_2020/activity/activity_manifest.json",
+  "event_results": "../../research_outputs/observed_2020/results/event_results.json",
+  "minimum_estimation_sessions": 20
+}

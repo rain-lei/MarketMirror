@@ -1,0 +1,17 @@
+{
+  "run_id": "asset_management_2018_lagged_turnover_impact_sensitivity",
+  "data_kind": "observed_return_sensitivity",
+  "replay_config": "historical_replay_2018.json",
+  "event_config": "observed_pilot_2018.json",
+  "activity_manifest": "../../research_outputs/observed_2018/activity/activity_manifest.json",
+  "event_id": "asset_management_guidance_date_only",
+  "stock_code": "000001",
+  "aum_cny_per_agent": 1000000000,
+  "participation_rates": [0.01, 0.05],
+  "impact_depth_fractions": [0.01, 0.05],
+  "impact_coefficients": [0.0, 0.01, 0.03],
+  "max_impact": 0.03,
+  "scenario_signal": -0.8,
+  "scenario_uncertainty": 0.6,
+  "signal_sessions": 3
+}

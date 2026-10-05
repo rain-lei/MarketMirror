@@ -1,0 +1,40 @@
+{
+  "allow_new_pdf_parsing_or_rendering": false,
+  "allow_numeric_simulation": true,
+  "alter_numerical_protocol": false,
+  "binding_differences": [
+    {
+      "historical_sha256": "3f2440140fef98ddd1ef0772a10d8e58dc3564a9b15a14b4611b5bbd5bdcd37f",
+      "observed_sha256": "aac096ff054753776e9efe804a3480e3fadeaff1e08c7c4d22e4b87dbbce025e",
+      "path": "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe"
+    }
+  ],
+  "cause_verified": false,
+  "frozen_at_utc": "2026-10-02T04:33:48.042989+00:00",
+  "historical_sha256": "3f2440140fef98ddd1ef0772a10d8e58dc3564a9b15a14b4611b5bbd5bdcd37f",
+  "inputs": {
+    "research/configs/pre_wuhan_public_factor_channels_2019.json": "ab26ab711e49cad458c39f64c63321a5d572fd7683b9343de015d9160ff2c46e",
+    "research/simulation/public_factor_runtime_scope.py": "ba40cdfcb5254fd1b4b6b7a9c1eb21e5204e1f96e5d9d13a50dd4e19d7b7ce80",
+    "research/simulation/run_pre_wuhan_public_factor_channels_2019_v2.py": "1410ff116bb27ed9317b7430c506d9717761bd841ea6207eabb6155974e62e2c",
+    "research/simulation/verify_pre_wuhan_public_factor_channels_2019_v2.py": "6f84431369a68bc0a80a4a6f9aa11c52f1bb0b571e94c7cb8642c282d604c190",
+    "research_outputs/freeze_public_factor_runtime_scope_20261002.py": "a28e8adeff789a0990d0fe9f101d7e2c69a2ca57ebcfb1af7ee2056d7ff14f47",
+    "research_outputs/pre_wuhan_public_factor_durable_jobs_20261002.json": "4d48ffb2ae1e1b12265f39d92bd313a2de76fd59b26490682ce3ec70834c32f7",
+    "research_outputs/pre_wuhan_public_factor_durable_wrapper_stderr_20261002.txt": "b99a1fba0536df8d64f1fedf13bdf351603786d491d23c4c71eab6612ec284ba",
+    "research_outputs/pre_wuhan_public_factor_durable_wrapper_stdout_20261002.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "research_outputs/pre_wuhan_public_factor_interrupted_initial_20261002.json": "932e20f7291160a879d445d2deaa944389e460cbcd5717efff03948a33ec1f6c",
+    "research_outputs/pre_wuhan_public_factor_job_producer_initial_20261002.json": "93d012b3c4cf76aaaa274d90e865df17abeba5027b438272d087728eba2cd436",
+    "research_outputs/pre_wuhan_public_factor_producer_log_20261002.txt": "2213b23935f946ece6df30419c80a18bbd51cbd5fc79b31356b4858a6c2fed31",
+    "research_outputs/pre_wuhan_public_factor_producer_log_20261002_v2.txt": "c726a111a389a00801fc3404378bbf0ef015ec2dbf871445414446d726b541ed",
+    "research_outputs/run_public_factor_full_tests_20261002_v2.py": "16eced02c68454797c96fed97ee2015f3db476e9c448308d37d8fe8ecde1ffd9",
+    "research_outputs/run_public_factor_verified_jobs_20261002.py": "84644e6dc10773d92307299d795b6b1cb87886595306267d829185dbabf58a71",
+    "research_outputs/run_public_factor_verified_jobs_20261002_v2.py": "50407214a3152b7eb94a6ceda9626b76556771e7c2e472a584ab3a0671f19a0e",
+    "tests/test_public_factor_runtime_scope.py": "323416795e8aca0e4930fd304667fd04ad8eff332104c50a6346dbc7ffb4576e"
+  },
+  "interpretation": "The public experiment started under the historical renderer then stopped without observed exit; partial stage remains. A durable restart exited 1 before simulation because this non-executed binary changed. This scoped version uses exactly the original frozen numerical protocol and production run AST, explicitly accepts only this exact native path/hash pair for CSV/JSON/gzip simulation, and preserves all original failures and renderer history. It neither executes nor validates the changed PDF renderer and does not restore old renders.",
+  "observed_sha256": "aac096ff054753776e9efe804a3480e3fadeaff1e08c7c4d22e4b87dbbce025e",
+  "prior_bindings_checked": 1288,
+  "prior_unchanged_bindings": 1287,
+  "renderer_path": "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe",
+  "scope": "NUMERIC_SIMULATION_FROM_FROZEN_CSV_JSON_GZIP_ONLY",
+  "version": "public-factor-nonexecuted-renderer-scope-v2"
+}

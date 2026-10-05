@@ -1,0 +1,18 @@
+{
+  "stock_input": "../../research_outputs/wuhan_pit_market_download_2020/stock_returns.csv",
+  "benchmark_input": "../../research_outputs/wuhan_pit_market_download_2020/benchmark_prices.csv",
+  "calendar_input": "../../research_outputs/wuhan_pit_market_download_2020/calendar.csv",
+  "benchmark_id": "sh.000300",
+  "stock_format": "returns",
+  "benchmark_format": "prices",
+  "stock_value_column": "stock_return_pct",
+  "benchmark_value_column": "close",
+  "stock_return_unit": "percent",
+  "stock_return_basis": "adjusted_price_return",
+  "benchmark_price_basis": "price_index",
+  "stock_data_source": "BaoStock SDK 0.9.4; pctChg of flag=1 query, checked against same-day close/preclose; https://www.baostock.com/mainContent?file=pythonAPI.md; see download_manifest.json",
+  "benchmark_data_source": "BaoStock SDK 0.9.4; index flag=3; https://www.baostock.com/mainContent?file=pythonAPI.md; see download_manifest.json",
+  "calendar_data_source": "BaoStock query_trade_dates open-day flags; https://www.baostock.com/mainContent?file=pythonAPI.md; see download_manifest.json",
+  "data_kind": "observed",
+  "return_type": "simple"
+}

@@ -1,0 +1,21 @@
+{
+  "version": "historical-price-limit-2019-v1",
+  "start_date": "2019-11-01",
+  "end_date": "2019-12-31",
+  "tick_rmb": "0.01",
+  "rounding": "ROUND_HALF_UP",
+  "regular_band_bps": 1000,
+  "non_star_st_band_bps": 500,
+  "star_band_bps": 2000,
+  "regular_ipo_exempt_sessions": 1,
+  "star_ipo_exempt_sessions": 5,
+  "scope": "Ordinary 2019 A-share trading; exceptional resumption/relisting regimes require separate official evidence. Provider isST is a historical observation, not independent exchange certification.",
+  "sources": [
+    {"title": "深交所交易规则及限价四舍五入", "url": "https://www.szse.cn/disclosure/notice/general/t20060515_499577.html"},
+    {"title": "上交所2012年交易规则修订：普通股票10%与限价计算", "url": "https://www.sse.com.cn/aboutus/mediacenter/hotandd/c/c_20150912_3988628.shtml"},
+    {"title": "2019年科创板交易特别规定发布通知", "url": "https://www.sse.com.cn/lawandrules/sselawsrules/repeal/rules/c/c_20230217_5716503.shtml"},
+    {"title": "科创板交易特别规定第十八条", "url": "https://www.sse.com.cn/lawandrules/sselawsrules2025/repeal/rules/c/10785118/files/8c544552dc7e4c83a863440179f0b9de.pdf"},
+    {"title": "深交所2020年创业板改革说明：此前10%，改革后20%", "url": "https://www.szse.cn/www/investor/index/update/t20200807_580310.html"},
+    {"title": "上交所历史统计年鉴：风险警示股票5%", "url": "https://www.sse.com.cn/aboutus/publication/factbook/documents/c/10170564/files/300a2dcef0f0452794683bd1bfbf65b0.pdf"}
+  ]
+}

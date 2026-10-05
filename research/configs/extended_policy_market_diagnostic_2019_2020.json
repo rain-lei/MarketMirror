@@ -1,0 +1,77 @@
+{
+  "additional_policy_features": [
+    {
+      "instrument": "mlf",
+      "tenor_unit": "年",
+      "tenor_value": 1
+    },
+    {
+      "instrument": "reverse_repo",
+      "tenor_unit": "天",
+      "tenor_value": 7
+    },
+    {
+      "instrument": "reverse_repo",
+      "tenor_unit": "天",
+      "tenor_value": 14
+    },
+    {
+      "instrument": "lpr",
+      "tenor_unit": "年",
+      "tenor_value": 1
+    },
+    {
+      "instrument": "lpr",
+      "tenor_unit": "年以上",
+      "tenor_value": 5
+    }
+  ],
+  "adoption_rule": "No Agent coefficient or market-core adoption from this diagnostic alone. Further independent periods, policy expectations, issuer disclosures and mechanism validation remain required.",
+  "agent_signal_enabled": false,
+  "baseline_features": [
+    "intercept",
+    "five_day_simple_momentum_at_cutoff",
+    "twenty_day_return_std_at_cutoff",
+    "twenty_day_mean_absolute_return_at_cutoff"
+  ],
+  "benchmark_id": "sh.000300",
+  "clock_rule": "Cutoff is end of the second previous observed exchange trading day; the first previous day is execution reference. Rates entering before the first cutoff are inherited state, never replayed as fresh pulses.",
+  "estimator": "ordinary least squares, training only, no hyperparameter search; baseline and increment use identical paired rows",
+  "evaluation_start_date": "2020-01-23",
+  "frozen_at_utc": "2026-09-30T21:46:17.984872+00:00",
+  "limitations": [
+    "Development diagnosis, not a new blind holdout or a preregistered causal study. The old Nov-Dec window and Wuhan period have been inspected in related studies.",
+    "Benchmark outcomes only; no claim of 123-company exposure mapping, issuer effects or real investor calibration.",
+    "Current historical web/data retrieval is not certified unrevised point-in-time bytes.",
+    "Observed rate changes are not market surprises. Funding expectations, other policy channels and pandemic confounds are not controlled by this bounded design.",
+    "A coefficient supported by a single policy date is descriptive and unstable even if the algebraic design is full rank."
+  ],
+  "market_inputs": {
+    "research_outputs/wuhan_pre_event_fresh_v3_holdout_market_download_2020_v2/baostock_download_manifest.json": "f7a292ce3cbeb4c03c32c1706f6ebd53149ffd9b4d761acb012bae3db796ff00",
+    "research_outputs/wuhan_pre_event_fresh_v3_holdout_market_download_2020_v2/benchmark_prices.csv": "6b3fd2a8c66cb02b95a475a28217f73acd525154e93a67d4e153e5525fe1fe67",
+    "research_outputs/wuhan_pre_event_fresh_v3_holdout_market_download_2020_v2/calendar.csv": "9c4fdd59cad244ca606f8b60137e6c95cabe49fb3b15df5cf98daa59571f2bcc",
+    "research_outputs/wuhan_pre_event_fresh_v3_holdout_market_download_2020_v2/download_manifest.json": "9f4d2e2f042af346c261677fc627268f5fcf845693293056785c649370588817",
+    "research_outputs/wuhan_pre_event_fresh_v3_holdout_market_download_2020_v2/market_import.json": "79b2289d5d6de09245e1a6265e98880560f953e7b7e04204141f74f8eca5419b"
+  },
+  "metrics": [
+    "mae",
+    "rmse",
+    "r2_against_training_target_mean",
+    "return_direction_accuracy",
+    "absolute_return_predictions_below_zero"
+  ],
+  "negative_absolute_prediction_rule": "Report raw linear predictions; no post-hoc clipping.",
+  "policy_unit": "change_from_previous_observed_bps; first newly observed delta without predecessor remains null and the paired row is excluded, never zero-filled",
+  "rank_gate": "Both complete-case training designs must have full column rank under exact fraction arithmetic and NumPy tol=1e-10; otherwise no coefficient fitting. Full rank alone does not prove precision or causality.",
+  "source_end_date": "2020-03-31",
+  "source_start_date": "2019-08-01",
+  "stage": "protocol_frozen_before_expanded_diagnostic_outcomes",
+  "study_end_date": "2020-03-31",
+  "study_start_date": "2019-09-02",
+  "targets": [
+    "same_labelled_day_simple_benchmark_return",
+    "absolute_same_labelled_day_simple_benchmark_return"
+  ],
+  "training_end_date": "2020-01-22",
+  "version": "extended-policy-market-development-diagnostic-v1"
+}

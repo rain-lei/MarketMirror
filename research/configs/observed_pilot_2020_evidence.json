@@ -1,0 +1,19 @@
+{
+  "sources": [
+    {
+      "url": "https://www.xinhuanet.com/politics/2020-01/23/c_1125495557.htm",
+      "path": "../../.firecrawl/wuhan-notice-1.md",
+      "filename": "xinhua_wuhan_notice.md"
+    },
+    {
+      "url": "http://www.sse.com.cn/disclosure/announcement/general/c/c_20200127_4991582.shtml",
+      "path": "../../.firecrawl/sse-holiday-1.md",
+      "filename": "sse_holiday_notice.md"
+    },
+    {
+      "url": "https://www.baostock.com/mainContent?file=pythonAPI.md",
+      "path": "../../.firecrawl/baostock-search-0.md",
+      "filename": "baostock_api.md"
+    }
+  ]
+}

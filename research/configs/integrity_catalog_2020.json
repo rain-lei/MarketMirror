@@ -1,0 +1,123 @@
+{
+  "runs": [
+    {
+      "run_id": "unified_dataset",
+      "manifest": "../../research_outputs/unified/run_manifest.json",
+      "extra_hashes": {
+        "financial_catalog_sha256": "../data_contracts/financial_fields.json",
+        "feature_policy_sha256": "../data_contracts/forecast_feature_policy.json"
+      },
+      "manifest_sha256": "903325dda7aa61e25c0e329e0baa0d8e2e248b57dd60e3f4e4846ea1ecf133ca"
+    },
+    {
+      "run_id": "observed_market",
+      "manifest": "../../research_outputs/observed_2020/prepared/market_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "4e1685edad8c5b50b2aaa074ab22953e13a9a3cfe86f920bf3c6daf293122958"
+    },
+    {
+      "run_id": "observed_event",
+      "manifest": "../../research_outputs/observed_2020/results/experiment_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "db7838ce25e7b867708f02fbfe99dec3e7b5d6023be366538042f440d4eeb9df"
+    },
+    {
+      "run_id": "event_date_diagnostic",
+      "manifest": "../../research_outputs/observed_2020/placebo/placebo_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "46faa315998c391720448f8f44a73d70635b8f0c1ecc15636228caa0320a5599"
+    },
+    {
+      "run_id": "observed_activity",
+      "manifest": "../../research_outputs/observed_2020/activity/activity_manifest.json",
+      "extra_hashes": {
+        "documentation_sha256": "../../research_outputs/observed_2020/evidence/baostock_api.md"
+      },
+      "manifest_sha256": "b9f3c19dbcac7339964c7c7ed3a2a817237ec2af901e6afa919992c80cbc4088"
+    },
+    {
+      "run_id": "activity_event",
+      "manifest": "../../research_outputs/observed_2020/activity_event/activity_event_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "4d85f2cb93b69e73c16df6ff7d52596f3fc7abfcc579a4634ae92ee6a08eab3d"
+    },
+    {
+      "run_id": "text_prediction",
+      "manifest": "../../research_outputs/text_pilot_2020/results/prediction_manifest.json",
+      "extra_hashes": {
+        "config_sha256": "text_pilot_2020.json"
+      },
+      "manifest_sha256": "2998759b3dfed1c629db85ccae56102562724a79f0afaa9da668d7118f6c6129"
+    },
+    {
+      "run_id": "synthetic_stress",
+      "manifest": "../../research_outputs/synthetic_stress_v1/stress_manifest.json",
+      "extra_hashes": {
+        "config_sha256": "synthetic_stress_v1.json"
+      },
+      "manifest_sha256": "4a373bab8c87f2d65b0afd65ac89e65f06c21c8146eaa7264ab23eb845cbb6b2"
+    },
+    {
+      "run_id": "historical_replay_q1",
+      "manifest": "../../research_outputs/observed_2020/historical_replay/historical_replay_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "b650a9ac048ee4fabf4a06de34caad524180bfce9545f51b48bacaa46e1ab349"
+    },
+    {
+      "run_id": "historical_replay_later",
+      "manifest": "../../research_outputs/observed_2020/historical_replay_later/historical_replay_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "9e20b3287476b384c5afb03172cd42416acf17b371aa17e52ae5d21445f666d3"
+    },
+    {
+      "run_id": "semantic_annotation",
+      "manifest": "../../research_outputs/semantic_annotation_pilot_2020/annotation_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "8e5ff5587cb46d0c89947f31b90810e493c9567c4f08f7ef8cfe629fc3e9b8f0"
+    },
+    {
+      "run_id": "keyword_baseline",
+      "manifest": "../../research_outputs/semantic_keyword_baseline_2020/keyword_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "2c0307c4ce2321187e1b64cd99fbc20addebe5f7708a85b418e953f3a81882b7"
+    },
+    {
+      "run_id": "observed_market_2018",
+      "manifest": "../../research_outputs/observed_2018/prepared/market_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "61fbc40310d89a7682f948e45b155a8d9219c827e249da7897e638fc87b58d25"
+    },
+    {
+      "run_id": "observed_event_2018",
+      "manifest": "../../research_outputs/observed_2018/results/experiment_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "c9c545c99840853b883450b9327cce9239ccaa8e16a673d326f6ea84096241e2"
+    },
+    {
+      "run_id": "historical_replay_2018",
+      "manifest": "../../research_outputs/observed_2018/historical_replay/historical_replay_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "10de1047d28ad9df969a80ce9eb2461095d233f023be5874d86eeb1cbe6e18ae"
+    },
+    {
+      "run_id": "observed_activity_2018",
+      "manifest": "../../research_outputs/observed_2018/activity/activity_manifest.json",
+      "extra_hashes": {
+        "documentation_sha256": "../../research_outputs/observed_2018/evidence/baostock_api.md"
+      },
+      "manifest_sha256": "5c89da59bc62316fcbc3c281a30f6d590d1ade7b2b393f1461d33fc8dae4a421"
+    },
+    {
+      "run_id": "activity_event_2018",
+      "manifest": "../../research_outputs/observed_2018/activity_event/diagnostic_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "d5fa0fe9e6c582889b1e0fa34ec863b16a43adf8afa0d4f2fef772cac33e4da8"
+    },
+    {
+      "run_id": "event_date_diagnostic_2018",
+      "manifest": "../../research_outputs/observed_2018/placebo/diagnostic_manifest.json",
+      "extra_hashes": {},
+      "manifest_sha256": "6fd72f9592d3a4b5496d9619b4e75d93d4d8eda974d059aa964569bb96d6358e"
+    }
+  ]
+}

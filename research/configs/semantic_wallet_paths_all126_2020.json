@@ -1,0 +1,17 @@
+{
+  "run_id": "semantic_h2_2020_portfolio_wallet_paths",
+  "background_config": "semantic_background_all126_2020.json",
+  "background_case_id": "active_quote25",
+  "basket_size": 3,
+  "quote_response_bps": [200, 500],
+  "cases": [
+    {"case_id": "shared_institution35", "cash_mode": "shared", "institutional_asset_cap": 0.35},
+    {"case_id": "separated_equal_institution35", "cash_mode": "separated", "institutional_asset_cap": 0.35, "initial_cash_weights": [1, 1, 1]},
+    {"case_id": "separated_80_asset0_institution35", "cash_mode": "separated", "institutional_asset_cap": 0.35, "initial_cash_weights": [8, 1, 1]},
+    {"case_id": "separated_80_asset1_institution35", "cash_mode": "separated", "institutional_asset_cap": 0.35, "initial_cash_weights": [1, 8, 1]},
+    {"case_id": "separated_80_asset2_institution35", "cash_mode": "separated", "institutional_asset_cap": 0.35, "initial_cash_weights": [1, 1, 8]},
+    {"case_id": "separated_98_asset0_institution35", "cash_mode": "separated", "institutional_asset_cap": 0.35, "initial_cash_weights": [98, 1, 1]},
+    {"case_id": "separated_98_asset1_institution35", "cash_mode": "separated", "institutional_asset_cap": 0.35, "initial_cash_weights": [1, 98, 1]},
+    {"case_id": "separated_98_asset2_institution35", "cash_mode": "separated", "institutional_asset_cap": 0.35, "initial_cash_weights": [1, 1, 98]}
+  ]
+}

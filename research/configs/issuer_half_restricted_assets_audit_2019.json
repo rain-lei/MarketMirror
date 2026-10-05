@@ -1,0 +1,13 @@
+{
+  "agent_signal_enabled": false,
+  "border_coordinate_tolerance_points": 3,
+  "candidates_path": "research_outputs/issuer_half_restricted_assets_candidates_2019_v1.json",
+  "expected_companies": 123,
+  "frozen_at_utc": "2026-10-01T09:38:12.083383+00:00",
+  "geometry_rule": "Unique independently extracted bordered cell, or independently read original words at recorded coordinates for the explicit ending-header fallback. Do not select equal-looking amounts elsewhere. Verify note scope, ending column, missingness, printed reasons, unit and total arithmetic; source-reader QC persists.",
+  "inputs": {
+    "research_outputs/issuer_half_restricted_assets_candidates_2019_v1.json": "790d9f7e86edc5a1d159273caf85fc1fba645796bcbe1a7441e4eb9add3be0ea"
+  },
+  "pdfplumber_version": "0.11.10",
+  "version": "half-year-restricted-assets-independent-source-audit-v1"
+}

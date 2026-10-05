@@ -1,0 +1,80 @@
+{
+  "agent_signal_enabled": false,
+  "currency_rule": "Yuan state requires printed local RMB or an earlier explicit universal financial-statement-and-note presentation with matching units, independently re-read. Unit-only 元 is not assumed RMB.",
+  "expected_companies": 123,
+  "field_labels": {
+    "assets": [
+      "资产总计",
+      "资产合计"
+    ],
+    "bank_cash_and_central_bank_balances": [
+      "现金及存放中央银行款项"
+    ],
+    "bonds_payable": [
+      "应付债券"
+    ],
+    "current_assets": [
+      "流动资产合计"
+    ],
+    "current_liabilities": [
+      "流动负债合计"
+    ],
+    "customer_deposits_in_money_funds": [
+      "其中：客户存款",
+      "其中：客户资金存款"
+    ],
+    "equity": [
+      "所有者权益合计",
+      "所有者权益总计",
+      "股东权益合计",
+      "所有者权益（或股东权益）合计"
+    ],
+    "inventories": [
+      "存货"
+    ],
+    "lease_liabilities": [
+      "租赁负债"
+    ],
+    "liabilities": [
+      "负债合计",
+      "负债总计"
+    ],
+    "liabilities_and_equity": [
+      "负债和所有者权益总计",
+      "负债及所有者权益总计",
+      "负债和股东权益总计",
+      "负债及股东权益总计",
+      "负债和所有者权益（或股东权益）总计"
+    ],
+    "long_term_borrowings": [
+      "长期借款"
+    ],
+    "money_funds": [
+      "货币资金"
+    ],
+    "noncurrent_liabilities_due_within_one_year": [
+      "一年内到期的非流动负债"
+    ],
+    "short_term_borrowings": [
+      "短期借款"
+    ],
+    "trade_receivables": [
+      "应收账款"
+    ]
+  },
+  "frozen_at_utc": "2026-10-01T11:41:48.692407+00:00",
+  "inputs": {
+    "research_outputs/issuer_half_balance_sheet_audit_2019_v1.json": "dae4d5bf2d921d61b345f22f26559367ebaf789112ef7f88ffe5ade73f9e812b",
+    "research_outputs/issuer_half_balance_sheet_candidates_2019_v2.json": "91039beeb7b98484c566d8b875c5bbcbf012041c0bdf9d40bb0bfe5f7ae5fea0",
+    "research_outputs/issuer_half_business_evidence_audit_2019_v3.json": "d71bcd9c2775c8816f3bb0a5653e6f8f72eec43a9e431618099bb2675ac3fc43",
+    "research_outputs/issuer_half_reports_raw_2019_v1/manifest.json": "2092907d4fc3e5554bde18aac0221613805000af51aaa90e52cf65aebaf15007"
+  },
+  "interpretation": "Same archived half-year issuer/period/source, raw current and comparison cells including blanks, explicit zeros and dates. Every issuer retained; extraction failure and upstream reader QC cannot become verified success. No cross-quarter balances, certified historical bytes, free cash, complete interest-bearing debt or predictive gain claimed. Earlier v1/v2 source outputs and v1 independent disagreement remain archived. Fresh v3 parsing addresses actual 附注 references hiding declared cash/debt rows; no target outcomes are read.",
+  "literal_audit_path": "research_outputs/issuer_half_business_evidence_audit_2019_v3.json",
+  "pymupdf_version": "1.27.2.3",
+  "report_end_date": "2019-06-30",
+  "report_manifest": "research_outputs/issuer_half_reports_raw_2019_v1/manifest.json",
+  "selection_rule": "Unique reconciled explicit June 30 nonparent balance. Preserve all candidates, including January accounting-transition tables. Ignore only top-of-page exact half-year running report titles, preserving their evidence. Duplicate current statements remain QC, no favorable selection. Explicit 项目/附注/date headers bind a note interval through midpoint geometry. Only reference-shaped words inside that interval on an exact known financial label row are separated; their original row, word and header proof remain. New statement headings reset the interval; all financial zero/blank/amounts remain.",
+  "snapshot_at": "2020-01-22T23:59:59+08:00",
+  "version": "half-year-dated-balance-with-explicit-note-column-v3"
+}

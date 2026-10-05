@@ -1,0 +1,17 @@
+{
+  "version": "pre-wuhan-inventory-anchor-strategy-waits-full-path-v1",
+  "reference_directory": "../../research_outputs/pre_wuhan_issuer_valuation_2019_v1",
+  "reference_results_sha256": "28c273c950e930e0e2a04c00ac00e8835b0db20f980c9dd937b7762e4f1990a1",
+  "reference_manifest_sha256": "132767f64da6cf6dbb0f20ab967260969777263fea4de8c2e988518aea799d64",
+  "reference_portfolio_source": "../../research_outputs/pre_wuhan_quantity_reference_source_2019_v1/portfolio_market.py",
+  "reference_portfolio_source_sha256": "c1dad7aeb5071d295808ecf47d36604c9bdaeb23f4e8357a20b064bed7eaf647",
+  "issuer_variant": "issuer_one_sigma_half",
+  "variants": [
+    {"name": "original_quantity_reference", "background_anchor": "initial_inventory", "strategy_wait": "original"},
+    {"name": "background_current_anchor", "background_anchor": "current_inventory", "strategy_wait": "original"},
+    {"name": "strategy_immediate_daily", "background_anchor": "initial_inventory", "strategy_wait": "immediate_daily"},
+    {"name": "current_anchor_and_daily", "background_anchor": "current_inventory", "strategy_wait": "immediate_daily"}
+  ],
+  "dense_audit_sessions": [0, 10],
+  "interpretation": "Full multi-day synthetic mechanism sensitivity on consumed 2019 development data. Current-inventory anchoring disables restoration toward the initial background inventory; daily activity removes confirmation and interval waits only. Risk, concentration, turnover, minimum-order, cash, stock and fees remain. Neither intervention is empirically calibrated or adopted as a real investor model."
+}

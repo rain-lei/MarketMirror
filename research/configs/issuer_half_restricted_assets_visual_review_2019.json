@@ -1,0 +1,201 @@
+{
+  "agent_signal_enabled": false,
+  "all_company_restrictions_completely_disclosed_verified": false,
+  "financing_impact_coefficient": null,
+  "inputs": {
+    "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe": "3f2440140fef98ddd1ef0772a10d8e58dc3564a9b15a14b4611b5bbd5bdcd37f",
+    "research_outputs/issuer_half_reports_raw_2019_v1/000950/run_1/attempt1.pdf": "49d51afb11088e54d16205ec49b8b53fe8b152a3b58b73354bb33e320621d2bb",
+    "research_outputs/issuer_half_reports_raw_2019_v1/002385/run_1/attempt1.pdf": "9bcadbe82777fc6b8f92afcb4ba050519cf38b85726f7edeb05e22818bbf8d4c",
+    "research_outputs/issuer_half_reports_raw_2019_v1/600565/run_1/attempt1.pdf": "8f2b79caea4d7ef8a0f0efeb841a25b3f680990f68173e50e987a8bcd259f7d1",
+    "research_outputs/issuer_half_reports_raw_2019_v1/603156/run_1/attempt1.pdf": "5d2bc4e85ef91041fff98f9a277213e8f50d24ba5891a7573eb72767d2062f60",
+    "research_outputs/issuer_half_restricted_asset_states_2019_v1.json": "0cd230c9da3bc1098efbfa6749a5ef8463bfc7a5b76c3c25f8036d432fec2c11",
+    "research_outputs/issuer_half_restricted_assets_audit_2019_v1.json": "98931404c9fa4fd3e01cd6f303a16591bbd45af6b9a538e98f00d62453785ec4",
+    "research_outputs/issuer_half_restricted_assets_candidates_2019_v1.json": "790d9f7e86edc5a1d159273caf85fc1fba645796bcbe1a7441e4eb9add3be0ea",
+    "research_outputs/issuer_half_restricted_assets_visual_review_2019_v1/000950_pdf_page_146.png": "d1ba941faa4466419711cbbea2cc1081803516ffa244a9c6206054a08b20cfb8",
+    "research_outputs/issuer_half_restricted_assets_visual_review_2019_v1/002385_pdf_page_159.png": "24a2771b9f8e34ff2ddc3039691ccdad03e4aae2b20d468a2d1ea1fbc210f4be",
+    "research_outputs/issuer_half_restricted_assets_visual_review_2019_v1/600565_pdf_page_153.png": "1a405ba21c05b28a00c17d9b5cb216d9c88348a6dba8fad75404d3d8c653d035",
+    "research_outputs/issuer_half_restricted_assets_visual_review_2019_v1/600565_pdf_page_154.png": "dd9b9d3071af27135dde32ec212397f97c598856686639e3dec2a1e250dde892",
+    "research_outputs/issuer_half_restricted_assets_visual_review_2019_v1/603156_pdf_page_132.png": "04b68a06a534f7e711799e8f37677e3b26c0b137b73a46811f4a2ffab25292c7",
+    "research_outputs/issuer_half_restricted_assets_visual_review_2019_v1/render_manifest.json": "db5ed95fc2edd7355cb0359b55f4fdaf7909eb9c4f1c2a46cb1e220c0f798ee5"
+  },
+  "original_render_manifest_preserved": true,
+  "page_reviews": [
+    {
+      "command": [
+        "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe",
+        "-f",
+        "146",
+        "-l",
+        "146",
+        "-singlefile",
+        "-scale-to",
+        "1800",
+        "-png",
+        "D:\\rain\\Desktop\\marketmirrow\\MarketMirror\\research_outputs\\issuer_half_reports_raw_2019_v1\\000950\\run_1\\attempt1.pdf",
+        "D:\\rain\\Desktop\\marketmirrow\\MarketMirror\\research_outputs\\issuer_half_restricted_assets_visual_review_2019_v1\\000950_pdf_page_146"
+      ],
+      "complete_selected_page_visually_inspected": true,
+      "pdf_page": 146,
+      "raster_path": "research_outputs/issuer_half_restricted_assets_visual_review_2019_v1/000950_pdf_page_146.png",
+      "raster_sha256": "d1ba941faa4466419711cbbea2cc1081803516ffa244a9c6206054a08b20cfb8",
+      "render_stderr": "Syntax Error: No display font for 'Symbol'\nSyntax Error: No display font for 'ArialUnicode'\n",
+      "renderer_path": "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe",
+      "renderer_sha256": "3f2440140fef98ddd1ef0772a10d8e58dc3564a9b15a14b4611b5bbd5bdcd37f",
+      "selected_table_text_and_digits_visibly_legible": true,
+      "source_pdf_path": "research_outputs/issuer_half_reports_raw_2019_v1/000950/run_1/attempt1.pdf",
+      "source_pdf_sha256": "49d51afb11088e54d16205ec49b8b53fe8b152a3b58b73354bb33e320621d2bb",
+      "stock_code": "000950"
+    },
+    {
+      "command": [
+        "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe",
+        "-f",
+        "159",
+        "-l",
+        "159",
+        "-singlefile",
+        "-scale-to",
+        "1800",
+        "-png",
+        "D:\\rain\\Desktop\\marketmirrow\\MarketMirror\\research_outputs\\issuer_half_reports_raw_2019_v1\\002385\\run_1\\attempt1.pdf",
+        "D:\\rain\\Desktop\\marketmirrow\\MarketMirror\\research_outputs\\issuer_half_restricted_assets_visual_review_2019_v1\\002385_pdf_page_159"
+      ],
+      "complete_selected_page_visually_inspected": true,
+      "pdf_page": 159,
+      "raster_path": "research_outputs/issuer_half_restricted_assets_visual_review_2019_v1/002385_pdf_page_159.png",
+      "raster_sha256": "24a2771b9f8e34ff2ddc3039691ccdad03e4aae2b20d468a2d1ea1fbc210f4be",
+      "render_stderr": "Syntax Error: No display font for 'Symbol'\nSyntax Error: No display font for 'ArialUnicode'\n",
+      "renderer_path": "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe",
+      "renderer_sha256": "3f2440140fef98ddd1ef0772a10d8e58dc3564a9b15a14b4611b5bbd5bdcd37f",
+      "selected_table_text_and_digits_visibly_legible": true,
+      "source_pdf_path": "research_outputs/issuer_half_reports_raw_2019_v1/002385/run_1/attempt1.pdf",
+      "source_pdf_sha256": "9bcadbe82777fc6b8f92afcb4ba050519cf38b85726f7edeb05e22818bbf8d4c",
+      "stock_code": "002385"
+    },
+    {
+      "command": [
+        "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe",
+        "-f",
+        "153",
+        "-l",
+        "153",
+        "-singlefile",
+        "-scale-to",
+        "1800",
+        "-png",
+        "D:\\rain\\Desktop\\marketmirrow\\MarketMirror\\research_outputs\\issuer_half_reports_raw_2019_v1\\600565\\run_1\\attempt1.pdf",
+        "D:\\rain\\Desktop\\marketmirrow\\MarketMirror\\research_outputs\\issuer_half_restricted_assets_visual_review_2019_v1\\600565_pdf_page_153"
+      ],
+      "complete_selected_page_visually_inspected": true,
+      "pdf_page": 153,
+      "raster_path": "research_outputs/issuer_half_restricted_assets_visual_review_2019_v1/600565_pdf_page_153.png",
+      "raster_sha256": "1a405ba21c05b28a00c17d9b5cb216d9c88348a6dba8fad75404d3d8c653d035",
+      "render_stderr": "Syntax Error: No display font for 'Symbol'\nSyntax Error: No display font for 'ArialUnicode'\n",
+      "renderer_path": "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe",
+      "renderer_sha256": "3f2440140fef98ddd1ef0772a10d8e58dc3564a9b15a14b4611b5bbd5bdcd37f",
+      "selected_table_text_and_digits_visibly_legible": true,
+      "source_pdf_path": "research_outputs/issuer_half_reports_raw_2019_v1/600565/run_1/attempt1.pdf",
+      "source_pdf_sha256": "8f2b79caea4d7ef8a0f0efeb841a25b3f680990f68173e50e987a8bcd259f7d1",
+      "stock_code": "600565"
+    },
+    {
+      "command": [
+        "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe",
+        "-f",
+        "154",
+        "-l",
+        "154",
+        "-singlefile",
+        "-scale-to",
+        "1800",
+        "-png",
+        "D:\\rain\\Desktop\\marketmirrow\\MarketMirror\\research_outputs\\issuer_half_reports_raw_2019_v1\\600565\\run_1\\attempt1.pdf",
+        "D:\\rain\\Desktop\\marketmirrow\\MarketMirror\\research_outputs\\issuer_half_restricted_assets_visual_review_2019_v1\\600565_pdf_page_154"
+      ],
+      "complete_selected_page_visually_inspected": true,
+      "pdf_page": 154,
+      "raster_path": "research_outputs/issuer_half_restricted_assets_visual_review_2019_v1/600565_pdf_page_154.png",
+      "raster_sha256": "dd9b9d3071af27135dde32ec212397f97c598856686639e3dec2a1e250dde892",
+      "render_stderr": "Syntax Error: No display font for 'Symbol'\nSyntax Error: No display font for 'ArialUnicode'\n",
+      "renderer_path": "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe",
+      "renderer_sha256": "3f2440140fef98ddd1ef0772a10d8e58dc3564a9b15a14b4611b5bbd5bdcd37f",
+      "selected_table_text_and_digits_visibly_legible": true,
+      "source_pdf_path": "research_outputs/issuer_half_reports_raw_2019_v1/600565/run_1/attempt1.pdf",
+      "source_pdf_sha256": "8f2b79caea4d7ef8a0f0efeb841a25b3f680990f68173e50e987a8bcd259f7d1",
+      "stock_code": "600565"
+    },
+    {
+      "command": [
+        "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe",
+        "-f",
+        "132",
+        "-l",
+        "132",
+        "-singlefile",
+        "-scale-to",
+        "1800",
+        "-png",
+        "D:\\rain\\Desktop\\marketmirrow\\MarketMirror\\research_outputs\\issuer_half_reports_raw_2019_v1\\603156\\run_1\\attempt1.pdf",
+        "D:\\rain\\Desktop\\marketmirrow\\MarketMirror\\research_outputs\\issuer_half_restricted_assets_visual_review_2019_v1\\603156_pdf_page_132"
+      ],
+      "complete_selected_page_visually_inspected": true,
+      "pdf_page": 132,
+      "raster_path": "research_outputs/issuer_half_restricted_assets_visual_review_2019_v1/603156_pdf_page_132.png",
+      "raster_sha256": "04b68a06a534f7e711799e8f37677e3b26c0b137b73a46811f4a2ffab25292c7",
+      "render_stderr": "",
+      "renderer_path": "C:\\Users\\rain_\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin\\pdftoppm.exe",
+      "renderer_sha256": "3f2440140fef98ddd1ef0772a10d8e58dc3564a9b15a14b4611b5bbd5bdcd37f",
+      "selected_table_text_and_digits_visibly_legible": true,
+      "source_pdf_path": "research_outputs/issuer_half_reports_raw_2019_v1/603156/run_1/attempt1.pdf",
+      "source_pdf_sha256": "5d2bc4e85ef91041fff98f9a277213e8f50d24ba5891a7573eb72767d2062f60",
+      "stock_code": "603156"
+    }
+  ],
+  "recorded_at_utc": "2026-10-01T09:51:23.825674+00:00",
+  "render_warning_page_count": 4,
+  "review_protocol": "Recorded after actual entire-page inspection of four sources and five selected pages. Development QA only; no random sampling preregistration or human gold labels.",
+  "reviewer": "single_assistant",
+  "selected_complete_pages_reviewed": 5,
+  "source_observations": {
+    "000950": {
+      "observations": [
+        "Restricted money funds 668202278.68 in printed yuan unit; receivable bills and inventories explicitly 0.00. These are actual source zeros, not blank imputation.",
+        "Fixed asset 11473405.75 has wrapped guarantee/pledge/mortgage reason that overlaps its asset row. All printed asset values close to 2285595091.19. The separate cash-equivalents table above is not certified or used as a denominator in this extraction."
+      ],
+      "pdf_pages": [
+        146
+      ]
+    },
+    "002385": {
+      "observations": [
+        "Restriction table current ending book values: money funds 96084086.19, fixed assets 743638830.61, intangible assets 134093973.43 and printed total 973816890.23. Reasons are printed cross-references to notes 6/1, 6/12 and 6/15; their contents/maturities are not inferred.",
+        "Primary bordered-table detection returned no tables on this page despite visible table rules. Explicit header word geometry was independently read. Current parser note scope and local unit remain unknown. The blank restricted-cash line in the different cash-equivalents table above does not mean no restricted money funds."
+      ],
+      "pdf_pages": [
+        159
+      ]
+    },
+    "600565": {
+      "observations": [
+        "Explicit CNY restricted money funds 1867863511.86 with presale-supervision and bill-margin reason. Inventories 20790662383.87 and fixed assets 66816754.14 are noncash collateral.",
+        "Continuation on PDF 154 retains investment property 2693792717.99, long-term equity 980203618.00, receivables 41184214.57 and printed total 26440523200.43. Receivable bills and intangible assets are blank and remain unknown, so complete-total reconciliation is not checkable, even if known numeric rows sum to the printed total. New foreign-currency note terminates the restriction table."
+      ],
+      "pdf_pages": [
+        153,
+        154
+      ]
+    },
+    "603156": {
+      "observations": [
+        "Explicit CNY money-fund label occurs twice: 3050000.00 margin and 173281058.50 for bill pledge. Preserve both printed rows and different reasons, do not overwrite by label. Trading financial assets 96600000.00 are pledged and cannot be treated as spendable cash.",
+        "Printed total 272931058.50 retained, while blank receivable-bill/inventory/fixed/intangible rows remain unknown; no complete composition is certified. This selected report is revised and retains its own September availability proxy."
+      ],
+      "pdf_pages": [
+        132
+      ]
+    }
+  },
+  "source_pdf_count": 4,
+  "unrestricted_money_funds": null,
+  "version": "half-year-restricted-assets-limited-single-assistant-visual-review-v1"
+}

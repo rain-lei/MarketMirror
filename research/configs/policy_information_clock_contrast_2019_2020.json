@@ -1,0 +1,64 @@
+{
+  "agent_signal_enabled": false,
+  "checks": [
+    "All source and producer bindings must match independently audited prior artifacts.",
+    "Recover old two-day source/calendar/features/targets before shared exclusions; ensure earlier inputs are unaffected by poisoned target and execution-reference prices.",
+    "Compare policy1-policy2 under fixed market lag and market1-market2 under fixed policy lag, reporting all four instead of selecting an optimum.",
+    "Inspect March30 observed rate change: visible March31 under lag1, outside the study under lag2; record this difference rather than claiming equal policy events."
+  ],
+  "clock_rule": "Each cutoff is end of the specified previous exchange trading day (+08:00); market and policy cutoff dates are distinct fields. No same-day announcement or target-day market input. Execution reference remains prior-day close, which is a regression reference, not evidence of feasible post-close execution.",
+  "design_gate": "Every full model design must pass both exact Fraction and NumPy rank checks before any variant can claim a fitted comparison.",
+  "estimator": "Same frozen ordinary least squares and features as prior diagnostic; no search, no coefficient adoption, raw negative absolute predictions retained.",
+  "evaluation_start_date": "2020-01-23",
+  "expected_raw_calendar_steps": 139,
+  "expected_raw_evaluation_steps": 43,
+  "expected_raw_training_steps": 96,
+  "frozen_at_utc": "2026-10-01T00:45:32.534501+00:00",
+  "inputs": {
+    "research/configs/extended_policy_market_diagnostic_2019_2020.json": "5b9a563313d73a08c8635db54b9df8b550adbc89c4bf2f71645a48d5dfc57519",
+    "research_outputs/extended_policy_rate_diagnostic_2019_2020_v2/diagnostic_panel.json": "7f8a5291bbbab86549ab35011682385662683dc3ecd36da2411ccdf9c36b6833",
+    "research_outputs/extended_policy_rate_diagnostic_2019_2020_v2/manifest.json": "b385a7b997d7ba4c9c27b9d9cfa47cd8b85c49f2d1ebada3c16739a5f25c7396",
+    "research_outputs/extended_policy_rate_diagnostic_2019_2020_v2/policy_facts.json": "804082b18a88deb1fb06d4960343f73cb0416865f3d86f9461306d6fa4f2d96f",
+    "research_outputs/extended_policy_rate_diagnostic_2019_2020_v2/rate_calendar.json": "42cd4911fd6a3622f5529a19f4b948b22c110f970ae16320a76dcffc947eef82",
+    "research_outputs/extended_policy_rate_diagnostic_2019_2020_v2/results.json": "af947040636af4a5c9e47b92d1eb94b6ffa4f3f57f6e80cd65cac076c09e89c0",
+    "research_outputs/extended_policy_rate_diagnostic_audit_2019_2020_v2.json": "9a456692347884efbc6bb03492d340a3a5df27413a9365006f18153a17823758",
+    "research_outputs/wuhan_pre_event_fresh_v3_holdout_market_download_2020_v2/benchmark_prices.csv": "6b3fd2a8c66cb02b95a475a28217f73acd525154e93a67d4e153e5525fe1fe67",
+    "research_outputs/wuhan_pre_event_fresh_v3_holdout_market_download_2020_v2/calendar.csv": "9c4fdd59cad244ca606f8b60137e6c95cabe49fb3b15df5cf98daa59571f2bcc"
+  },
+  "limitations": [
+    "Already consumed development window; rule fixed before this computation is not a new blind validation.",
+    "Only five training policy dates and few later policy dates; full rank does not imply stable coefficients or a causal policy effect.",
+    "Official publication is not a market surprise; no expectations or contemporaneous pandemic confound control.",
+    "Prior-day policy updates can still miss same-day market reactions; daily data alone cannot substantiate tradable intraday returns.",
+    "This benchmarks timing availability only; Q&A fusion, issuer exposure and investor/market mechanism calibration remain incomplete."
+  ],
+  "pairing_rule": "Union of unknown-policy or insufficient-market-history dates across all four variants is excluded from every fit and target. Targets and train/evaluation dates are identical; show old two-day model on this paired intersection separately from its published 95-row result.",
+  "source_directory": "research_outputs/extended_policy_rate_diagnostic_2019_2020_v2",
+  "stage": "frozen_before_clock_variant_outcomes",
+  "study_end_date": "2020-03-31",
+  "study_start_date": "2019-09-02",
+  "training_end_date": "2020-01-22",
+  "variants": [
+    {
+      "market_lag_sessions": 2,
+      "name": "market2_policy2",
+      "policy_lag_sessions": 2
+    },
+    {
+      "market_lag_sessions": 2,
+      "name": "market2_policy1",
+      "policy_lag_sessions": 1
+    },
+    {
+      "market_lag_sessions": 1,
+      "name": "market1_policy2",
+      "policy_lag_sessions": 2
+    },
+    {
+      "market_lag_sessions": 1,
+      "name": "market1_policy1",
+      "policy_lag_sessions": 1
+    }
+  ],
+  "version": "policy-information-clock-crossed-development-contrast-v1"
+}

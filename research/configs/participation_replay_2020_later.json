@@ -1,0 +1,9 @@
+{
+  "run_id": "historical_participation_2020_later",
+  "data_kind": "observed_sensitivity",
+  "replay_config": "historical_replay_later_2020.json",
+  "replay_manifest": "../../research_outputs/observed_2020/historical_replay_later/historical_replay_manifest.json",
+  "activity_manifest": "../../research_outputs/observed_2020/activity/activity_manifest.json",
+  "aum_cny_per_agent": [100000000, 1000000000],
+  "participation_rates": [0.01, 0.05]
+}

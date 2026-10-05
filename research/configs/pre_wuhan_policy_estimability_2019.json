@@ -1,0 +1,43 @@
+{
+  "check_steps": 13,
+  "inputs": {
+    "research_outputs/pre_wuhan_policy_calendar_2019_v1/lagged_policy_calendar.json": "121192eb49263210a7028275f1eebd646991440a46f0c3a77c1f08bcc1a0a8ca",
+    "research_outputs/pre_wuhan_policy_calendar_2019_v1/manifest.json": "53a16826d5da91f80f68d2772e370b537304b3778377258f993d0f695c7273df",
+    "research_outputs/pre_wuhan_policy_calendar_2019_v1/policy_facts.json": "00a0f7bad03daa5f0264505435fd429c5c2cc96ff4ccce1205de8d31e3a6a637",
+    "research_outputs/pre_wuhan_policy_calendar_audit_2019_v1.json": "db934973c328b121e0d9a163d937d618952a9189aaa7487bf0f45436233a7c0f"
+  },
+  "interpretation": "No market outcomes or coefficients are fitted. Known first-visible mainland rate-change pulses are checked for training variation and joint identifiability. Zero means no newly observed predecessor-backed change in the bounded source catalog, not no monetary policy change in every channel. Unknown newly observed deltas remain missing. RRR anticipated implementation and offshore bill yields are reported separately. This consumed development split is not independent forecast validation.",
+  "rank_methods": [
+    "exact_fraction_gaussian_elimination",
+    "numpy_svd_rank_tolerance_1e-10"
+  ],
+  "rate_channels": [
+    {
+      "instrument": "mlf",
+      "tenor_unit": "年",
+      "tenor_value": 1
+    },
+    {
+      "instrument": "reverse_repo",
+      "tenor_unit": "天",
+      "tenor_value": 7
+    },
+    {
+      "instrument": "reverse_repo",
+      "tenor_unit": "天",
+      "tenor_value": 14
+    },
+    {
+      "instrument": "lpr",
+      "tenor_unit": "年",
+      "tenor_value": 1
+    },
+    {
+      "instrument": "lpr",
+      "tenor_unit": "年以上",
+      "tenor_value": 5
+    }
+  ],
+  "training_steps": 30,
+  "version": "pre-wuhan-policy-coefficient-estimability-development-audit-v1"
+}

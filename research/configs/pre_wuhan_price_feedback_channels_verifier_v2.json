@@ -1,0 +1,28 @@
+{
+  "frozen_at_utc": "2026-10-01T16:33:18.278450+00:00",
+  "inputs": {
+    "research/configs/pre_wuhan_price_feedback_channels_2019.json": "6ae7c811a30b4d3203f35d4440684b01d3020ce70cc8bdd499a4ee73d73777c4",
+    "research/simulation/semantic_memory_sensitivity.py": "dca0e08fcb50daa3cb2bd337df9c9dd8fab82975f2bdf1c1f1864f416a7fe1b2",
+    "research/simulation/verify_pre_wuhan_price_feedback_channels_2019.py": "d48c19a70504ae7c3530279bb12c4af89d60ed33bb271babcb454bcc84813f0b",
+    "research/simulation/verify_pre_wuhan_price_feedback_channels_2019_v2.py": "7a9876ba2e8e09e46dd6b488b7ac21c1665acaaa9d3fb42e79e0d80a6b89e13a",
+    "research_outputs/pre_wuhan_price_feedback_channel_verifier_v1_failure_20261002.json": "f4ae10af87bd5842532066cee51b9f9eaf64e8914a91430db84c20983d30ddfe",
+    "research_outputs/pre_wuhan_price_feedback_channels_2019_v1/ledger.jsonl.gz": "cb2b458945dee7401702a703aab436d2a89ec7a37431a5b31d19860603f50f43",
+    "research_outputs/pre_wuhan_price_feedback_channels_2019_v1/manifest.json": "d5c07996b3e9e4ac4f4d8bbf787445d5612061b4b8f55eebd782eaee87c35d54",
+    "research_outputs/pre_wuhan_price_feedback_channels_2019_v1/results.json": "28af5d3fc6852f9c7ef09b09eebcc24abfdaac76e986b8db64bdb587e421d53e",
+    "research_outputs/pre_wuhan_price_feedback_channels_2019_v1/same_state_orders.jsonl.gz": "41d6418129905ded22393d9b4383258b964c4c3cd69447ceda8274008f293149",
+    "research_outputs/pre_wuhan_price_feedback_channels_independent_run_20261002.txt": "5861179b078050417bb58dc9e731db60dd70dd5cf8413142773f58cc1020836a",
+    "tests/test_price_feedback_channel_verifier_v2.py": "09c8979ac267bc4a28d561590ab9dc3b5b9292cd46c4c79cbfe59ad5c300aedd"
+  },
+  "interpretation": "Fix only state/streak/trace digest byte formatting and add explicit repair bindings. All factorial cells, five seed bundles, market/agent parameters, primary limits and statistical/aggregation formulas remain fixed. Producer outcomes were inspected before this verifier-only repair; this is not a new blind model experiment.",
+  "original_failure_preserved": true,
+  "producer_and_market_results_unchanged": true,
+  "scope": "canonical-json-default-spacing-only",
+  "serialization_contract": {
+    "allow_nan": false,
+    "ensure_ascii": false,
+    "separators": "Python json.dumps default; matches frozen canonical_hash",
+    "sort_keys": true
+  },
+  "statistical_formula_ast_unchanged": true,
+  "version": "pre-wuhan-target-quote-feedback-independent-ledger-statistics-v2"
+}

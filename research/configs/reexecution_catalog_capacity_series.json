@@ -1,0 +1,11 @@
+{
+  "integrity_catalog": "integrity_catalog_capacity_series.json",
+  "runs": [
+    {"run_id": "historical_capacity_2018_h1", "input": "capacity_diagnostic_2018.json"},
+    {"run_id": "historical_capacity_2020_q1", "input": "capacity_diagnostic_2020_q1.json"},
+    {"run_id": "historical_capacity_2020_later", "input": "capacity_diagnostic_2020_later.json"},
+    {"run_id": "historical_participation_2018_h1", "input": "participation_replay_2018.json"},
+    {"run_id": "historical_participation_2020_q1", "input": "participation_replay_2020_q1.json"},
+    {"run_id": "historical_participation_2020_later", "input": "participation_replay_2020_later.json"}
+  ]
+}

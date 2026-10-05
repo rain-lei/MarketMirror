@@ -1,0 +1,269 @@
+{
+  "agent_signal_enabled": false,
+  "business_exposure_values_verified": false,
+  "complete_pages_reviewed_count": 12,
+  "coverage_limit": "Four reports and twelve complete pages only. Printed facts are limited context observations, not independent numeric exposure certification or calibrated coefficients.",
+  "inputs": {
+    "research_outputs/issuer_half_business_evidence_2019_v1.json": "865b10637319934b50d90501eee70194a83d04a0d8f772738017b22b36717c8c",
+    "research_outputs/issuer_half_business_evidence_audit_2019_v3.json": "d71bcd9c2775c8816f3bb0a5653e6f8f72eec43a9e431618099bb2675ac3fc43"
+  },
+  "quantified_exposure": null,
+  "recorded_at_utc": "2026-10-01T07:29:21.552718+00:00",
+  "review_basis": "Complete original-page raster inspection of business narrative, current/comparison columns, partial-versus-complete regional revenue, subsidiary and guarantee relationships. Independent full-cohort literal-page audit recorded separately.",
+  "reviewer": "assistant_single_reviewer",
+  "selection_rule": "Representative table-coverage and relationship hazards plus the earlier reading-order diagnostic; not an outcome-selected sample or whole-cohort manual certification.",
+  "source_count": 4,
+  "sources": [
+    {
+      "agent_signal_enabled": false,
+      "complete_pages_reviewed": [
+        9,
+        16
+      ],
+      "complete_regional_revenue_coverage_verified": false,
+      "group_scope_verified": false,
+      "historical_short_name": "深圳华强",
+      "numeric_table_values_verified": false,
+      "observations": [
+        "Business section describes electronic component distribution and supply-chain services.",
+        "Main-business table separates domestic and overseas revenue. These region labels do not identify Hubei or Wuhan shares.",
+        "Current revenue, cost, margin and comparison changes are distinct columns; group scope and complete coverage still require numeric-table verification."
+      ],
+      "page_rasters": [
+        {
+          "complete_page_inspected": true,
+          "pdf_page": 9,
+          "raster_path": "research_outputs/issuer_half_business_visual_review_2019_v1/000062_pdf_page_009.png",
+          "raster_sha256": "1b888899c798ae5f389744580a73aad3dcda6fdc80976f0ca1645291527742a4"
+        },
+        {
+          "complete_page_inspected": true,
+          "pdf_page": 16,
+          "raster_path": "research_outputs/issuer_half_business_visual_review_2019_v1/000062_pdf_page_016.png",
+          "raster_sha256": "6f1acc15e9da713b83ade62a8806ab8cfe6e22c0603c8ff97321444860a7e5a8"
+        }
+      ],
+      "quantified_exposure": null,
+      "report_metadata": {
+        "agent_signal_enabled": false,
+        "announcement_id": "1206653281",
+        "archive_date": "2019-08-28",
+        "attachment_url": "https://static.cninfo.com.cn/finalpage/2019-08-28/1206653281.PDF",
+        "availability_basis": "agreement_of_provider_calendar_date_and_official_archive_date_next_midnight",
+        "available_at_proxy": "2019-08-29T00:00:00+08:00",
+        "eligibility_reason": "eligible_report_metadata",
+        "eligible": true,
+        "financial_values_verified": false,
+        "org_id": "gssz0000062",
+        "provider_announcement_time_ms": 1566921600000,
+        "provider_announcement_timestamp": "2019-08-28T00:00:00+08:00",
+        "publication_precision_used": "date",
+        "report_end_date": "2019-06-30",
+        "report_form": "plain_report",
+        "report_period_key": "2019_half",
+        "revision_marked_in_title": false,
+        "stock_code": "000062",
+        "title": "2019年半年度报告"
+      },
+      "source_pdf_path": "research_outputs/issuer_half_reports_raw_2019_v1/000062/run_1/attempt1.pdf",
+      "source_pdf_sha256": "2d715580e2f3957192bf8d65a5be5a0c965be88ee7b0b0b713d61a51496a7e0d",
+      "stock_code": "000062"
+    },
+    {
+      "agent_signal_enabled": false,
+      "complete_pages_reviewed": [
+        4,
+        5,
+        8,
+        11,
+        12
+      ],
+      "complete_regional_revenue_coverage_verified": false,
+      "group_scope_verified": false,
+      "historical_short_name": "京粮控股",
+      "numeric_table_values_verified": false,
+      "observations": [
+        "Report period is January through June 2019; monetary unit labels and stated company definitions were inspected.",
+        "Contact address is Beijing; the registered address is referred to the 2018 annual report, not printed here. Hainan in the company name is not verified operating geography.",
+        "Oil-processing narrative centers on Beijing-Tianjin-Hebei, whereas snack sales cover a wider area.",
+        "Main-business regional table prints only North China, which does not sum to total revenue. Next page begins another section. Do not normalize the partial table to 100% or invent residual regions."
+      ],
+      "page_rasters": [
+        {
+          "complete_page_inspected": true,
+          "pdf_page": 4,
+          "raster_path": "research_outputs/issuer_half_business_visual_review_2019_v1/000505_pdf_page_004.png",
+          "raster_sha256": "6f929a43126cd2bf5510050db600f709ff7db90ec3d89d06c6b23907df7dcf0a"
+        },
+        {
+          "complete_page_inspected": true,
+          "pdf_page": 5,
+          "raster_path": "research_outputs/issuer_half_business_visual_review_2019_v1/000505_pdf_page_005.png",
+          "raster_sha256": "838dabdc543b18fb43be5d7fa39004e055d66cb4d1606c2fc3b5014856cbfe31"
+        },
+        {
+          "complete_page_inspected": true,
+          "pdf_page": 8,
+          "raster_path": "research_outputs/issuer_half_business_visual_review_2019_v1/000505_pdf_page_008.png",
+          "raster_sha256": "382a7f47123fbf6ced5130c6ebaccddf57c3f721af1f6ab1833a18ad4036d225"
+        },
+        {
+          "complete_page_inspected": true,
+          "pdf_page": 11,
+          "raster_path": "research_outputs/issuer_half_business_visual_review_2019_v1/000505_pdf_page_011.png",
+          "raster_sha256": "cedd91b3a86ce93d633947a40b751361debf172a480fb0bc76f3ba61718161bd"
+        },
+        {
+          "complete_page_inspected": true,
+          "pdf_page": 12,
+          "raster_path": "research_outputs/issuer_half_business_visual_review_2019_v1/000505_pdf_page_012.png",
+          "raster_sha256": "c29751a023d1c332be769b92b0789bff759a86bf59599b905f4c9ffcb8474f37"
+        }
+      ],
+      "quantified_exposure": null,
+      "report_metadata": {
+        "agent_signal_enabled": false,
+        "announcement_id": "1206540674",
+        "archive_date": "2019-08-17",
+        "attachment_url": "https://static.cninfo.com.cn/finalpage/2019-08-17/1206540674.PDF",
+        "availability_basis": "agreement_of_provider_calendar_date_and_official_archive_date_next_midnight",
+        "available_at_proxy": "2019-08-18T00:00:00+08:00",
+        "eligibility_reason": "eligible_report_metadata",
+        "eligible": true,
+        "financial_values_verified": false,
+        "org_id": "gssz0000505",
+        "provider_announcement_time_ms": 1565971200000,
+        "provider_announcement_timestamp": "2019-08-17T00:00:00+08:00",
+        "publication_precision_used": "date",
+        "report_end_date": "2019-06-30",
+        "report_form": "plain_report",
+        "report_period_key": "2019_half",
+        "revision_marked_in_title": false,
+        "stock_code": "000505",
+        "title": "2019年半年度报告"
+      },
+      "source_pdf_path": "research_outputs/issuer_half_reports_raw_2019_v1/000505/run_1/attempt1.pdf",
+      "source_pdf_sha256": "ea2fc47b150add3945247f2ddee5fbb9d78aef666ce0ce0996127e9dc58f8c37",
+      "stock_code": "000505"
+    },
+    {
+      "agent_signal_enabled": false,
+      "complete_pages_reviewed": [
+        18,
+        19,
+        163
+      ],
+      "complete_regional_revenue_coverage_verified": false,
+      "group_scope_verified": false,
+      "historical_short_name": "大北农",
+      "numeric_table_values_verified": false,
+      "observations": [
+        "Full revenue-composition table has six regions; a separate material industry/product/region table has different coverage. Table continuation and current/comparison columns were inspected.",
+        "Central-South printed revenue share of 32.65% is not a Hubei or Wuhan share.",
+        "Subsidiary row for Wuhan Dabeinong states operating and registered locations in Wuhan, Hubei, a production business and direct holding percentage. This verifies a limited disclosed subsidiary relationship, not a group revenue share or shock direction.",
+        "The holding percentage column must not be used as regional revenue exposure."
+      ],
+      "page_rasters": [
+        {
+          "complete_page_inspected": true,
+          "pdf_page": 18,
+          "raster_path": "research_outputs/issuer_half_business_visual_review_2019_v1/002385_pdf_page_018.png",
+          "raster_sha256": "46ecdee45e373f47f9938e31009ddd506754ac2dff92826dd1b2579bff663558"
+        },
+        {
+          "complete_page_inspected": true,
+          "pdf_page": 19,
+          "raster_path": "research_outputs/issuer_half_business_visual_review_2019_v1/002385_pdf_page_019.png",
+          "raster_sha256": "da40bf5616142f434537e37da1036212f8a9621692f4fe56bc644c032346466c"
+        },
+        {
+          "complete_page_inspected": true,
+          "pdf_page": 163,
+          "raster_path": "research_outputs/issuer_half_business_visual_review_2019_v1/002385_pdf_page_163.png",
+          "raster_sha256": "b0d121d26c0039ac42f0da7e609ebb746ced5e89409424117d805d1dbc8611b3"
+        }
+      ],
+      "quantified_exposure": null,
+      "report_metadata": {
+        "agent_signal_enabled": false,
+        "announcement_id": "1206552412",
+        "archive_date": "2019-08-22",
+        "attachment_url": "https://static.cninfo.com.cn/finalpage/2019-08-22/1206552412.PDF",
+        "availability_basis": "agreement_of_provider_calendar_date_and_official_archive_date_next_midnight",
+        "available_at_proxy": "2019-08-23T00:00:00+08:00",
+        "eligibility_reason": "eligible_report_metadata",
+        "eligible": true,
+        "financial_values_verified": false,
+        "org_id": "9900011648",
+        "provider_announcement_time_ms": 1566403200000,
+        "provider_announcement_timestamp": "2019-08-22T00:00:00+08:00",
+        "publication_precision_used": "date",
+        "report_end_date": "2019-06-30",
+        "report_form": "plain_report",
+        "report_period_key": "2019_half",
+        "revision_marked_in_title": false,
+        "stock_code": "002385",
+        "title": "2019年半年度报告"
+      },
+      "source_pdf_path": "research_outputs/issuer_half_reports_raw_2019_v1/002385/run_1/attempt1.pdf",
+      "source_pdf_sha256": "9bcadbe82777fc6b8f92afcb4ba050519cf38b85726f7edeb05e22818bbf8d4c",
+      "stock_code": "002385"
+    },
+    {
+      "agent_signal_enabled": false,
+      "complete_pages_reviewed": [
+        29,
+        30
+      ],
+      "complete_regional_revenue_coverage_verified": false,
+      "group_scope_verified": false,
+      "historical_short_name": "重药控股",
+      "numeric_table_values_verified": false,
+      "observations": [
+        "Guarantee-table section, unit of ten-thousand renminbi, and continuation page were inspected.",
+        "Hubei in a wrapped company name is real source text in the subsidiary-to-subsidiary guarantee table. It is a guarantee-object relationship for this context, not a numeric operating-revenue exposure.",
+        "Layout-mode independent text extraction interleaves neighboring columns. The whole-cohort content-order audit matches the original wrapped name without issuer-specific fallback."
+      ],
+      "page_rasters": [
+        {
+          "complete_page_inspected": true,
+          "pdf_page": 29,
+          "raster_path": "research_outputs/issuer_half_business_visual_review_2019_v1/000950_pdf_page_029.png",
+          "raster_sha256": "963a7a41723ee42444ec89d25a65e01720e75060ef1f2b1174dfa2b600c804bc"
+        },
+        {
+          "complete_page_inspected": true,
+          "pdf_page": 30,
+          "raster_path": "research_outputs/issuer_half_business_visual_review_2019_v1/000950_pdf_page_030.png",
+          "raster_sha256": "471be40507764c7b71e00b11361e9ba455a7dcb0d8572f44c8cfc1d3d28093b4"
+        }
+      ],
+      "quantified_exposure": null,
+      "report_metadata": {
+        "agent_signal_enabled": false,
+        "announcement_id": "1206545980",
+        "archive_date": "2019-08-20",
+        "attachment_url": "https://static.cninfo.com.cn/finalpage/2019-08-20/1206545980.PDF",
+        "availability_basis": "agreement_of_provider_calendar_date_and_official_archive_date_next_midnight",
+        "available_at_proxy": "2019-08-21T00:00:00+08:00",
+        "eligibility_reason": "eligible_report_metadata",
+        "eligible": true,
+        "financial_values_verified": false,
+        "org_id": "gssz0000950",
+        "provider_announcement_time_ms": 1566230400000,
+        "provider_announcement_timestamp": "2019-08-20T00:00:00+08:00",
+        "publication_precision_used": "date",
+        "report_end_date": "2019-06-30",
+        "report_form": "plain_report",
+        "report_period_key": "2019_half",
+        "revision_marked_in_title": false,
+        "stock_code": "000950",
+        "title": "2019年半年度报告"
+      },
+      "source_pdf_path": "research_outputs/issuer_half_reports_raw_2019_v1/000950/run_1/attempt1.pdf",
+      "source_pdf_sha256": "49d51afb11088e54d16205ec49b8b53fe8b152a3b58b73354bb33e320621d2bb",
+      "stock_code": "000950"
+    }
+  ],
+  "version": "pre-wuhan-half-business-limited-visual-review-v1"
+}

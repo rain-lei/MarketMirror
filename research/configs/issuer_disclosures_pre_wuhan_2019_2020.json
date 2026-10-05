@@ -1,0 +1,52 @@
+{
+  "agent_signal_enabled": false,
+  "announcement_url": "https://www.cninfo.com.cn/new/hisAnnouncement/query",
+  "attachment_host": "static.cninfo.com.cn",
+  "availability_rule": "Retain provider announcementTime and official attachment archive date separately. They must agree on China calendar date. Use next-day 00:00:00 +08:00 as conservative date-only availability, never infer first-publication seconds from a midnight provider field. Only availability <= snapshot is eligible.",
+  "cohort_field": "cohort_memberships",
+  "expected_companies": 123,
+  "frozen_at_utc": "2026-10-01T01:38:26.179605+00:00",
+  "identity_url": "https://www.cninfo.com.cn/new/information/topSearch/query",
+  "inputs": {
+    "research/configs/pre_wuhan_industry_2019q3.json": "963fc2d7ec0764cb52e0f73e51b552de5e023dff6fab542d672c6d85f7974561",
+    "research_outputs/pre_wuhan_industry_2019q3_v1/industry_memberships.json": "3fad4ce7a1423273e3d75e93a1407a29405c50a62df42f706813ad61a9c2fdfb",
+    "research_outputs/pre_wuhan_industry_2019q3_v1/provenance.json": "ebc3d0d1533d12a104c3ac416ea77501b990fb1f8bf5f164032c21b5989804f5"
+  },
+  "limitations": [
+    "This is the existing retrospective 123-company mechanism-development cohort, not the separate fresh-v3 126-company cohort or an unseen validation population.",
+    "Current official archive is not certified as unchanged historical bytes.",
+    "Report date is not public availability; bank/broker fields require separate applicability and unit checks.",
+    "2019 annual reports published after the cutoff are ineligible even though the report year is 2019.",
+    "Unknown or ambiguous reports remain explicit QC states; missing financial values cannot be zero-filled."
+  ],
+  "maximum_attempts_per_request": 3,
+  "maximum_pages_per_company": 10,
+  "maximum_parallel_requests": 2,
+  "page_size": 50,
+  "query_categories": [
+    "category_ndbg_szsh",
+    "category_bndbg_szsh",
+    "category_sjdbg_szsh"
+  ],
+  "query_end_date": "2020-01-22",
+  "query_start_date": "2019-01-01",
+  "report_periods": {
+    "2018_annual": {
+      "report_end_date": "2018-12-31",
+      "title_token": "2018年年度报告"
+    },
+    "2019_half": {
+      "report_end_date": "2019-06-30",
+      "title_token": "2019年半年度报告"
+    },
+    "2019_q3": {
+      "report_end_date": "2019-09-30",
+      "title_token": "2019年第三季度报告"
+    }
+  },
+  "selection_rule": "Query every member of the frozen 123-company mechanism-development cohort, without returns or semantic labels. Preserve all candidate announcements. For each period prefer full text, then plain report, then report body; exclude summaries, English versions and ancillary announcements. Within preferred form choose latest eligible version; retain revision status. Equal-date competing documents are ambiguous and not silently selected.",
+  "snapshot_at": "2020-01-22T23:59:59+08:00",
+  "source_cohort": "research_outputs/pre_wuhan_industry_2019q3_v1/industry_memberships.json",
+  "stage_scope": "Formal source inventory and batch raw acquisition, not verified financial values or prediction increment. Current identity is a retrieval crosswalk, not a historical Agent feature.",
+  "version": "pre-wuhan-official-issuer-disclosure-inventory-v1"
+}

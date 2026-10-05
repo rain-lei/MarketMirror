@@ -1,0 +1,8 @@
+{
+  "run_id": "wuhan_pre_event_126_reply_keyword_attention_current_code_v2",
+  "baseline_config": "wuhan_pre_event_pit_portfolio_no_text_2020.json",
+  "baseline_directory": "../../research_outputs/wuhan_pit_portfolio_no_text_2020_v3",
+  "annotation_pack": "../../research_outputs/wuhan_pre_event_pit_snapshot_2020_v3",
+  "keyword_directory": "../../research_outputs/wuhan_pre_event_pit_keywords_2020_v3",
+  "attention_levels": [0.25, 1.0]
+}

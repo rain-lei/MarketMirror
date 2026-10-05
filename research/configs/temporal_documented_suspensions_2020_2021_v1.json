@@ -1,0 +1,546 @@
+{
+  "documents": [
+    {
+      "assertions": [
+        {
+          "date": "2021-03-15",
+          "event": "SUSPEND",
+          "excerpt": "公司股票自2021年3月15日（星期一）开市起停牌"
+        },
+        {
+          "date": "2021-03-22",
+          "event": "RESUME",
+          "excerpt": "公司股票（证券简称：浙商中拓，证券代码：000906）将于2021年3月22日（星期一）开市起复牌"
+        }
+      ],
+      "document_date": "2021-03-20",
+      "document_date_excerpt": "2021 年 3 月 20 日",
+      "document_id": "000906_resume",
+      "path": ".firecrawl\\temporal-status-000906-resume-20261003-v1.json",
+      "sha256": "10397bd3df27402530dba6a2caa137bf03ee3c24e4502e3f08b765c96e84846a",
+      "stock_code": "000906",
+      "url": "https://www.zmd.com.cn/mtsc/uploads/StockExchangeFile/20240112121959762.PDF"
+    },
+    {
+      "assertions": [
+        {
+          "date": "2020-09-07",
+          "event": "SUSPEND",
+          "excerpt": "公司股票（证券简称：东方中科，证券代码：002819）自2020年9月7日（星期一）开市起停牌"
+        },
+        {
+          "date": "2020-09-21",
+          "event": "RESUME",
+          "excerpt": "公司股票将于2020年9月21日（星期一）上午开市起复牌"
+        }
+      ],
+      "document_date": "2020-09-19",
+      "document_date_excerpt": "二〇二〇年九月十九日",
+      "document_id": "002819_interval",
+      "path": ".firecrawl\\temporal-status-002819-interval-20261003-v1.json",
+      "sha256": "7206eb85a2779d3725a43010eafffc6da25c08a9875d072bd1e7cdb4bc661547",
+      "stock_code": "002819",
+      "url": "https://disc.static.szse.cn/disc/disk02/finalpage/2020-09-19/cde0f1dc-4b78-4804-b903-e6be086e3a52.PDF"
+    },
+    {
+      "assertions": [
+        {
+          "date": "2020-12-29",
+          "event": "SUSPEND",
+          "excerpt": "公司股票（股票简称：博世科，股票代码：300422）自 2020 年 12 月 29 日（星期二）开市起停牌"
+        },
+        {
+          "date": "2021-01-04",
+          "event": "RESUME",
+          "excerpt": "公司股票（股票简称：博世科，股票代码：300422）自 2021 年 1 月 4 日（星期一）开市起复牌"
+        }
+      ],
+      "document_date": "2020-12-31",
+      "document_date_excerpt": "2020 年 12 月 31 日",
+      "document_id": "300422_interval",
+      "path": ".firecrawl\\temporal-status-300422-interval-20261003-v1.json",
+      "sha256": "b5bb05fe41ff1bbeedece6543b1aca62b1165f4c244d803d73c66eac14eb1b94",
+      "stock_code": "300422",
+      "url": "https://pdf.dfcfw.com/pdf/H2_AN202101031446690635_1.pdf"
+    },
+    {
+      "assertions": [
+        {
+          "date": "2020-10-12",
+          "event": "SUSPEND",
+          "excerpt": "公司股票自 2020 年 10 月 12 日开市起停牌核查"
+        },
+        {
+          "date": "2020-10-14",
+          "event": "RESUME",
+          "excerpt": "公司股票将于 2020 年 10 月 14 日（星期三）开市起复牌"
+        }
+      ],
+      "document_date": "2020-10-14",
+      "document_date_excerpt": "2020 年 10 月 14 日",
+      "document_id": "300722_interval",
+      "path": ".firecrawl\\temporal-status-300722-interval-20261003-v1.json",
+      "sha256": "ff3045a6f635fc7a4f47d6a9bc99e6e277aa30fc2a314e6d3f04c955734b35ce",
+      "stock_code": "300722",
+      "url": "https://pdf.dfcfw.com/pdf/H2_AN202010131421139410_1.pdf"
+    },
+    {
+      "assertions": [
+        {
+          "date": "2021-01-25",
+          "event": "SUSPEND",
+          "excerpt": "公司股票（证券简称：万盛股份，证券代码：603010）自 2021 年 1 月 25 日（星期一）开市起开始停牌"
+        }
+      ],
+      "document_date": "2021-01-23",
+      "document_date_excerpt": "2021 年 1 月 23 日",
+      "document_id": "603010_suspend",
+      "path": ".firecrawl\\temporal-status-603010-suspend-20261003-v1.json",
+      "sha256": "178e8e400eb3d8009beb607cf2a81c3fa31742fbed091f722b38c1bf82563e39",
+      "stock_code": "603010",
+      "url": "https://pdf.dfcfw.com/pdf/H2_AN202101221453302535_1.pdf"
+    },
+    {
+      "assertions": [
+        {
+          "date": "2021-01-27",
+          "event": "CONTINUE_SUSPENSION",
+          "excerpt": "公司股票自 2021 年 1 月 27 日开市起继续停牌"
+        }
+      ],
+      "document_date": "2021-01-27",
+      "document_date_excerpt": "2021 年 1 月 27 日",
+      "document_id": "603010_continue",
+      "path": ".firecrawl\\temporal-status-603010-continue-20261003-v1.json",
+      "sha256": "da73a55e87dac76699399de06ed00c09cb489d4904cd8e2c8a488465a8c143da",
+      "stock_code": "603010",
+      "url": "https://cn.ws-chem.com/Upload/tzzgx/%E5%85%AC%E5%8F%B8%E5%85%AC%E5%91%8A/%E4%B8%B4%E6%97%B6%E5%85%AC%E5%91%8A/2021/2021006/%E6%B5%99%E6%B1%9F%E4%B8%87%E7%9B%9B%E8%82%A1%E4%BB%BD%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8%E5%85%B3%E4%BA%8E%E9%87%8D%E5%A4%A7%E4%BA%8B%E9%A1%B9%E7%BB%A7%E7%BB%AD%E5%81%9C%E7%89%8C%E7%9A%84%E5%85%AC%E5%91%8A-16295756494.pdf"
+    },
+    {
+      "assertions": [
+        {
+          "date": "2021-01-28",
+          "event": "RESUME",
+          "excerpt": "公司股票（证券简称：万盛股份，证券代码：603010）将于 2021 年 1 月 28 日（周四）开市起复牌"
+        }
+      ],
+      "document_date": "2021-01-28",
+      "document_date_excerpt": "2021 年 1 月 28 日",
+      "document_id": "603010_resume",
+      "path": ".firecrawl\\temporal-status-603010-resume-20261003-v1.json",
+      "sha256": "5fef8b4550813e2514be4a2bec80544e6827e2d10d3eee32019f09a79430671f",
+      "stock_code": "603010",
+      "url": "https://pdf.dfcfw.com/pdf/H2_AN202101271454986469_1.pdf"
+    },
+    {
+      "assertions": [
+        {
+          "date": "2021-02-18",
+          "event": "SUSPEND",
+          "excerpt": "本公司股票（证券代码：603677）、奇精转债（转债代码：113524）和奇精转股（转股代码：191524）自 2021 年 2 月 18 日开市起停牌"
+        }
+      ],
+      "document_date": "2021-02-19",
+      "document_date_excerpt": "2021 年 2 月 19 日",
+      "document_id": "603677_suspend",
+      "path": ".firecrawl\\temporal-status-603677-suspend-20261003-v1.json",
+      "sha256": "b06d30b97036d809967641c586e77ec6f72b41dec781e1675ee5ce6a497b6c8a",
+      "stock_code": "603677",
+      "url": "https://static.cninfo.com.cn/finalpage/2021-02-19/1209280376.PDF"
+    },
+    {
+      "assertions": [
+        {
+          "date": "2021-02-22",
+          "event": "CONTINUE_SUSPENSION",
+          "excerpt": "本公司股票（证券代码：603677）、奇精转债（转债代码：113524）和奇精转股（转股代码：191524）自 2021 年 2 月 22 日开市起继续停牌"
+        }
+      ],
+      "document_date": "2021-02-20",
+      "document_date_excerpt": "2021 年 2 月 20 日",
+      "document_id": "603677_continue",
+      "path": ".firecrawl\\temporal-status-603677-continue-20261003-v1.json",
+      "sha256": "7dcd82df7d62378216493d2b01420735a9d2adf941b7258fd58b63a390c6bb7f",
+      "stock_code": "603677",
+      "url": "https://pdf.dfcfw.com/pdf/H2_AN202102191463533517_1.pdf"
+    },
+    {
+      "assertions": [
+        {
+          "date": "2021-02-23",
+          "event": "RESUME",
+          "excerpt": "本公司股票（证券代码：603677）、奇精转债（转债代码：113524）和奇精转股（转股代码：191524）将于 2021 年 2 月 23 日（周二）复牌"
+        }
+      ],
+      "document_date": "2021-02-23",
+      "document_date_excerpt": "2021 年 2 月 23 日",
+      "document_id": "603677_resume",
+      "path": ".firecrawl\\temporal-status-603677-resume-20261003-v1.json",
+      "sha256": "3150126063faca70b902ab009eae2de1583d3e8396a0a3d57f7a88bde3e0a134",
+      "stock_code": "603677",
+      "url": "https://pdf.dfcfw.com/pdf/H2_AN202102221464328027_1.pdf?1614027592000.pdf"
+    }
+  ],
+  "evidence_review": "Sole assistant reviewed complete issuer-authored announcement text, identity, literal dates, definitive versus expected events, and separate continuation notices. Literal assertions below are mechanically bound, not automatic NLP judgments.",
+  "execution_price_and_return_basis_approved": false,
+  "frozen_at_utc": "2026-10-03T00:09:44.455896+00:00",
+  "input_bindings": {
+    "research\\configs\\temporal_risk_firecrawl_raw_acquisition_2021_v6.json": "d838b71f962d40d880b67505e7f094b5443746cc58a6b3545881f7e36019ff2f",
+    "research\\data_pipeline\\documented_trade_status.py": "a433f56f37e55edbf61e355c90404612443fa0f98e10ae25fcaf0161ae369ce0",
+    "research_outputs\\freeze_temporal_status_reconciliation_20261003_v1.py": "fba23fd53cfa4ff0a2edf21b93fcec3dfcf2a6fa4f1fa5dbde1b82c923312898",
+    "research_outputs\\run_temporal_status_reconciliation_20261003_v1.py": "a6189e4e2ee8a4c9e2d7f1298a5be6cb0ea33df8a1f6826b88ebee861323ec9e",
+    "research_outputs\\temporal_return_mechanics_verification_20261002_v2.json": "888863ff4145c858ffc7b0e0a076f56cb24faa949fabcbbac7d472b46438323a",
+    "research_outputs\\temporal_risk_raw_independent_qc_20261002_v2\\source_bindings.json": "1df29ee600324f34dd635c46d0d11087a758b429b218d817210606e3da6e3272",
+    "research_outputs\\temporal_risk_raw_independent_qc_20261002_v2\\source_positions.jsonl.gz": "a3b128db0fcc8e81c9b6999676fb0beb74b588fa10d0f44e6893b5d0535c0620",
+    "research_outputs\\temporal_source_readiness_final_verification_20261002_v1.json": "191ef4f20fcc1a5eaf54ed798efa44ab3d67273d9927930bdff9476641f127bf",
+    "research_outputs\\verify_temporal_status_reconciliation_20261003_v1.py": "a31026db22032db25567a7f9abf76cd1c9c28ff4c500b5e22a698d8635b12af4",
+    "tests\\test_documented_trade_status.py": "cc2918a761366ebc6f8d075f6bbb55d37f16c6aedf82f3a77dc5f22c6c5516a1"
+  },
+  "interval_rule": "start inclusive; confirmed resumption exclusive; quoted resumption date required for both parameters",
+  "intervals": [
+    {
+      "document_ids": [
+        "000906_resume"
+      ],
+      "interval_id": "000906_20210315",
+      "resume_date": "2021-03-22",
+      "start_date": "2021-03-15",
+      "stock_code": "000906"
+    },
+    {
+      "document_ids": [
+        "002819_interval"
+      ],
+      "interval_id": "002819_20200907",
+      "resume_date": "2020-09-21",
+      "start_date": "2020-09-07",
+      "stock_code": "002819"
+    },
+    {
+      "document_ids": [
+        "300422_interval"
+      ],
+      "interval_id": "300422_20201229",
+      "resume_date": "2021-01-04",
+      "start_date": "2020-12-29",
+      "stock_code": "300422"
+    },
+    {
+      "document_ids": [
+        "300722_interval"
+      ],
+      "interval_id": "300722_20201012",
+      "resume_date": "2020-10-14",
+      "start_date": "2020-10-12",
+      "stock_code": "300722"
+    },
+    {
+      "document_ids": [
+        "603010_suspend",
+        "603010_continue",
+        "603010_resume"
+      ],
+      "interval_id": "603010_20210125",
+      "resume_date": "2021-01-28",
+      "start_date": "2021-01-25",
+      "stock_code": "603010"
+    },
+    {
+      "document_ids": [
+        "603677_suspend",
+        "603677_continue",
+        "603677_resume"
+      ],
+      "interval_id": "603677_20210218",
+      "resume_date": "2021-02-23",
+      "start_date": "2021-02-18",
+      "stock_code": "603677"
+    }
+  ],
+  "limitations": [
+    "Archived Firecrawl document text is extracted content, not original PDF transport bytes.",
+    "Current acquisition and issuer signature dates do not prove original intraday publication availability.",
+    "Stock event assertions concern the listed company stock, not a substitute convertible bond status.",
+    "Request failure and absent raw quote remain separate and retain null prices, returns, volume and amount.",
+    "This evidence does not certify corporate actions, return definitions, historical ST status, volume/amount units, or model effects."
+  ],
+  "market_effects_evaluated": false,
+  "missing_values_filled": false,
+  "model_eligible": false,
+  "output_path": "research_outputs/temporal_documented_suspensions_20261003_v1",
+  "parameters": [
+    0,
+    1
+  ],
+  "protocol_version": "temporal-issuer-documented-suspension-v1",
+  "source_positions_path": "research_outputs\\temporal_risk_raw_independent_qc_20261002_v2\\source_positions.jsonl.gz",
+  "status_mode": "RETROSPECTIVE_RECONCILIATION_NOT_POINT_IN_TIME_FEED",
+  "stock_codes": [
+    "000001",
+    "000062",
+    "000505",
+    "000506",
+    "000599",
+    "000698",
+    "000758",
+    "000761",
+    "000762",
+    "000776",
+    "000777",
+    "000802",
+    "000810",
+    "000861",
+    "000895",
+    "000906",
+    "000917",
+    "000926",
+    "000950",
+    "002009",
+    "002093",
+    "002098",
+    "002105",
+    "002126",
+    "002133",
+    "002153",
+    "002160",
+    "002191",
+    "002194",
+    "002274",
+    "002331",
+    "002350",
+    "002360",
+    "002376",
+    "002385",
+    "002393",
+    "002474",
+    "002521",
+    "002527",
+    "002562",
+    "002594",
+    "002615",
+    "002631",
+    "002727",
+    "002775",
+    "002819",
+    "002827",
+    "002828",
+    "002837",
+    "002906",
+    "002936",
+    "002945",
+    "300086",
+    "300091",
+    "300119",
+    "300133",
+    "300139",
+    "300213",
+    "300215",
+    "300225",
+    "300230",
+    "300286",
+    "300289",
+    "300296",
+    "300306",
+    "300308",
+    "300318",
+    "300331",
+    "300370",
+    "300422",
+    "300476",
+    "300479",
+    "300513",
+    "300575",
+    "300619",
+    "300634",
+    "300664",
+    "300667",
+    "300684",
+    "300691",
+    "300722",
+    "300772",
+    "300778",
+    "600037",
+    "600129",
+    "600196",
+    "600256",
+    "600278",
+    "600323",
+    "600448",
+    "600459",
+    "600489",
+    "600546",
+    "600565",
+    "600594",
+    "600706",
+    "600733",
+    "600794",
+    "600814",
+    "600824",
+    "601010",
+    "601020",
+    "601038",
+    "601330",
+    "601339",
+    "603010",
+    "603040",
+    "603127",
+    "603156",
+    "603197",
+    "603316",
+    "603335",
+    "603496",
+    "603517",
+    "603677",
+    "603697",
+    "603711",
+    "603789",
+    "603803",
+    "603839",
+    "603880",
+    "603959",
+    "688018"
+  ],
+  "stock_positions": 34440,
+  "trade_dates": [
+    "2020-09-01",
+    "2020-09-02",
+    "2020-09-03",
+    "2020-09-04",
+    "2020-09-07",
+    "2020-09-08",
+    "2020-09-09",
+    "2020-09-10",
+    "2020-09-11",
+    "2020-09-14",
+    "2020-09-15",
+    "2020-09-16",
+    "2020-09-17",
+    "2020-09-18",
+    "2020-09-21",
+    "2020-09-22",
+    "2020-09-23",
+    "2020-09-24",
+    "2020-09-25",
+    "2020-09-28",
+    "2020-09-29",
+    "2020-09-30",
+    "2020-10-09",
+    "2020-10-12",
+    "2020-10-13",
+    "2020-10-14",
+    "2020-10-15",
+    "2020-10-16",
+    "2020-10-19",
+    "2020-10-20",
+    "2020-10-21",
+    "2020-10-22",
+    "2020-10-23",
+    "2020-10-26",
+    "2020-10-27",
+    "2020-10-28",
+    "2020-10-29",
+    "2020-10-30",
+    "2020-11-02",
+    "2020-11-03",
+    "2020-11-04",
+    "2020-11-05",
+    "2020-11-06",
+    "2020-11-09",
+    "2020-11-10",
+    "2020-11-11",
+    "2020-11-12",
+    "2020-11-13",
+    "2020-11-16",
+    "2020-11-17",
+    "2020-11-18",
+    "2020-11-19",
+    "2020-11-20",
+    "2020-11-23",
+    "2020-11-24",
+    "2020-11-25",
+    "2020-11-26",
+    "2020-11-27",
+    "2020-11-30",
+    "2020-12-01",
+    "2020-12-02",
+    "2020-12-03",
+    "2020-12-04",
+    "2020-12-07",
+    "2020-12-08",
+    "2020-12-09",
+    "2020-12-10",
+    "2020-12-11",
+    "2020-12-14",
+    "2020-12-15",
+    "2020-12-16",
+    "2020-12-17",
+    "2020-12-18",
+    "2020-12-21",
+    "2020-12-22",
+    "2020-12-23",
+    "2020-12-24",
+    "2020-12-25",
+    "2020-12-28",
+    "2020-12-29",
+    "2020-12-30",
+    "2020-12-31",
+    "2021-01-04",
+    "2021-01-05",
+    "2021-01-06",
+    "2021-01-07",
+    "2021-01-08",
+    "2021-01-11",
+    "2021-01-12",
+    "2021-01-13",
+    "2021-01-14",
+    "2021-01-15",
+    "2021-01-18",
+    "2021-01-19",
+    "2021-01-20",
+    "2021-01-21",
+    "2021-01-22",
+    "2021-01-25",
+    "2021-01-26",
+    "2021-01-27",
+    "2021-01-28",
+    "2021-01-29",
+    "2021-02-01",
+    "2021-02-02",
+    "2021-02-03",
+    "2021-02-04",
+    "2021-02-05",
+    "2021-02-08",
+    "2021-02-09",
+    "2021-02-10",
+    "2021-02-18",
+    "2021-02-19",
+    "2021-02-22",
+    "2021-02-23",
+    "2021-02-24",
+    "2021-02-25",
+    "2021-02-26",
+    "2021-03-01",
+    "2021-03-02",
+    "2021-03-03",
+    "2021-03-04",
+    "2021-03-05",
+    "2021-03-08",
+    "2021-03-09",
+    "2021-03-10",
+    "2021-03-11",
+    "2021-03-12",
+    "2021-03-15",
+    "2021-03-16",
+    "2021-03-17",
+    "2021-03-18",
+    "2021-03-19",
+    "2021-03-22",
+    "2021-03-23",
+    "2021-03-24",
+    "2021-03-25",
+    "2021-03-26",
+    "2021-03-29",
+    "2021-03-30",
+    "2021-03-31"
+  ]
+}

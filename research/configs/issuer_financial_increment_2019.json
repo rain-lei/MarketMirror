@@ -1,0 +1,43 @@
+{
+  "version": "issuer-financial-common-panel-risk-diagnostic-v1",
+  "period_start": "2019-11-01",
+  "period_end": "2019-12-31",
+  "expected_parent_companies": 123,
+  "expected_sessions": 43,
+  "nominal_training_sessions": 30,
+  "evaluation_sessions": 13,
+  "market_lag_sessions": 2,
+  "return_lookback_sessions": 20,
+  "market_momentum_sessions": 5,
+  "activity_lookback_sessions": 20,
+  "signal_cutoff_time": "15:00:00+08:00",
+  "target": "absolute_stock_return",
+  "market_features": ["stock_volatility_20", "benchmark_volatility_20", "absolute_benchmark_momentum_5", "log_amount_surprise_20"],
+  "financial_features": ["log_reported_assets_yuan", "total_liabilities_to_assets", "money_funds_to_assets"],
+  "industry_control": "historical_CSRC_category_letter; training-only alphabetic reference category; no current industry substitution",
+  "pairing_rule": "At each t use the identical company-date intersection for every model. Exclude financial institutions, disclosures or industry unavailable at the t-2 15:00 cutoff, and missing fixed financial fields. No future report backfill, zero imputation or outcome-dependent exclusions.",
+  "training_clock_rule": "Freeze all coefficients at the first evaluation signal cutoff. Purge nominal training target sessions later than that cutoff, including t-1; no evaluation-day refitting or evaluation-derived scaling.",
+  "fitting_rule": "Unpenalized linear least squares, sample-standardized on eligible training rows only, explicit intercept; company fixed effects reference uses training-only within-company demeaning. Static financial fields are not fitted alongside company fixed effects because they are absorbed.",
+  "primary_comparison": ["market_industry", "market_industry_financial"],
+  "secondary_comparison": ["market", "market_financial"],
+  "references": ["training_mean", "company_training_mean", "company_fixed_market"],
+  "metrics": ["pooled_MAE", "pooled_RMSE", "equal_session_MAE", "daily_mean_target_MAE", "daily_mean_target_RMSE", "negative_prediction_count", "paired_session_errors", "delete_one_evaluation_date_error_improvement_range"],
+  "prediction_postprocessing": "none; negative absolute-return predictions are counted, never silently clipped",
+  "inputs": {
+    "financial_states": {"path": "../../research_outputs/issuer_financial_states_2019q3_v1.json", "sha256": "593e407f743399aebc3fddc3ca407f06d754fd930b53e5de82248abede22c77b"},
+    "cohort_archive": {"path": "../../research_outputs/pre_wuhan_order_arrival_sensitivity_2019_v1.json", "sha256": "57ee3d29d709fd641694113b778dc22e5275dc4404c744eb108e9c20001bcb63"},
+    "market_manifest": {"path": "../../research_outputs/wuhan_pit_market_prepared_2020_v2/market_manifest.json", "sha256": "3d18f1f949673dfda719fc95e664564a4bc1e521a50f45e20b305e1baf31fb87"},
+    "download_manifest": {"path": "../../research_outputs/wuhan_pit_market_download_2020/download_manifest.json", "sha256": "c4ba18441e4b8b694e425c36b2be2aead9dc18c46c3a4cfb0d71eae45e864a9c"},
+    "industry_memberships": {"path": "../../research_outputs/pre_wuhan_industry_2019q3_v1/industry_memberships.json", "sha256": "3fad4ce7a1423273e3d75e93a1407a29405c50a62df42f706813ad61a9c2fdfb"},
+    "industry_provenance": {"path": "../../research_outputs/pre_wuhan_industry_2019q3_v1/provenance.json", "sha256": "ebc3d0d1533d12a104c3ac416ea77501b990fb1f8bf5f164032c21b5989804f5"}
+  },
+  "limitations": [
+    "Existing 2019 development dates and the 123-company cohort have been inspected. This is not a new blind validation; the parent cohort was retrospectively selected using January 2020 Q&A activity.",
+    "Report availability and industry availability use conservative publication-date proxies. Retrieved PDF bytes and provider adjustment vintage are not certified unchanged historical snapshots.",
+    "Money funds are not verified unrestricted cash; reported assets are book assets, not market capitalization; liabilities are not renamed interest-bearing debt.",
+    "Company-days share dates and financial values repeat within companies. Session deletions describe sensitivity, not independent observations, p-values or serial-dependence-corrected confidence intervals.",
+    "A late-available issuer may have very few training observations; their counts are retained. Industry category controls are coarse and do not fully control 42 detailed divisions or business geography.",
+    "This absolute-return diagnostic does not establish stock direction, event causality, participant behavior or calibrated endogenous price dynamics. Every result is retained and economic Agent input remains disabled."
+  ],
+  "agent_signal_enabled": false
+}
