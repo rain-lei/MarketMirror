@@ -29,3 +29,17 @@ test('one unreadable experiment does not hide healthy records and retry recovers
   assert.equal(context.experimentLoadError,'');
   assert.equal(context.experiments[context.state.selected].id,'good');
 });
+
+test('corrupt rows have no buttons or fabricated parameters; healthy rows remain openable', () => {
+  const line = source.split('\n').find(line => line.startsWith('  function experimentRows()'));
+  const context = vm.createContext({experiments:[{id:'broken',title:'损坏',type:'未知',corrupt:true,custom:true,time:'记录损坏'}],state:{search:''},esc:String,icon:()=>''});
+  vm.runInContext(line,context);
+  const broken=context.experimentRows();
+  assert.equal((broken.match(/<button/g)||[]).length,0);
+  assert.doesNotMatch(broken,/undefined|18 步|信号/);
+  context.experiments=[{id:'healthy',title:'正常',type:'政策消息',sessions:18,seed:7,time:'今天'}];
+  const healthy=context.experimentRows();
+  assert.equal((healthy.match(/<button\b/g)||[]).length,2);
+  assert.equal((healthy.match(/<\/button>/g)||[]).length,2);
+  assert.doesNotMatch(healthy,/<button[^>]*<button/);
+});

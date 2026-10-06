@@ -137,6 +137,8 @@ class PlatformStore:
         for path in self.data_dir.glob('*/experiment.json'):
             try:
                 record = load_json(path)
+                if not isinstance(record, dict):
+                    raise ValueError('实验记录必须为对象')
             except (OSError, ValueError, TypeError):
                 # A damaged record is surfaced by list(); it must not prevent
                 # the rest of the workspace from recovering on startup.
@@ -152,6 +154,9 @@ class PlatformStore:
         for path in self.data_dir.glob("*/experiment.json"):
             try:
                 row = load_json(path)
+                if (not isinstance(row, dict) or row.get('id') != path.parent.name
+                        or any(not isinstance(row.get(k), str) for k in ('title', 'type', 'created_at'))):
+                    raise ValueError('实验记录摘要字段无效')
                 rows.append({k: row[k] for k in ("id", "title", "type", "created_at", "status", "run_status") if k in row})
             except (OSError, ValueError, KeyError, TypeError):
                 # Keep a visible tombstone so the UI can identify a damaged

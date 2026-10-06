@@ -48,6 +48,19 @@ class PlatformStoreTest(unittest.TestCase):
             store.recover_interrupted()
             self.assertEqual(store.list()[0]['run_status'], 'corrupt')
 
+    def test_non_object_records_do_not_prevent_real_server_startup(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            for index, value in enumerate((None, [], 7, {}, {'created_at': 42})):
+                atomic_json(directory / str(index) / 'experiment.json', value)
+            server = create_server(directory, 0)
+            try:
+                rows = PlatformStore(directory).list()
+                self.assertEqual(len(rows), 5)
+                self.assertTrue(all(row['run_status'] == 'corrupt' for row in rows))
+            finally:
+                server.server_close()
+
     def test_list_exposes_corrupt_record_tombstone(self):
         with tempfile.TemporaryDirectory() as tmp:
             directory = Path(tmp)
