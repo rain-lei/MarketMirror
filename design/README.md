@@ -7,10 +7,14 @@
 在项目根目录执行：
 
 ```powershell
-python -B -X utf8 -m design.server --port 8770
+.\scripts\start-platform.ps1
 ```
 
-浏览器打开 `http://127.0.0.1:8770`。服务默认只监听本机；不指定端口时使用 8770。
+浏览器打开 `http://127.0.0.1:8770`。脚本会检查端口并在当前终端前台运行服务，按 `Ctrl+C` 停止；也可直接执行 `python -B -X utf8 -m design.server --port 8770`。服务默认只监听本机；不指定端口时使用 8770。
+
+当前交付状态（2026-10-06）：20 个本机撮合实验、1 个已完成批次和 6 个真实原文案例可读取；三类策略配置、DeepSeek 事实提取、逐步账本、同一步决策对照、批量情景和草稿刷新恢复已接通。最新平台回归为 Python 75 项、Node 84 项通过。干净 Git 副本已验证无需研究归档也能完成合成实验和导出。真实模型提取只作为情景依据，不自动生成市场信号。
+
+本机已完成一条当前平台的真实原文端到端运行：武汉交通通告经 DeepSeek 提取 4 条事实，创建带分析快照的实验并完成 36 个市场日审计。详细编号和边界见[真实原文端到端实验核验](REAL_SOURCE_EXPERIMENT_VALIDATION_20261006.md)。
 
 ## 文本分析与依据
 
@@ -63,15 +67,25 @@ python -B -X utf8 -m design.server --port 8770
 
 ## 验证
 
+在项目根目录执行 `.\scripts\verify-platform.ps1` 可一次运行完整平台回归、前端语法检查和本机真实原文归档核验。没有本地研究归档的新克隆会自动跳过最后一步。
+
 ```powershell
-python -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server -v
-node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_record_loading.cjs tests/test_platform_copy.cjs
-node --check design/app.js
+.\scripts\verify-platform.ps1
 ```
 
-27 项后端测试与 14 项前端状态及决策视图测试已通过，覆盖存档恢复、引文位置、缺失或错误分析 ID、篡改快照拒绝、手动参数独立性、HTTP 流程、完整文件导出、原文修改与迟到响应、撮合复现、逐日账本审计、运行失败重试、服务中断恢复，以及真实决策账本的组别切换、账户加权、订单汇总和缺失来源保留。这些检查验证平台机制与数据一致性，不证明模型的市场解释能力。
+等价的分步命令如下：
 
-2026-10-05 浏览器验收使用明确标注的虚构公司消息，真实调用 DeepSeek 提取 5 条事实，建立 18 步双组实验，36 个市场日审计通过。实验 ID 为 `92ba2235d8ea4b6a9991d7974bfcc527`；浏览器完成保存、刷新恢复和归档下载，下载文件中的事实、源文及关联哈希与存档相符。另一次真实模型调用验证了编辑原文后的旧分析失效提示。1366 像素与 390 像素断点未见水平溢出；三类策略卡片对齐，两组图的刻度一致。后续重点是进一步完善对照结果的可视化与三类策略的决策解释。
+```powershell
+python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_submission tests.test_platform_model_connection tests.test_platform_draft_recovery -q
+node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs tests/test_platform_draft_cache.cjs
+node --check design/app.js
+# 本机有真实原文归档时再执行
+python -B -X utf8 -m design.source_cases --verify-all
+```
+
+早期 27 项后端测试与 14 项前端状态及决策视图测试已通过；当前完整平台回归为 Python 75 项、Node 84 项。覆盖存档恢复、引文位置、缺失或错误分析 ID、篡改快照拒绝、手动参数独立性、HTTP 流程、完整文件导出、原文修改与迟到响应、撮合复现、逐日账本审计、运行失败重试、服务中断恢复，以及真实决策账本的组别切换、账户加权、订单汇总和缺失来源保留。这些检查验证平台机制与数据一致性，不证明模型的市场解释能力。
+
+2026-10-06 浏览器验收使用明确标注的虚构公司消息，真实调用 DeepSeek 提取 2 条事实，设置 6 步双组实验并完成 12 个市场日审计。刷新后原文、零值参数、三类独立策略配置和分析编号均保持；再次刷新后从“继续草稿”打开原结果，运行次数仍为 1。结果页上方的“查看同一步决策对照”可直接跳到时间轴；540、1440 和 375 像素窗口均显示三类对照且无横向溢出。完整记录见[草稿与浏览器核验](DRAFT_RECOVERY_VALIDATION_20261006.md)。
 
 
 2026-10-05 策略配置验收：工作区敏感度设为 1.20 后刷新保留；单次实验覆盖为 1.60，运行并导出，随后恢复工作区默认 0.90。实验 `02852185c2544de49035061f477d2140` 仍保持 1.60，复制新实验也保留该值。下载归档参数与存档、运行结果和参数哈希一致，36 个市场日审计通过。在相同种子与情景下，相比默认敏感度 0.90 的既有实验，无消息组逐步账本完全相同，有消息组策略请求从 16,300 股变为 27,200 股、成交从 4,700 股变为 7,100 股。这是本次合成情景下的机制变化，不代表普遍收益提升。
@@ -126,7 +140,7 @@ node --check design/app.js
 
 保存响应丢失后重试沿用原提交编号，服务端返回原配置及当前运行状态。接口 `POST /api/platform/experiments` 可携带 `Idempotency-Key`，值为 32 位小写十六进制编号；重复编号必须对应同一份规范化配置，冲突返回 400，未携带该头的原客户端保持兼容。提交编号由页面自动生成并随当前标签页的草稿保存，刷新后继续使用。其他浏览器通过实验空间读取已保存记录，不同步未提交草稿。
 
-2026-10-06 平台回归为 Python 58 项、Node 57 项通过。独立服务完成六项 HTTP / 前端状态核验与五次真实撮合引擎运行，具体范围及浏览器验收限制见[提交与恢复核验](SUBMISSION_VALIDATION_20261006.md)。
+提交与恢复的早期阶段回归为 Python 58 项、Node 57 项；最新完整回归为 Python 75 项、Node 84 项。独立服务的丢失响应检查、实际浏览器流程和限制见[草稿与浏览器核验](DRAFT_RECOVERY_VALIDATION_20261006.md)。
 
 ## 同一步决策对照
 
@@ -136,7 +150,7 @@ node --check design/app.js
 
 收益差等数值显示六位小数，极小非零值使用科学计数法；缺失角色或预期账户决策不冒充零合计。两条完整路径可能已有不同持仓和价格，显示差异不表示固定状态下的纯文本效应。
 
-17 个本机实验及六案例全部 120 种归档选择已经实际 HTTP 核对。最终 Node 回归 64 项通过，完整范围、恢复记录及浏览器验收边界见[决策对照核验](DECISION_COMPARISON_VALIDATION_20261006.md)。
+20 个本机实验及六案例全部 120 种归档选择已经实际 HTTP 核对。最新 Node 回归为 84 项通过，完整范围、恢复记录及浏览器验收边界见[决策对照核验](DECISION_COMPARISON_VALIDATION_20261006.md)和[草稿与浏览器核验](DRAFT_RECOVERY_VALIDATION_20261006.md)。
 
 ## 模型设置与连接检测
 
@@ -146,7 +160,7 @@ node --check design/app.js
 
 最近检测保存在服务内存，重启后需重新检测；本机凭据改变时旧检测失效。通过表示请求完成且事实与引文结构合格，零事实也可为有效结果，不代表事实判断或市场预测准确。调用失败区分凭据、限流、超时、网络、网关和返回内容问题；不保存失败的分析，也不回显网关错误正文。
 
-本轮平台回归为 Python 70 项、Node 72 项通过。实际连接检测、生产入口和界面验收边界见[模型连接核验](MODEL_CONNECTION_VALIDATION_20261006.md)。
+模型连接阶段回归为 Python 70 项、Node 72 项；最新完整平台回归为 Python 75 项、Node 84 项。实际连接检测、生产入口和界面验收边界见[模型连接核验](MODEL_CONNECTION_VALIDATION_20261006.md)。
 
 ## 草稿自动保存与刷新恢复
 
@@ -156,4 +170,4 @@ node --check design/app.js
 
 刷新后先从本机列表与完整快照核对原提交。已完成实验打开原结果，运行中的实验只查看进度，失败实验从原记录恢复；保存状态未确认时保留同一提交编号。缓存中的旧运行状态不作为成功凭证，配置不匹配的服务端记录不认作本次提交。
 
-2026-10-06 最新回归为 Python 74 项、Node 84 项通过。实际 HTTP 丢失响应检查、真实浏览器刷新流程、一次虚构文字模型提取与三种窗口宽度验收见[草稿与浏览器核验](DRAFT_RECOVERY_VALIDATION_20261006.md)。
+2026-10-06 最新回归为 Python 75 项、Node 84 项通过。实际 HTTP 丢失响应检查、真实浏览器刷新流程、一次虚构文字模型提取与三种窗口宽度验收见[草稿与浏览器核验](DRAFT_RECOVERY_VALIDATION_20261006.md)。

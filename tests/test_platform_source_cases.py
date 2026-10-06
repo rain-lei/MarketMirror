@@ -111,6 +111,14 @@ class SourceCaseLibraryTest(unittest.TestCase):
         self.assertEqual(self.library.catalog()['cases'],[])
         self.assertFalse(self.library.catalog()['available'])
 
+    def test_missing_registered_archive_root_reports_unavailable_without_fallback(self):
+        missing = self.root/'archive-missing'
+        self.archive.rename(missing)
+        catalog = self.library.catalog()
+        self.assertFalse(catalog['available'])
+        self.assertEqual(catalog['cases'], [])
+        self.assertIn('尚无完整案例归档', catalog['message'])
+
     def test_changed_manifest_or_unsafe_path_is_rejected(self):
         with self.assertRaises(CaseArchiveIntegrityError):self.library._path('../outside')
         (self.archive/'manifest.json').write_text('{}',encoding='utf-8')

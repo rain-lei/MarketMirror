@@ -42,10 +42,10 @@ MarketMirror 是一个本地运行的可视化金融仿真实验平台。输入�
 git clone --branch codex/research-rebuild https://github.com/rain-lei/MarketMirror.git
 cd MarketMirror
 python -m pip install -r requirements-research.txt
-python -B -X utf8 -m design.server --port 8770
+.\scripts\start-platform.ps1
 ```
 
-打开 **http://127.0.0.1:8770/**。已有仓库时，在项目根目录执行最后一条启动命令即可。更新代码后请重启服务，再刷新页面。
+打开 **http://127.0.0.1:8770/**。已有仓库时，在项目根目录执行启动脚本即可。脚本会检查端口并在当前终端前台运行服务；更新代码后重启服务，再刷新页面。也可以直接执行 `python -B -X utf8 -m design.server --port 8770`。
 
 当前本地平台使用 Python 标准库 HTTP 服务和原生 HTML/CSS/JavaScript，无需前端构建。共享研究模块依赖 `openpyxl`，由上述安装命令提供。跳过文本分析即可运行合成市场实验；不需要原始 Excel 或历史研究产物。
 
@@ -108,11 +108,18 @@ research_outputs/ 本地生成数据与运行产物（Git 忽略）
 在仓库根目录执行平台相关检查。JavaScript 测试需要支持 `node --test` 的 Node.js：
 
 ```powershell
-python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_submission tests.test_platform_model_connection tests.test_platform_draft_recovery -q
-node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs tests/test_platform_draft_cache.cjs
+.\scripts\verify-platform.ps1
 ```
 
-具体实验结论、运行条件和限制见[研究总结](research/RESEARCH_SUMMARY_2026.md)、[平台验证记录](design/PLATFORM_VALIDATION_20261005.md)、[批量对照核验](design/BATCH_PLATFORM_VALIDATION_20261006.md)与[真实原文案例核验](design/SOURCE_CASE_PLATFORM_VALIDATION_20261006.md)。
+脚本会依次运行完整 Python 平台回归、Node 状态与视图回归、JavaScript 语法检查；检测到本机真实原文归档时，还会运行 120 条路径的全量归档核验。新克隆仓库没有 `research_outputs/` 时会明确跳过最后一步。也可以按下面的命令分别执行：
+
+```powershell
+python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_submission tests.test_platform_model_connection tests.test_platform_draft_recovery -q
+node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs tests/test_platform_draft_cache.cjs
+python -B -X utf8 -m design.source_cases --verify-all
+```
+
+具体实验结论、运行条件和限制见[研究总结](research/RESEARCH_SUMMARY_2026.md)、[平台验证记录](design/PLATFORM_VALIDATION_20261005.md)、[批量对照核验](design/BATCH_PLATFORM_VALIDATION_20261006.md)、[真实原文案例核验](design/SOURCE_CASE_PLATFORM_VALIDATION_20261006.md)、[真实原文端到端实验核验](design/REAL_SOURCE_EXPERIMENT_VALIDATION_20261006.md)与[干净克隆可用性冒烟核验](design/FRESH_CLONE_SMOKE_VALIDATION_20261006.md)。
 
 首页、模板分组及记录加载的实际核验见[实验读取核验](design/EXPERIMENT_LOADING_VALIDATION_20261006.md)。
 
@@ -122,4 +129,4 @@ node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_
 
 后端配置、连接检测与真实模型请求见[模型连接核验](design/MODEL_CONNECTION_VALIDATION_20261006.md)。
 
-草稿刷新恢复、实际浏览器流程与结果对照直达入口见[草稿与浏览器核验](design/DRAFT_RECOVERY_VALIDATION_20261006.md)。最新平台回归为 Python 74 项、Node 84 项通过。
+草稿刷新恢复、实际浏览器流程与结果对照直达入口见[草稿与浏览器核验](design/DRAFT_RECOVERY_VALIDATION_20261006.md)。最新平台回归为 Python 75 项、Node 84 项通过。
