@@ -14,6 +14,7 @@ MarketMirror 是一个本地运行的可视化金融仿真实验平台。输入�
 | --- | --- |
 | 实验空间 | 新建、搜索、复制实验，查看运行状态，失败后重试 |
 | 文本分析 | 可选 DeepSeek 事实提取，展示原文引文、位置及分析快照 |
+| 模型设置 | 查看后端模型与本机凭据状态，手动检测实际连接，查看具体失败原因 |
 | 三类 Agent | 调整文本敏感度、基础股票权重和风险预算，每个实验保存独立参数 |
 | 对照仿真 | 使用相同初始条件与种子运行有消息 / 无消息两组市场 |
 | 批量对照 | 页面创建四情景 × 多种子批次，查看进度、策略范围图、失败原因与报告 |
@@ -57,6 +58,8 @@ MARKETMIRROR_LLM_API_KEY=your_api_key
 ```
 
 平台读取本机保存的配置。当前接入网关为 `http://aigw.dlut.edu.cn/v1`，模型为 `DeepSeek-V4-Flash-0731-W8A8`；需要对应网关的可用凭据。`.env.local` 不提交到 Git，密钥不会返回浏览器。
+
+打开侧栏底部的**模型设置**可查看后端实际配置；读取和刷新配置不调用模型。点击**检测连接**才发送一段固定合成文字，显示请求及引文结构是否通过、检测时间和耗时。检测不发送当前草稿、不创建实验或分析记录，也不证明事实判断或市场预测准确性；检测结果在服务重启或本机凭据改变后清除。
 
 ## 使用流程
 
@@ -103,8 +106,8 @@ research_outputs/ 本地生成数据与运行产物（Git 忽略）
 在仓库根目录执行平台相关检查。JavaScript 测试需要支持 `node --test` 的 Node.js：
 
 ```powershell
-python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_submission -q
-node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs
+python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_submission tests.test_platform_model_connection -q
+node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs
 ```
 
 具体实验结论、运行条件和限制见[研究总结](research/RESEARCH_SUMMARY_2026.md)、[平台验证记录](design/PLATFORM_VALIDATION_20261005.md)、[批量对照核验](design/BATCH_PLATFORM_VALIDATION_20261006.md)与[真实原文案例核验](design/SOURCE_CASE_PLATFORM_VALIDATION_20261006.md)。
@@ -114,3 +117,5 @@ node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_
 后台提交、页面切换及丢失响应恢复见[实验提交核验](design/SUBMISSION_VALIDATION_20261006.md)。
 
 两组同一步的三类策略及微小差异展示见[决策对照核验](design/DECISION_COMPARISON_VALIDATION_20261006.md)。
+
+后端配置、连接检测与真实模型请求见[模型连接核验](design/MODEL_CONNECTION_VALIDATION_20261006.md)。

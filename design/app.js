@@ -48,6 +48,7 @@
   const strategyWorkspace = new StrategyWorkspace();
   const batchWorkspace = new MarketBatchView.BatchState();
   const caseWorkspace = new MarketCaseView.CaseState();
+  const modelSettings = new MarketModelView.ConnectionState();
   let caseCatalogLoading=false,caseCatalogVersion=0,caseCatalogError='';
   const batchForm = {title:'三类策略情景对照',seeds:'1, 7, 19',sessions:18,duration:6,cash:1000000};
   let batchFormError='', batchListLoading=false, batchListVersion=0, batchPollTimer;
@@ -68,7 +69,8 @@
   const heading = (eyebrow, title, caption, actions = '') => `<div class="page-heading"><div><div class="eyebrow">${eyebrow}</div><h1>${title}</h1><div class="heading-caption">${caption}</div></div><div class="heading-actions">${actions}</div></div>`;
   const newButton = () => `<button class="btn primary" type="button" data-action="new">${icon('plus')}新建实验</button>`;
   function toast(message) { const el=document.getElementById('toast');el.textContent=message;el.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('visible'),3500); }
-  function modal(title, body, footer = `<button type="button" class="btn primary" data-action="close">知道了</button>`) {
+  function modal(title, body, footer = `<button type="button" class="btn primary" data-action="close">知道了</button>`, section='') {
+    dialog.dataset.section=section;
     document.getElementById('dialog-content').innerHTML=`<div class="dialog-head"><h2>${title}</h2><button class="icon-button" type="button" data-action="close" aria-label="关闭对话框">${icon('close')}</button></div><div class="dialog-body">${body}</div><div class="dialog-footer">${footer}</div>`;
     if (!dialog.open) dialog.showModal();
   }
@@ -174,6 +176,28 @@
   function render(){document.querySelector('.nav-count').textContent=experiments.filter(e=>e.custom).length;document.querySelector('.preview-tag').textContent=current().custom&&state.page==='analysis'?'已保存实验':'本机研究空间';document.getElementById('breadcrumb-current').textContent=labels[state.page]||'结果分析';document.querySelectorAll('[data-nav]').forEach(a=>{const active=a.dataset.nav===state.page;a.classList.toggle('active',active);active?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current');});content.innerHTML=(experimentLoadError&&['experiments','analysis','sources'].includes(state.page)?`<div class="callout" role="alert"><div><strong>本机实验记录未能完整加载</strong><p>${esc(experimentLoadError)}。现有页面内容可能不是最新状态，不代表记录已丢失。</p><button class="btn" data-action="refresh-runs">重新加载记录</button></div></div>`:'')+({analysis,experiments:experimentsPage,batches:batchesPage,cases:casesPage,sources:sourcesPage,agents:agentsPage,new:wizardPage}[state.page]||analysis)();icons();if(state.page==='new')updateDraftAnalysisPanel();clearTimeout(batchPollTimer);if(state.page==='batches'){if(!batchListLoading&&!batchWorkspace.busy)hydrateBatches();else scheduleBatchPoll();}if(state.page==='cases'&&!caseCatalogLoading)hydrateSourceCases();}
   function useSample(index,record=experiments[index]){const e=record;state.draft={...state.draft,title:e.title,source:e.source,type:e.type,seed:e.seed,signal:e.signal??(e.kind==='negative'?-.6:e.kind==='uncertain'?0:.6),uncertainty:e.uncertainty??(e.kind==='uncertain'?.8:.2),duration:e.duration??6,cash:e.cash??1000000,sessions:e.sessions??18,published:e.published_at||state.draft.published,strategy_parameters:parametersFromExperiment(e)||(strategyWorkspace.parameters?strategyWorkspace.snapshot():null)};analysisBinding.reset(e.source);if(e.text_analysis)analysisBinding.finish(analysisBinding.begin(e.source),e.text_analysis);state.wizard=1;navigate('new');}
   async function apiJson(path, options={}) { const response=await fetch(path,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})}}); const body=await response.json(); if(!response.ok){const error=new Error(body.error||`API ${response.status}`);error.status=response.status;throw error;} return body; }
+  function updateModelSettings(){
+    if(!dialog.open||dialog.dataset.section!=='model')return;
+    const panel=document.getElementById('model-settings-panel');if(panel)panel.innerHTML=MarketModelView.render(modelSettings);
+  }
+  function openModelSettings(){
+    modal('模型设置',`<div id="model-settings-panel">${MarketModelView.render(modelSettings)}</div>`,`<button class="btn" type="button" data-action="close">关闭</button>`,'model');
+    loadModelConfiguration();
+  }
+  async function loadModelConfiguration(){
+    const ticket=modelSettings.beginLoad();if(ticket===null){updateModelSettings();return;}
+    updateModelSettings();
+    try{modelSettings.accept(ticket,await apiJson('/api/platform/model'));}
+    catch(error){modelSettings.fail(ticket,'配置读取失败：'+error.message);}
+    finally{updateModelSettings();}
+  }
+  async function checkModelConnection(){
+    const ticket=modelSettings.beginCheck();if(ticket===null)return;
+    updateModelSettings();
+    try{modelSettings.accept(ticket,await apiJson('/api/platform/model/check',{method:'POST',body:'{}'}));}
+    catch(error){modelSettings.fail(ticket,'检测结果未确认：'+error.message+'。请刷新配置查看服务端状态');}
+    finally{updateModelSettings();}
+  }
   function caseDetail(){
     const bundle=caseWorkspace.detail;
     if(!bundle)return MarketCaseView.renderDetail(null,caseWorkspace);
@@ -512,6 +536,8 @@
     if(action==='retry-run'){await retryRun();return;}
     if(action==='draft-result'){await openSubmittedExperiment();return;}
     if(action==='refresh-runs'){await hydrateExperiments();return;}
+    if(action==='refresh-model'){await loadModelConfiguration();return;}
+    if(action==='check-model'){await checkModelConnection();return;}
     if(action==='analyze-source'){
       saveDraft();const source=state.draft.source;
       if(source.trim().length<20){toast('请先填写至少20字的消息原文。');return;}
@@ -533,7 +559,7 @@
     if(action==='source')modal('消息原文',`<span class="badge neutral">${esc(current().type)} · 虚构展示文本</span><p class="quote">${esc(current().source)}</p><p>正式版在此保留来源链接、发布时间、文本版本及提取证据。当前未绑定真实来源。</p>`, `<button class="btn" type="button" data-action="close">关闭</button><button class="btn primary" type="button" data-action="source-new">用此消息新建</button>`);
     if(action==='source-new'){dialog.close();useSample(state.selected,current());}
     if(action==='help')modal('MarketMirror 使用说明',`<div class="eyebrow">MARKETMIRROR · RESEARCH STUDIO</div><p>这是本机运行的金融仿真实验平台。输入消息、设置情景变量，比较激进型、保守型和机构型三类预设规则的仓位、订单与成交。</p><div class="review-box"><strong>实验与对照</strong><p>实验空间显示本机记录；示例模板复用后才会生成结果。批量对照比较四种人工情景与多个种子；真实原文案例读取六个已归档的开发实验。</p></div><p>新建实验可提取 DeepSeek 事实并运行合成市场撮合，配置与账本保存在本机。运行时可以切换页面或新建另一份草稿，结果会继续保存。原文事实可以核对；情景强度为明确假设，结果不代表真实市场预测。</p>`);
-    if(action==='settings')modal('模型设置',`<div class="eyebrow">MODEL CONNECTION · 本地配置</div><div class="form-field"><label for="model-name">模型</label><input id="model-name" value="DeepSeek-V4-Flash-0731-W8A8" readonly></div><div class="form-field"><label for="model-endpoint">接口地址</label><input id="model-endpoint" value="http://aigw.dlut.edu.cn/v1" readonly></div><div class="review-box"><strong>后端读取本地保存的密钥</strong><p>新建实验中点击“使用 DeepSeek 提取事实”即可调用，无需每次输入。浏览器不读取密钥。</p></div><span class="badge neutral">连接状态：尚未在此页检测</span>`);
+    if(action==='settings'){openModelSettings();return;}
     if(action==='export'){const record=current();if(!record.custom)return;const data={artifact:'MarketMirror experiment',schema_version:'platform-export-v2',mode:record.backendResult?.mode||'not_run',experiment:record,selected_asset:state.asset,selected_step:state.step,selected_information_condition:state.decisionGroup,fixture:null};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`marketmirror-${record.id}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('已导出当前记录及其数据类型标识。');}
     if(action==='save-roles')saveStrategies();
     if(action==='retry-strategies'){hydrateStrategies();render();}

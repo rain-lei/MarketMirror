@@ -13,7 +13,8 @@ from uuid import uuid4
 from urllib.parse import parse_qs, urlsplit
 from .engine import run_market
 from .workspace_lease import WorkspaceLease
-from .text_analysis import analyze, source_digest, validate_analysis_id, validate_saved_analysis, validate_source
+from .text_analysis import analyze, ModelAnalysisError, source_digest, validate_analysis_id, validate_saved_analysis, validate_source
+from .model_connection import ModelConnection, ModelCheckInProgress
 from .strategy_config import defaults, load_model, parameters_digest, profile_view, validate_parameters
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -324,6 +325,7 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
     store = PlatformStore(data_dir)
     batches = BatchManager(store)
     source_cases = SourceCaseLibrary()
+    model_connection = ModelConnection()
     class Handler(BaseHTTPRequestHandler):
         def json(self, code: int, payload: object, download: str | None = None) -> None:
             raw = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
@@ -348,6 +350,7 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
             try:
                 if path == "/api/platform/health": self.json(200, {"status": "ok", "platform_version": "v3", "mode": "local"}); return
                 if path == '/api/platform/strategies': self.json(200, store.strategies()); return
+                if path == '/api/platform/model': self.json(200, model_connection.configuration()); return
                 if path == '/api/platform/source-cases': self.json(200, source_cases.catalog()); return
                 if path.startswith('/api/platform/source-cases/'):
                     case_id = path.removeprefix('/api/platform/source-cases/')
@@ -383,7 +386,7 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                     else: payload = store.get(tail)
                     self.json(200 if payload is not None else 404, payload or {"error": "实验不存在"}); return
                 name = "index.html" if path == "/" else path.removeprefix("/")
-                types = {"index.html":"text/html","app.js":"text/javascript","case-view.js":"text/javascript","batch-view.js":"text/javascript","analysis-state.js":"text/javascript","strategy-state.js":"text/javascript","decision-view.js":"text/javascript","styles.css":"text/css","README.md":"text/markdown"}
+                types = {"index.html":"text/html","app.js":"text/javascript","model-view.js":"text/javascript","case-view.js":"text/javascript","batch-view.js":"text/javascript","analysis-state.js":"text/javascript","strategy-state.js":"text/javascript","decision-view.js":"text/javascript","styles.css":"text/css","README.md":"text/markdown"}
                 if name not in types: self.json(404, {"error": "资源不存在"}); return
                 raw = (SITE / name).read_bytes(); self.send_response(200); self.send_header("Content-Type", types[name] + '; charset=utf-8'); self.send_header("Cache-Control", "no-store"); self.send_header("Content-Length", str(len(raw))); self.end_headers(); self.wfile.write(raw)
             except FileNotFoundError: self.json(404, {'error': '记录或归档结果不存在'})
@@ -396,6 +399,9 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                 length = int(self.headers.get("Content-Length", "0"))
                 if length < 1 or length > MAX_BODY: raise ValueError("请求过大")
                 payload = json.loads(self.rfile.read(length)); path = self.path.split("?", 1)[0]
+                if path == '/api/platform/model/check':
+                    if payload != {}: raise ValueError('连接检测只接受空对象')
+                    self.json(200, model_connection.check()); return
                 if path == '/api/platform/batches': self.json(201, batches.create(payload)); return
                 if path.startswith('/api/platform/batches/') and path.endswith('/run'):
                     if payload != {}: raise ValueError('运行批次只接受空对象')
@@ -418,6 +424,8 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
             except FileNotFoundError: self.json(404, {"error": "记录不存在"})
             except RunInProgress as exc: self.json(409, {'error': str(exc)})
             except BatchInProgress as exc: self.json(409, {'error': str(exc)})
+            except ModelCheckInProgress as exc: self.json(409, {'error': str(exc)})
+            except ModelAnalysisError as exc: self.json(502, {'error': str(exc), 'code': exc.code})
             except RuntimeError: self.json(502, {'error': '运行服务暂不可用，请刷新状态后重试'})
             except OSError: self.json(500, {'error': '本机记录读写失败，请检查存储目录'})
             except (ValueError, TypeError, json.JSONDecodeError) as exc: self.json(400, {"error": str(exc)})
