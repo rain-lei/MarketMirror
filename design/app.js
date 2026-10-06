@@ -82,6 +82,7 @@
       reason:step<5?'消息尚未可见，保持原有目标。':index===1?'不确定性尚未消除，等待下一步确认。':q?(index===0?'信息信号触发目标仓位调整。':'按再平衡规则调整资产配置。'):'当前偏差未触发新增交易。'};
   }
   function analysis() {
+    if(current().corrupt)return `<section class="panel"><div class="summary-content"><h1>实验记录需要恢复</h1><p>记录编号：${esc(current().id)}</p><p>配置文件无法读取，不能运行、复制或导出此实验。原文件仍保留在本机；请从已知完整的备份恢复后重新加载。</p><button class="btn" data-action="refresh-runs">重新加载记录</button></div></section>`;
     if(current().custom)return runStatusPanel(current())+savedAnalysis();
     const e=current(),v=values(),delta=v.signal.at(-1)-100,impact=v.signal.at(-1)-v.baseline.at(-1);
     return heading('EXPERIMENT ANALYSIS',esc(e.title),`<span>${e.id}</span><span class="sep"></span><span>${e.sessions||18} 个决策步</span><span class="sep"></span><span>三资产模拟市场</span><span class="badge">${e.custom?'本机平台预览':'对照实验 · 示例'}</span>`, `<button class="btn" type="button" data-action="export">${icon('download')}导出</button>${newButton()}`)
@@ -199,7 +200,7 @@
     return `<section class="callout" role="status"><div><strong>${label}</strong><p>${e.backendResult?'下方保留的是上一次成功结果。':'完成运行后可查看撮合结果。'} 已尝试 ${Number(e.run_attempts)||0} 次。</p>${e.run_error?`<p>${esc(e.run_error.message||'请重试或检查本机服务。')}</p>`:''}<button class="btn primary" data-action="retry-run" ${busy?'disabled':''}>${status==='unknown'?'等待状态确认':busy?'运行中…':'运行此实验'}</button><button class="btn" data-action="refresh-runs">刷新状态</button></div></section>`;
   }
   async function retryRun(){
-    const e=current();if(!e.custom||activeRuns.has(e.id)||['running','unknown'].includes(e.run_status))return;
+    const e=current();if(e.corrupt||!e.custom||activeRuns.has(e.id)||['running','unknown'].includes(e.run_status))return;
     activeRuns.add(e.id);e.run_status='running';e.run_error=null;render();
     try{e.backendResult=await apiJson(`/api/platform/experiments/${e.id}/run`,{method:'POST',body:'{}'});e.run_status='completed';toast('实验完成，结果已保存。');}
     catch(error){e.run_status='unknown';e.run_error={message:'请求未完成：'+error.message+'。请刷新确认服务端状态后重试。'};toast('请刷新确认运行状态。');}

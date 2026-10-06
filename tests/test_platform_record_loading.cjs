@@ -43,3 +43,13 @@ test('corrupt rows have no buttons or fabricated parameters; healthy rows remain
   assert.equal((healthy.match(/<\/button>/g)||[]).length,2);
   assert.doesNotMatch(healthy,/<button[^>]*<button/);
 });
+
+test('remembered corrupt experiment renders recovery guidance without running normal analysis', () => {
+  const body=source.slice(source.indexOf('  function analysis() {'),source.indexOf('    const e=current(),v=values()'))+'\n}';
+  const context=vm.createContext({current:()=>({corrupt:true,id:'broken',custom:true}),esc:String});
+  vm.runInContext(body,context);
+  const html=context.analysis();
+  assert.match(html,/实验记录需要恢复/);
+  assert.match(html,/broken/);
+  assert.doesNotMatch(html,/retry-run|data-action="export"|undefined/);
+});
