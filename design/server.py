@@ -400,6 +400,7 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
             except (ValueError, TypeError, json.JSONDecodeError) as exc: self.json(400, {"error": str(exc)})
         def log_message(self, *_args: object) -> None: return
     class PlatformHTTPServer(ThreadingHTTPServer):
+        request_queue_size = 32
         lease = None
 
         def server_close(self):

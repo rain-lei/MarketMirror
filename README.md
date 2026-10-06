@@ -66,7 +66,9 @@ MARKETMIRROR_LLM_API_KEY=your_api_key
 4. **解释差异**：切换资产与决策步，检查三类 Agent 的仓位、订单和成交。
 5. **保存结果**：实验自动保存在本机，可下载完整 JSON 归档。
 
-实验数据位于 `research_outputs/platform_workspace/`，不随仓库分发。内置示例带有明确标识，与实际运行的撮合结果区分展示。
+实验数据位于 `research_outputs/platform_workspace/`，不随仓库分发。首页默认打开实验空间，只列本机记录；结果分析优先选择已有撮合实验。内置虚构消息位于“示例模板”，点击复用进入新建流程，保存并运行后生成自己的结果；模板本身不展示虚构收益或成交账本。
+
+记录加载使用与配置匹配的结果快照，并限制同时读取数量。刷新失败时保留上次成功数据并提示；过期请求不能覆盖新选择，结果版本或依据不一致的记录会显示读取失败。
 
 要检验种子敏感性，打开左侧**批量对照**。输入种子、总步数及资金，四种固定情景共享每个种子的无消息基线；页面显示三类策略的均值与最小最大范围。单项失败后继续后续项，重试只处理未完成项；每项可以打开当时归档的决策账本，并下载批次报告。该入口使用人工设定情景，不调用 LLM。
 
@@ -102,3 +104,5 @@ node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_
 ```
 
 具体实验结论、运行条件和限制见[研究总结](research/RESEARCH_SUMMARY_2026.md)、[平台验证记录](design/PLATFORM_VALIDATION_20261005.md)、[批量对照核验](design/BATCH_PLATFORM_VALIDATION_20261006.md)与[真实原文案例核验](design/SOURCE_CASE_PLATFORM_VALIDATION_20261006.md)。
+
+首页、模板分组及记录加载的实际核验见[实验读取核验](design/EXPERIMENT_LOADING_VALIDATION_20261006.md)。
