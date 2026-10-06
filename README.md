@@ -129,4 +129,4 @@ python -B -X utf8 -m design.source_cases --verify-all
 
 后端配置、连接检测与真实模型请求见[模型连接核验](design/MODEL_CONNECTION_VALIDATION_20261006.md)。
 
-草稿刷新恢复、实际浏览器流程与结果对照直达入口见[草稿与浏览器核验](design/DRAFT_RECOVERY_VALIDATION_20261006.md)。最新平台回归为 Python 74 项、Node 84 项通过。
+草稿刷新恢复、实际浏览器流程与结果对照直达入口见[草稿与浏览器核验](design/DRAFT_RECOVERY_VALIDATION_20261006.md)。最新平台回归为 Python 75 项、Node 84 项通过。
