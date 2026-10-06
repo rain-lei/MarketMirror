@@ -119,7 +119,7 @@ node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_
 python -B -X utf8 -m design.source_cases --verify-all
 ```
 
-具体实验结论、运行条件和限制见[研究总结](research/RESEARCH_SUMMARY_2026.md)、[平台验证记录](design/PLATFORM_VALIDATION_20261005.md)、[批量对照核验](design/BATCH_PLATFORM_VALIDATION_20261006.md)、[真实原文案例核验](design/SOURCE_CASE_PLATFORM_VALIDATION_20261006.md)与[真实原文端到端实验核验](design/REAL_SOURCE_EXPERIMENT_VALIDATION_20261006.md)。
+具体实验结论、运行条件和限制见[研究总结](research/RESEARCH_SUMMARY_2026.md)、[平台验证记录](design/PLATFORM_VALIDATION_20261005.md)、[批量对照核验](design/BATCH_PLATFORM_VALIDATION_20261006.md)、[真实原文案例核验](design/SOURCE_CASE_PLATFORM_VALIDATION_20261006.md)、[真实原文端到端实验核验](design/REAL_SOURCE_EXPERIMENT_VALIDATION_20261006.md)与[干净克隆可用性冒烟核验](design/FRESH_CLONE_SMOKE_VALIDATION_20261006.md)。
 
 首页、模板分组及记录加载的实际核验见[实验读取核验](design/EXPERIMENT_LOADING_VALIDATION_20261006.md)。
 
