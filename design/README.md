@@ -78,3 +78,7 @@ node --check design/app.js
 每次成功计算先写入独立的 `runs/<result_id>.json`，然后原子更新实验记录中的结果指针和完成状态。提交失败时，失败记录保留上一次成功结果的指针；未发布的文件不会进入导出结果。已有单文件 `result.json` 实验保持兼容。这里保证应用层发布一致性，不声明断电下的磁盘持久性。
 
 验证：`python -B -X utf8 -m unittest tests.test_platform_server tests.test_platform_analysis_binding -q`，18 项通过，覆盖提交失败、重启读取、重试发布和旧格式导出。
+
+## 批量情景对照
+
+运行 `python -B -X utf8 -m design.scenario_batch --output research_outputs/my_scenario_batch`，创建四情景、三种子的独立实验目录。支持 `--seeds` 与 `--sessions`；输出目录必须不存在。实际运行结果与限制见 [批次报告](SCENARIO_BATCH_20261006.md)。
