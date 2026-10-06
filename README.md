@@ -34,12 +34,12 @@ MarketMirror 是一个本地运行的可视化金融仿真实验平台。输入�
 
 ## 快速启动
 
-当前平台代码位于 **`codex/research-rebuild`** 分支，默认 `main` 仍是旧项目。
+当前平台已同步到默认 **`main`** 分支；`codex/research-rebuild` 保留同一版本的开发分支。
 
 准备 Python 3.10 或更高版本，在 PowerShell 或终端执行：
 
 ```powershell
-git clone --branch codex/research-rebuild https://github.com/rain-lei/MarketMirror.git
+git clone https://github.com/rain-lei/MarketMirror.git
 cd MarketMirror
 python -m pip install -r requirements-research.txt
 .\scripts\start-platform.ps1
