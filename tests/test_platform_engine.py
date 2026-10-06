@@ -46,6 +46,19 @@ class PlatformEngineTest(unittest.TestCase):
             # Expiry clears new information input; past trades may persist.
             self.assertTrue(uncertain['audit']['passed'])
 
+    def test_supported_horizon_endpoints_have_complete_audited_traces(self):
+        for sessions in (1, 60):
+            with self.subTest(sessions=sessions):
+                result = run_market(dict(cash=1000000, seed=7, sessions=sessions,
+                                         duration=9, signal=.6, uncertainty=.2))
+                self.assertEqual(result['audit'], {'passed': True, 'days_checked': sessions * 2})
+                for path in result['paths'].values():
+                    self.assertEqual(len(path['trace']), sessions)
+                trace = result['paths']['with_message']['trace']
+                active_steps = [index + 1 for index, day in enumerate(trace)
+                                if day['observations']['A']['text_signal'] != 0]
+                self.assertEqual(active_steps, [] if sessions == 1 else list(range(5, 14)))
+
     def test_message_has_no_effect_before_visibility(self):
         result = run_market(dict(cash=1000000, seed=7, sessions=4, duration=6,
                                  signal=.9, uncertainty=.7))
