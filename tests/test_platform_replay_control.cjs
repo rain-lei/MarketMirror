@@ -31,6 +31,9 @@ test('native slider semantics, date ticks and the real source window are exposed
   assert.match(html,/type="range" min="1" max="12" step="1" value="6"/);
   assert.match(html,/aria-valuetext="第 6 步 · 2020-07-25 · 消息作用中"/);
   assert.match(html,/消息进入 · 第 6 步/);assert.match(html,/第 6 — 8 步/);assert.match(html,/&lt;img/);
+  assert.match(html,/data-replay-progress>当前进度 6 \/ 12 步/);
+  assert.match(html,/data-replay-completion>已定位 50%/);
+  assert.match(html,/data-replay-current>第 6 步/);
   assert.doesNotMatch(html,/<img|NaN|undefined/);
   const untrusted=replay.render({id:'test-step',rows:[{date:'</script><img src=x onerror=bad()>',visible:true,active:true}]});
   assert.equal((untrusted.match(/<\/script>/g)||[]).length,1);assert.doesNotMatch(untrusted,/<img/);
@@ -45,7 +48,7 @@ function fakeControl(){
   const input={value:'1',max:'12',setAttribute(key,value){this[key]=value;},matches:()=>true,closest:()=>control,
     dispatchEvent(event){assert.equal(event.type,'input');assert.equal(event.bubbles,true);handlers.input.forEach(handler=>handler({target:this}));}};
   elements.set('[data-replay-input]',input);elements.set('[data-replay-rows]',{textContent:JSON.stringify(rows)});
-  for(const selector of ['[data-replay-position]','[data-replay-date]','[data-replay-status]','[data-replay-delta="-1"]','[data-replay-delta="1"]'])elements.set(selector,{});
+  for(const selector of ['[data-replay-position]','[data-replay-date]','[data-replay-status]','[data-replay-current]','[data-replay-progress]','[data-replay-completion]','[data-replay-progress-note]','[data-replay-delta="-1"]','[data-replay-delta="1"]'])elements.set(selector,{});
   return {root,control,input,elements,handlers,calls,click(dataset,disabled=false){const button={dataset,disabled,closest:()=>control};handlers.click.forEach(handler=>handler({target:{closest:()=>button}}));}};
 }
 
@@ -58,6 +61,10 @@ test('buttons dispatch the same input update as dragging, and duplicate binding 
   assert.equal(f.elements.get('[data-replay-position]').textContent,'第 6 / 12 日');
   assert.equal(f.elements.get('[data-replay-date]').textContent,'2020-07-25');
   assert.equal(f.elements.get('[data-replay-status]').textContent,'消息作用中');
+  assert.equal(f.elements.get('[data-replay-current]').textContent,'第 6 日');
+  assert.equal(f.elements.get('[data-replay-progress]').textContent,'当前进度 6 / 12 日');
+  assert.equal(f.elements.get('[data-replay-completion]').textContent,'已定位 50%');
+  assert.match(f.elements.get('[data-replay-progress-note]').textContent,/消息进入第 6 日/);
   assert.match(f.input['aria-valuetext'],/第 6 日/);
   assert.ok(f.calls.some(c=>c.key==='--replay-progress'&&c.value.startsWith('45.45')));
   f.click({replayTo:'999'});assert.equal(decisionStep,12);
