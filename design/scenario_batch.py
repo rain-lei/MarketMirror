@@ -2,9 +2,11 @@
 import argparse
 import hashlib
 import json
+import platform
 from pathlib import Path
 
 from .server import PlatformStore, atomic_json
+from .strategy_config import load_model, defaults, parameters_digest
 
 SCENARIOS = (("neutral", 0, 0), ("positive", .6, .2),
              ("negative", -.6, .2), ("uncertain", 0, .8))
@@ -38,6 +40,9 @@ def write_report(output, manifest):
     lines += ['', '收益差为有消息减无消息，以百分点表示；订单数量为策略账户汇总。',
               '未启动项不出现在表格中，可用计划总数与完成数区分。失败项不填零收益。',
               '同一种子的各情景核对无消息基线哈希；完整配置与账本保存在 workspace/，汇总及路径哈希见 batch.json。', '']
+    lines += ['## 运行配置', '', f"Python：{manifest['python_version']}",
+              f"撮合配置 SHA-256：`{manifest['mechanism_config_sha256']}`",
+              f"策略参数 SHA-256：`{manifest['strategy_parameters_sha256']}`", '']
     temporary = output / 'report.md.tmp'
     temporary.write_text('\n'.join(lines), encoding='utf-8')
     temporary.replace(output / 'report.md')
@@ -49,12 +54,18 @@ def run_batch(output, seeds=(1, 7, 19), sessions=18):
         raise ValueError('Seeds must be distinct integers from 0 to 999999')
     if type(sessions) is not int or not 1 <= sessions <= 60:
         raise ValueError('Sessions must be an integer from 1 to 60')
+    model, model_hash = load_model()
+    parameters = defaults(model)
+    parameter_hash = parameters_digest(parameters)
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
     store = PlatformStore(output / 'workspace')
     manifest = {'schema': 'platform-scenario-batch-v1', 'status': 'running',
                 'seeds': seeds, 'sessions': sessions, 'scenarios': SCENARIOS,
-                'mode': 'synthetic_market', 'llm_called': False, 'records': []}
+                'mode': 'synthetic_market', 'llm_called': False, 'records': [],
+                'python_version': platform.python_version(),
+                'mechanism_config_sha256': model_hash,
+                'strategy_parameters': parameters, 'strategy_parameters_sha256': parameter_hash}
     atomic_json(output / 'batch.json', manifest)
     write_report(output, manifest)
     baselines = {}
@@ -65,9 +76,13 @@ def run_batch(output, seeds=(1, 7, 19), sessions=18):
                     'source': '合成对照实验：方向与不确定性均为预设变量，不来自真实公告或模型推断。',
                     'type': '其他消息', 'published_at': '2000-01-01T00:00',
                     'signal': signal, 'uncertainty': uncertainty, 'duration': 6,
-                    'sessions': sessions, 'seed': seed, 'cash': 1000000})
+                    'sessions': sessions, 'seed': seed, 'cash': 1000000,
+                    'strategy_parameters': parameters})
                 row = {'scenario': name, 'seed': seed, 'experiment_id': record['id'], 'status': 'running'}
                 manifest['records'].append(row)
+                if (record['mechanism_config_sha256'] != model_hash
+                        or record['strategy_parameters_sha256'] != parameter_hash):
+                    raise ValueError('Batch configuration changed during execution')
                 atomic_json(output / 'batch.json', manifest)
                 write_report(output, manifest)
                 result = store.run(record['id'])
