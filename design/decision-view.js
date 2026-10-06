@@ -114,3 +114,56 @@
   }
   return {buildStep, buildComparison, renderComparison, formatNumber, describeOrder};
 });
+
+/* Shared replay navigation. Information timing comes from the displayed archive. */
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports.ReplayControl=api;else root.MarketReplayControl=api;})
+(typeof globalThis!=='undefined'?globalThis:this,function(){
+  'use strict';
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const position=(step,total)=>total>1?(step-1)/(total-1)*100:0;
+  const clamp=(step,total)=>Math.max(1,Math.min(total,Math.round(Number(step)||1)));
+  function viewModel(rows,step){
+    const total=Math.max(1,rows.length),current=clamp(step,total),row=rows[current-1]||{};
+    const entry=rows.findIndex(r=>r.visible===true);
+    const intervals=[];
+    rows.forEach((r,i)=>{if(r.active===true){const last=intervals.at(-1);if(last&&last.end===i)last.end=i+1;else intervals.push({start:i+1,end:i+1});}});
+    const futureActive=rows.slice(current).some(r=>r.active===true),pastActive=rows.slice(0,current).some(r=>r.active===true);
+    return {total,step:current,date:row.date||'',entry:entry<0?null:entry+1,intervals,
+      progress:position(current,total),status:row.active===true?'消息作用中':row.visible===true?(futureActive?'消息已可见 · 待作用':pastActive?'消息作用已结束':'消息已可见 · 无作用输入'):row.visible===false?'消息尚未进入':'信息时点未存档',
+      tone:row.active===true?'active':row.visible===true?'ended':'pending',previousDisabled:current===1,nextDisabled:current===total};
+  }
+  function render({id,step=1,rows=[],title='决策回放',label='选择决策步',unit='步',context=''}){
+    if(!/^[a-z][a-z0-9-]*$/.test(id))throw new Error('Invalid replay control ID');
+    const m=viewModel(rows,step),ticks=[...new Set([1,...Array.from({length:3},(_,i)=>Math.round(1+(m.total-1)*(i+1)/4)),m.total])];
+    const bands=m.intervals.map(r=>{const half=m.total>1?50/(m.total-1):0,left=Math.max(0,position(r.start,m.total)-half),right=Math.min(100,position(r.end,m.total)+half);return `<span class="replay-window" style="left:${left}%;width:${Math.max(0,right-left)}%" title="消息作用：第 ${r.start} — ${r.end} ${esc(unit)}"></span>`;}).join('');
+    const intervalText=m.intervals.length?m.intervals.map(r=>r.start===r.end?`第 ${r.start} ${unit}`:`第 ${r.start} — ${r.end} ${unit}`).join('、'):'本窗口无消息作用';
+    return `<div class="replay-control" data-replay="${id}" data-unit="${esc(unit)}" style="--replay-progress:${m.progress}%"><div class="replay-heading"><div><span class="replay-eyebrow">DECISION REPLAY</span><h3>${esc(title)}</h3>${context?`<p>${esc(context)}</p>`:''}</div><div class="replay-position"><strong id="${id}-label" data-replay-position>第 ${m.step} / ${m.total} ${esc(unit)}</strong><span data-replay-date>${esc(m.date||'逐步查看决策与执行')}</span></div></div>
+      <div class="replay-track"><div class="replay-rail" aria-hidden="true">${bands}<span class="replay-fill"></span>${m.entry?`<span class="replay-entry" style="left:${position(m.entry,m.total)}%"></span>`:''}</div><label class="sr-only" for="${id}">${esc(label)}</label><input class="replay-range" id="${id}" type="range" min="1" max="${m.total}" step="1" value="${m.step}" aria-valuetext="第 ${m.step} ${esc(unit)}${m.date?' · '+esc(m.date):''} · ${m.status}" data-replay-input>
+      <div class="replay-ticks">${ticks.map((n,i)=>`<button type="button" class="replay-tick ${i===0?'first':i===ticks.length-1?'last':''}" data-replay-to="${n}" style="left:${position(n,m.total)}%" aria-label="跳到第 ${n} ${esc(unit)}"><i></i><span>${n}</span>${rows[n-1]?.date?`<small>${esc(rows[n-1].date.slice(5))}</small>`:''}</button>`).join('')}</div></div>
+      <div class="replay-footer"><div class="replay-legend"><span class="replay-status ${m.tone}" data-replay-status>${m.status}</span><span class="replay-window-key"><i></i>消息作用区间 · ${esc(intervalText)}</span></div><div class="replay-actions"><button class="replay-jump" type="button" data-replay-to="${m.entry||1}" ${m.entry?'':'disabled'}>${m.entry?`消息进入 · 第 ${m.entry} ${esc(unit)}`:'本窗口消息未进入'}</button><div class="replay-step-buttons"><button type="button" data-replay-delta="-1" aria-label="上一步" ${m.previousDisabled?'disabled':''}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg><span>上一步</span></button><button type="button" data-replay-delta="1" aria-label="下一步" ${m.nextDisabled?'disabled':''}><span>下一步</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button></div></div></div>
+      <script type="application/json" data-replay-rows>${JSON.stringify(rows).replace(/</g,'\\u003c')}</script></div>`;
+  }
+  function sync(control,step){
+    const rows=JSON.parse(control.querySelector('[data-replay-rows]').textContent),m=viewModel(rows,step),unit=control.dataset.unit,input=control.querySelector('[data-replay-input]');
+    input.value=String(m.step);input.setAttribute('aria-valuetext',`第 ${m.step} ${unit}${m.date?' · '+m.date:''} · ${m.status}`);
+    control.style.setProperty('--replay-progress',`${m.progress}%`);
+    control.querySelector('[data-replay-position]').textContent=`第 ${m.step} / ${m.total} ${unit}`;
+    control.querySelector('[data-replay-date]').textContent=m.date||'逐步查看决策与执行';
+    const status=control.querySelector('[data-replay-status]');status.textContent=m.status;status.className=`replay-status ${m.tone}`;
+    control.querySelector('[data-replay-delta="-1"]').disabled=m.previousDisabled;
+    control.querySelector('[data-replay-delta="1"]').disabled=m.nextDisabled;
+    return m;
+  }
+  const boundRoots=new WeakSet();
+  function bind(root){
+    if(boundRoots.has(root))return;boundRoots.add(root);
+    root.addEventListener('input',event=>{if(!event.target.matches?.('[data-replay-input]'))return;sync(event.target.closest('[data-replay]'),event.target.value);});
+    root.addEventListener('click',event=>{
+      const button=event.target.closest?.('[data-replay-to],[data-replay-delta]');if(!button||button.disabled)return;
+      const control=button.closest('[data-replay]');if(!control)return;
+      const input=control.querySelector('[data-replay-input]'),target=button.dataset.replayTo===undefined?Number(input.value)+Number(button.dataset.replayDelta):Number(button.dataset.replayTo);
+      input.value=String(clamp(target,Number(input.max)));input.dispatchEvent(new Event('input',{bubbles:true}));
+    });
+  }
+  return {render,viewModel,sync,bind};
+});

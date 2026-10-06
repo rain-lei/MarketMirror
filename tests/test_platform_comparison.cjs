@@ -77,12 +77,15 @@ const source=fs.readFileSync('design/app.js','utf8');
 test('market results include the paired view and preserve the archived return difference precision',()=>{
   const r=result(),record={title:'对照实验',id:'example',source:'明确的合成消息',signal:.6,uncertainty:.2,duration:3,seed:7,backendResult:r};
   const c=vm.createContext({state:{asset:'A',step:5,decisionGroup:'with_message'},current:()=>record,
-    MarketDecisionView:view,batchArchivedExperiment:null,esc:String,icon:()=>'',newButton:()=>'',
+    MarketDecisionView:view,MarketReplayControl:view.ReplayControl,batchArchivedExperiment:null,esc:String,icon:()=>'',newButton:()=>'',
     format:n=>n.toLocaleString('zh-CN'),signed:n=>view.formatNumber(n,6,true),heading:()=>'',
     experimentStrategyPanel:()=>'',experimentEvidence:()=>'',savedPriceChart:()=>'',marketStepCards:()=>''});
   const method=source.slice(source.indexOf('  function marketAnalysis(){'),source.indexOf('  function savedAnalysis(){'));
   vm.runInContext(method,c);const html=c.marketAnalysis();
   assert.match(html,/id="market-comparison"/);assert.equal((html.match(/data-comparison-role=/g)||[]).length,3);
+  assert.match(html,/data-replay="market-step"/);assert.match(html,/消息进入 · 第 5 步/);
+  assert.match(html,/消息作用区间 · 第 5 — 7 步/);
+  assert.match(html,/合成情景 · 消息作用区间为实验假设/);
   for(const role of ['aggressive','conservative','institutional']){
     const difference=(r.paths.with_message.summary.role_wealth_multiple[role]-r.paths.baseline.summary.role_wealth_multiple[role])*100;
     assert.ok(html.includes(view.formatNumber(difference,6,true)+' pp'));

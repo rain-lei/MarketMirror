@@ -47,6 +47,13 @@ test('first visit selects a completed market run and keeps templates out of the 
   assert.doesNotMatch(templates,/data-open=|已完成/);
 });
 
+test('record hydration updates the sidebar on the historical replay page without replacing its content',async()=>{
+  const count={textContent:'0'};let renders=0;
+  const c=context({state:{page:'observed',selected:0},document:{querySelector:()=>count},render(){renders++;},
+    async apiJson(url){return url==='/api/platform/experiments'?[{id:'saved'}]:snapshot('saved');}});
+  await c.hydrateExperiments();assert.equal(count.textContent,1);assert.equal(renders,0);
+});
+
 test('snapshot reads are bounded even for a large workspace',async()=>{
   let active=0,maximum=0;
   const c=context({async apiJson(url){

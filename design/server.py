@@ -332,9 +332,11 @@ class PlatformStore:
 def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingHTTPServer:
     from .batches import BatchManager, BatchInProgress
     from .source_cases import SourceCaseLibrary, CaseArchiveIntegrityError
+    from .observed_experiments import ObservedExperimentLibrary, ObservedArchiveIntegrityError
     store = PlatformStore(data_dir)
     batches = BatchManager(store)
     source_cases = SourceCaseLibrary()
+    observed_experiments = ObservedExperimentLibrary()
     model_connection = ModelConnection()
     class Handler(BaseHTTPRequestHandler):
         def json(self, code: int, payload: object, download: str | None = None) -> None:
@@ -361,6 +363,16 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                 if path == "/api/platform/health": self.json(200, {"status": "ok", "platform_version": "v3", "mode": "local"}); return
                 if path == '/api/platform/strategies': self.json(200, store.strategies()); return
                 if path == '/api/platform/model': self.json(200, model_connection.configuration()); return
+                if path == '/api/platform/observed-experiments':
+                    if urlsplit(self.path).query: raise ValueError('历史实验不接受查看查询参数')
+                    self.json(200, observed_experiments.catalog()); return
+                if path.startswith('/api/platform/observed-experiments/'):
+                    if urlsplit(self.path).query: raise ValueError('历史实验不接受查看查询参数')
+                    experiment_id = path.removeprefix('/api/platform/observed-experiments/')
+                    download = experiment_id.endswith('/export')
+                    if download: experiment_id = experiment_id[:-7]
+                    payload = observed_experiments.get(experiment_id)
+                    self.json(200, payload, f'marketmirror-{experiment_id}.json' if download else None); return
                 if path.startswith('/api/platform/analyses/'):
                     payload = store.get_analysis(path.removeprefix('/api/platform/analyses/'))
                     self.json(200 if payload is not None else 404, payload if payload is not None else {'error': '文本分析不存在'}); return
@@ -399,11 +411,12 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                     else: payload = store.get(tail)
                     self.json(200 if payload is not None else 404, payload or {"error": "实验不存在"}); return
                 name = "index.html" if path == "/" else path.removeprefix("/")
-                types = {"index.html":"text/html","app.js":"text/javascript","draft-cache.js":"text/javascript","model-view.js":"text/javascript","case-view.js":"text/javascript","batch-view.js":"text/javascript","analysis-state.js":"text/javascript","strategy-state.js":"text/javascript","decision-view.js":"text/javascript","styles.css":"text/css","README.md":"text/markdown"}
+                types = {"index.html":"text/html","app.js":"text/javascript","observed-view.js":"text/javascript","draft-cache.js":"text/javascript","model-view.js":"text/javascript","case-view.js":"text/javascript","batch-view.js":"text/javascript","analysis-state.js":"text/javascript","strategy-state.js":"text/javascript","decision-view.js":"text/javascript","styles.css":"text/css","README.md":"text/markdown"}
                 if name not in types: self.json(404, {"error": "资源不存在"}); return
                 raw = (SITE / name).read_bytes(); self.send_response(200); self.send_header("Content-Type", types[name] + '; charset=utf-8'); self.send_header("Cache-Control", "no-store"); self.send_header("Content-Length", str(len(raw))); self.end_headers(); self.wfile.write(raw)
             except FileNotFoundError: self.json(404, {'error': '记录或归档结果不存在'})
             except CaseArchiveIntegrityError: self.json(503, {'error': '案例归档核验未通过，原文件保留；请检查来源与冻结版本。'})
+            except ObservedArchiveIntegrityError: self.json(503, {'error': '历史实验归档核验未通过，请检查来源、冻结版本及完整产物。'})
             except (ValueError, OSError, json.JSONDecodeError): self.json(400, {"error": "请求无法处理"})
         def do_POST(self) -> None:
             if not self.local() or self.headers.get("Origin") not in (None, f"http://127.0.0.1:{self.server.server_port}"):

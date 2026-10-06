@@ -19,7 +19,8 @@ MarketMirror 是一个本地运行的可视化金融仿真实验平台。输入�
 | 对照仿真 | 使用相同初始条件与种子运行有消息 / 无消息两组市场 |
 | 批量对照 | 页面创建四情景 × 多种子批次，查看进度、策略范围图、失败原因与报告 |
 | 真实原文案例 | 查看六个归档案例的来源、模型原始提取、复核修订及四条件 × 五种子决策路径 |
-| 决策回放 | 查看信息输入、评分、目标仓位、订单与成交，并同时比较两组同一步的三类策略 |
+| 历史行情实验 | 查看 300294 的真实收益回放，比较无文本、关键词和复核后 LLM，追溯当日决策使用的原文 |
+| 决策回放 | 带步骤刻度、消息作用区间和前后步按钮的时间轴，同时比较两组同一步的三类策略 |
 | 结果归档 | 导出实验配置、文本依据、参数标识和撮合账本 |
 
 ## 三类 Agent
@@ -30,7 +31,9 @@ MarketMirror 是一个本地运行的可视化金融仿真实验平台。输入�
 | 保守型 | 更重视不确定性与确认条件，控制仓位和交易频率 |
 | 机构型 | 在信息响应之外考虑组合配置、集中度和再平衡规则 |
 
-这些差异是可检查的模型假设，不代表已通过真实投资者数据训练。目标仓位改变也不意味着一定产生订单或成交；平台分别展示各阶段结果。
+三个 Agent 共用参数化决策引擎，角色差异来自各自的敏感度、风险预算、确认和再平衡规则，目前没有分别训练三个投资者模型。DeepSeek-V4-Flash-0731-W8A8 用于提取原文事实，仓位和订单由策略规则计算；新建情景的方向和不确定性由用户设定，归档研究案例使用登记的事实映射。
+
+这些差异是可检查的模型假设，不代表已通过真实投资者数据训练。目标仓位改变也不意味着一定产生订单或成交；平台分别展示各阶段结果。策略配置页展示原文理解、决策偏好和交易执行之间的关系。
 
 ## 快速启动
 
@@ -83,13 +86,18 @@ MARKETMIRROR_LLM_API_KEY=your_api_key
 
 普通结果与真实原文案例均提供**同一步决策对照**：切换资产和步骤，同时查看两组的目标权重、判断分值与订单执行差异。普通结果页上方的**查看同一步决策对照**可直接跳到时间轴和对照区。收益及权重差保留微小非零值，缺失账本字段不补零。两条路径的账户状态可能已不同，对照包含先前交易与价格反馈。
 
+三个回放入口共用时间轴：拖动圆形滑块、点击刻度或前后步按钮查看决策，也可直接跳到消息进入时点。橙色区间标出登记的消息作用期；真实原文案例及历史行情实验读取各自归档的日期和来源时钟，普通情景使用假设步数。无文本条件仍沿用相同的消息时钟用于对照，但不接收文本输入。
+
+打开**历史行情实验**可查看已完成的 300294 单案例开发实验：真实公司回复、当时 DeepSeek 的完整返回、逐条来源复核、三条件 × 三类策略 × 30 个交易日的结果，以及每一天的分值、目标仓位、请求、成交和费用。方向为零但有不确定性扣减时仍显示实际使用的引文；点击可以定位公司回复原文。订单以归一化指数单位展示，读取归档不发起新模型请求。
+
 这些案例需要原有本地研究归档，新克隆仓库不会附带原文和完整实验结果；缺少归档时页面明确提示。研究产物的恢复与复现见[复现说明](research/PROTOTYPE_REPRODUCTION_2026.md)。本机完整核验命令为 `python -B -X utf8 -m design.source_cases --verify-all`。
 
 ## 当前边界
 
-2026-10-06 已完成一轮[真实公司回复与真实历史行情实验](research/REAL_OBSERVED_EXPERIMENT_20261006.md)：重新调用 DeepSeek，三条件 × 三类 Agent × 30 个交易日，共 270 次决策，离线重放及账务核验通过。本轮 LLM 条件收益均低于无文本对照，报告保留负结果及逐日解释；这项研究运行尚未加入网页实验列表。
+2026-10-06 已完成一轮[真实公司回复与真实历史行情实验](research/REAL_OBSERVED_EXPERIMENT_20261006.md)：重新调用 DeepSeek，三条件 × 三类 Agent × 30 个交易日，共 270 次决策，离线重放及账务核验通过。本轮 LLM 条件收益均低于无文本对照，报告保留负结果及逐日解释；页面的**历史行情实验**入口读取并展示这份归档。
 
 - 新建及批量实验采用三资产合成情景，消息从第 5 步作用于资产 A；保存的发布时间不等于历史交易日回放。真实原文案例读取各自归档日历与信息截点，市场价格仍为合成数据。
+- 历史行情实验使用真实历史收益，价格不受 Agent 交易影响；成交为简化的指数单位回放，尚未纳入整手、涨跌停排队、滑点、盘口和市场冲击。这是已查看的单案例开发实验，不能证明预测能力或策略普遍有效。
 - LLM 提取结果只作为设定情景的参考，不自动转换为价格冲击。引文匹配通过也不代表语义判断一定正确。
 - 研究目录保留历史实验、负结果与原有验证门槛；平台可用不等于历史预测或高保真验证通过。
 - 当前服务仅监听本机，适合个人研究和演示，尚未提供多用户部署与权限管理。
@@ -113,12 +121,13 @@ research_outputs/ 本地生成数据与运行产物（Git 忽略）
 .\scripts\verify-platform.ps1
 ```
 
-脚本会依次运行完整 Python 平台回归、Node 状态与视图回归、JavaScript 语法检查；检测到本机真实原文归档时，还会运行 120 条路径的全量归档核验。新克隆仓库没有 `research_outputs/` 时会明确跳过最后一步。也可以按下面的命令分别执行：
+脚本会依次运行 Python 平台回归、Node 状态与视图回归、JavaScript 语法检查；检测到本机研究归档时，还会核验 120 条真实原文路径，以及历史行情实验的 270 次决策与文本依据。新克隆没有相应的 `research_outputs/` 归档时明确跳过相应核验，页面显示缺少归档，不补充演示数据。也可以按下面的命令分别执行：
 
 ```powershell
-python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_submission tests.test_platform_model_connection tests.test_platform_draft_recovery -q
-node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs tests/test_platform_draft_cache.cjs
+python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_observed_experiments tests.test_platform_submission tests.test_platform_model_connection tests.test_platform_draft_recovery -q
+node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_observed_view.cjs tests/test_platform_replay_control.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs tests/test_platform_draft_cache.cjs
 python -B -X utf8 -m design.source_cases --verify-all
+python -B -X utf8 -m design.observed_experiments --verify-all
 ```
 
 具体实验结论、运行条件和限制见[研究总结](research/RESEARCH_SUMMARY_2026.md)、[平台验证记录](design/PLATFORM_VALIDATION_20261005.md)、[批量对照核验](design/BATCH_PLATFORM_VALIDATION_20261006.md)、[真实原文案例核验](design/SOURCE_CASE_PLATFORM_VALIDATION_20261006.md)、[真实原文端到端实验核验](design/REAL_SOURCE_EXPERIMENT_VALIDATION_20261006.md)与[干净克隆可用性冒烟核验](design/FRESH_CLONE_SMOKE_VALIDATION_20261006.md)。
@@ -128,6 +137,8 @@ python -B -X utf8 -m design.source_cases --verify-all
 后台提交、页面切换及丢失响应恢复见[实验提交核验](design/SUBMISSION_VALIDATION_20261006.md)。
 
 两组同一步的三类策略及微小差异展示见[决策对照核验](design/DECISION_COMPARISON_VALIDATION_20261006.md)。
+
+历史行情归档、仅有不确定性时的引文、共用回放时间轴与 Agent 模型说明见[历史行情平台接入核验](design/OBSERVED_PLATFORM_VALIDATION_20261006.md)。
 
 后端配置、连接检测与真实模型请求见[模型连接核验](design/MODEL_CONNECTION_VALIDATION_20261006.md)。
 

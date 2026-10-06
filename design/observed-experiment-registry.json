@@ -1,0 +1,11 @@
+{
+  "schema": "platform-observed-experiment-v1",
+  "experiments": [
+    {
+      "id": "observed_300294_20261006",
+      "label": "300294 · 审批不确定性与真实行情",
+      "run_directory": "research_outputs/real_observed_experiment_20261006_v1",
+      "manifest_sha256": "ade369868ac915f0f9bb6ea4e58fe482aa6ee98b9ee55dd358c97f75288b17d1"
+    }
+  ]
+}

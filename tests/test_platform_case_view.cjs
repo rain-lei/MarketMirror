@@ -125,6 +125,9 @@ test('unavailable catalogs expose no substitute cases and exports identify the s
   assert.match(html,/\/export\?seed=89&mode=keywords/);
   assert.match(html,/\+0.000000%/);
   assert.match(html,/真实的是来源文本及归档日历/);
+  assert.match(html,/data-replay="case-step"/);assert.match(html,/消息进入 · 第 4 步/);
+  assert.match(html,/消息作用区间 · 第 4 — 9 步/);
+  assert.match(html,/2000-01-06/);
   assert.doesNotMatch(html,/NaN|undefined/);
   const paired=renderDetail(state.detail,state,{comparison:'<section>已核对的步骤对照</section>'});
   assert.match(paired,/id="case-comparison"><section>已核对的步骤对照/);
