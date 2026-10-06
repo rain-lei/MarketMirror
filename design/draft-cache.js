@@ -1,17 +1,19 @@
 /* Keep one draft per browser tab; completed records remain on the server. */
-(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.MarketDraftCache=api;})
-(typeof globalThis!=='undefined'?globalThis:this,function(){
+(function(root,factory){const api=factory(typeof module==='object'&&module.exports?require('./experiment-scenario.js'):root.MarketExperimentScenario);if(typeof module==='object'&&module.exports)module.exports=api;else root.MarketDraftCache=api;})
+(typeof globalThis!=='undefined'?globalThis:this,function(scenarios){
   'use strict';
   const KEY='marketmirror:draft-v1',SCHEMA='platform-draft-v1';
   const clone=value=>JSON.parse(JSON.stringify(value));
   const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
   const id=value=>typeof value==='string'&&/^[a-f0-9]{32}$/.test(value);
-  const fields=['title','source','type','published','signal','uncertainty','duration','sessions','seed','cash','strategy_parameters'];
+  const fields=['title','source','type','published','signal','uncertainty','duration','sessions','seed','cash','strategy_parameters','market_assumptions','preview_reference'];
   function validDraft(value){
     if(!object(value)||Object.keys(value).some(key=>!fields.includes(key)))return false;
     if(typeof value.title!=='string'||value.title.length>120||typeof value.source!=='string'||value.source.length>12000)return false;
     if(!['政策消息','宏观消息','公司问答','其他消息'].includes(value.type)||typeof value.published!=='string'||value.published.length>48)return false;
     if(!['signal','uncertainty','duration','sessions','seed','cash'].every(key=>typeof value[key]==='number'&&Number.isFinite(value[key])))return false;
+    if(Object.hasOwn(value,'market_assumptions')&&!scenarios.validate(value.market_assumptions))return false;
+    if(Object.hasOwn(value,'preview_reference')&&(!Object.hasOwn(value,'market_assumptions')||!scenarios.validReference(value.preview_reference)))return false;
     const p=value.strategy_parameters;
     if(p==null)return true;
     return object(p)&&Object.keys(p).length===3&&['aggressive','conservative','institutional'].every(role=>
@@ -21,7 +23,7 @@
     if(value==null)return true;
     if(!object(value)||!id(value.id)||!object(value.payload)||typeof value.signature!=='string'||value.signature!==JSON.stringify(value.payload))return false;
     const p=value.payload;
-    if(Object.keys(p).some(key=>!['title','source','type','published_at','signal','uncertainty','duration','sessions','seed','cash','analysis_id','strategy_parameters'].includes(key)))return false;
+    if(Object.keys(p).some(key=>!['title','source','type','published_at','signal','uncertainty','duration','sessions','seed','cash','analysis_id','strategy_parameters','market_assumptions','preview_reference'].includes(key)))return false;
     const draft={...p,published:p.published_at};delete draft.published_at;delete draft.analysis_id;
     return validDraft(draft)&&(p.analysis_id==null||id(p.analysis_id));
   }
@@ -59,6 +61,7 @@
     if(record.title!==payload.title.trim())return false;
     for(const key of ['source','type','published_at','signal','uncertainty','duration','sessions','seed','cash','analysis_id'])
       if((record[key]??null)!==(payload[key]??null))return false;
+    for(const key of ['market_assumptions','preview_reference'])if(!scenarios.matches(payload[key],record[key]))return false;
     if(payload.strategy_parameters!=null){
       for(const role of ['aggressive','conservative','institutional'])for(const key of ['text_sensitivity','base_weight','risk_budget'])
         if(record.strategy_parameters?.[role]?.[key]!==payload.strategy_parameters[role]?.[key])return false;

@@ -156,7 +156,7 @@ test('mismatched run responses cannot become completed results',async()=>{
 
 test('wrong source, strategy or model hashes never become accepted results',()=>{
   const {c}=context();
-  for(const key of ['source_sha256','strategy_parameters_sha256','analysis_sha256']){
+  for(const key of ['source_sha256','strategy_parameters_sha256','analysis_sha256','market_assumptions_sha256','decision_preview_sha256']){
     const value={id:'experiment',[key]:'expected'},reply=result('experiment');reply.provenance[key]='other';
     assert.throws(()=>c.completeExperiment(value,reply),/依据/);
   }

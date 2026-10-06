@@ -15,6 +15,7 @@ $pythonTests = @(
     "tests.test_platform_analysis_binding",
     "tests.test_platform_text",
     "tests.test_platform_engine",
+    "tests.test_platform_experiment_scenario",
     "tests.test_platform_server",
     "tests.test_platform_scenario_batch",
     "tests.test_platform_batches",
@@ -28,6 +29,7 @@ $pythonTests = @(
 $nodeTests = @(
     "tests/test_platform_strategy_state.cjs",
     "tests/test_platform_strategy_preview.cjs",
+    "tests/test_platform_experiment_scenario.cjs",
     "tests/test_platform_parameter_controls.cjs",
     "tests/test_platform_analysis_state.cjs",
     "tests/test_platform_decision_view.cjs",
@@ -61,6 +63,8 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & $node --check design/strategy-state.js
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & $node --check design/strategy-preview.js
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+& $node --check design/experiment-scenario.js
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 if ($SkipSourceCases) {

@@ -17,6 +17,7 @@ from .text_analysis import analyze, ModelAnalysisError, source_digest, validate_
 from .model_connection import ModelConnection, ModelCheckInProgress
 from .strategy_config import defaults, load_model, parameters_digest, profile_view, validate_parameters
 from .strategy_preview import preview_decisions
+from .experiment_scenario import assumptions_digest, validate_assumptions, validate_preview_reference
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA = ROOT / "research_outputs/platform_workspace"
@@ -53,7 +54,7 @@ def analysis_digest(record: dict) -> str:
 def validate_experiment(value: object) -> dict:
     if not isinstance(value, dict):
         raise ValueError("请求必须是 JSON 对象")
-    allowed = {"title", "source", "type", "published_at", "signal", "uncertainty", "duration", "sessions", "seed", "cash", "analysis_id", "strategy_parameters"}
+    allowed = {"title", "source", "type", "published_at", "signal", "uncertainty", "duration", "sessions", "seed", "cash", "analysis_id", "strategy_parameters", "market_assumptions", "preview_reference"}
     if set(value) - allowed:
         raise ValueError("请求包含不支持的字段")
     title, source, kind = value.get("title"), value.get("source"), value.get("type")
@@ -87,10 +88,18 @@ def validate_experiment(value: object) -> dict:
         raise ValueError("持续步数或模拟步数不在允许范围")
     if not 0 <= seed <= 999999 or seed != int(seed) or not 10_000 <= cash <= 100_000_000:
         raise ValueError("随机种子或初始资金不在允许范围")
-    return {"title": title.strip(), "source": source, "type": kind, "published_at": value["published_at"],
+    result = {"title": title.strip(), "source": source, "type": kind, "published_at": value["published_at"],
             "signal": signal, "uncertainty": uncertainty, "duration": duration, "sessions": sessions,
             "seed": seed, "cash": cash, "analysis_id": analysis_id,
             'strategy_parameters': validate_parameters(value['strategy_parameters']) if 'strategy_parameters' in value else None}
+    # Keep legacy normalized submissions unchanged for idempotent retries.
+    if 'market_assumptions' in value:
+        result['market_assumptions'] = validate_assumptions(value['market_assumptions'])
+    if 'preview_reference' in value:
+        if 'market_assumptions' not in value:
+            raise ValueError('带入预览参考时须明确本次实验的市场假设')
+        result['preview_reference'] = validate_preview_reference(value['preview_reference'])
+    return result
 
 
 def experiment_path(data_dir: Path, experiment_id: str) -> Path:
@@ -250,6 +259,12 @@ class PlatformStore:
                   'scenario_variables_origin': 'manual', 'strategy_parameters_origin': parameter_origin,
                   'strategy_parameters_sha256': parameters_digest(config['strategy_parameters']),
                   'mechanism_config_sha256': load_model()[1]}
+        if 'market_assumptions' in config:
+            record['market_assumptions_sha256'] = assumptions_digest(config['market_assumptions'])
+        if 'preview_reference' in config:
+            reference = config['preview_reference']
+            record['decision_preview'] = preview_decisions({k: reference[k] for k in ('parameters', 'scenario')})
+            record['decision_preview_sha256'] = analysis_digest(record['decision_preview'])
         if submission_id is not None:
             record['submission_payload_sha256'] = payload_sha256
         with self.lock:
@@ -285,6 +300,13 @@ class PlatformStore:
                 self.active_runs.discard(experiment_id)
 
     def _execute_run(self, experiment_id: str, record: dict) -> dict:
+        if 'preview_reference' in record:
+            reference = validate_preview_reference(record['preview_reference'])
+            snapshot = record.get('decision_preview')
+            if (not isinstance(snapshot, dict) or record.get('decision_preview_sha256') != analysis_digest(snapshot)
+                    or snapshot.get('input') != {k: reference[k] for k in ('parameters', 'scenario')}
+                    or snapshot.get('mechanism_config_sha256') != reference['mechanism_config_sha256']):
+                raise ValueError('实验的决策预览参考快照已改变')
         if record.get('text_analysis') is not None:
             validate_saved_analysis(record['source'], record['text_analysis'])
             if record['analysis_sha256'] != analysis_digest(record['text_analysis']):
@@ -297,6 +319,11 @@ class PlatformStore:
                       'strategy_parameters_sha256': record.get('strategy_parameters_sha256')}
         result_id = uuid4().hex
         provenance['result_id'] = result_id
+        if 'market_assumptions' in record:
+            provenance['market_assumptions_sha256'] = record['market_assumptions_sha256']
+        if 'preview_reference' in record:
+            provenance.update(decision_preview_sha256=record['decision_preview_sha256'],
+                              decision_preview_role='reference_only', preview_memory_applied=False)
         result = {**run_market(record), 'generated_at': utc_now(), 'provenance': provenance}
         record = {**record, "run_status": "completed", "last_run_at": result["generated_at"],
                   'run_finished_at': utc_now(), 'run_error': None}
@@ -412,7 +439,7 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                     else: payload = store.get(tail)
                     self.json(200 if payload is not None else 404, payload or {"error": "实验不存在"}); return
                 name = "index.html" if path == "/" else path.removeprefix("/")
-                types = {"index.html":"text/html","app.js":"text/javascript","observed-view.js":"text/javascript","draft-cache.js":"text/javascript","model-view.js":"text/javascript","case-view.js":"text/javascript","batch-view.js":"text/javascript","analysis-state.js":"text/javascript","strategy-state.js":"text/javascript","strategy-preview.js":"text/javascript","decision-view.js":"text/javascript","styles.css":"text/css","README.md":"text/markdown"}
+                types = {"index.html":"text/html","app.js":"text/javascript","observed-view.js":"text/javascript","draft-cache.js":"text/javascript","experiment-scenario.js":"text/javascript","model-view.js":"text/javascript","case-view.js":"text/javascript","batch-view.js":"text/javascript","analysis-state.js":"text/javascript","strategy-state.js":"text/javascript","strategy-preview.js":"text/javascript","decision-view.js":"text/javascript","styles.css":"text/css","README.md":"text/markdown"}
                 if name not in types: self.json(404, {"error": "资源不存在"}); return
                 raw = (SITE / name).read_bytes(); self.send_response(200); self.send_header("Content-Type", types[name] + '; charset=utf-8'); self.send_header("Cache-Control", "no-store"); self.send_header("Content-Length", str(len(raw))); self.end_headers(); self.wfile.write(raw)
             except FileNotFoundError: self.json(404, {'error': '记录或归档结果不存在'})

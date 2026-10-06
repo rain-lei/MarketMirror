@@ -77,7 +77,7 @@ const source=fs.readFileSync('design/app.js','utf8');
 test('market results include the paired view and preserve the archived return difference precision',()=>{
   const r=result(),record={title:'对照实验',id:'example',source:'明确的合成消息',signal:.6,uncertainty:.2,duration:3,seed:7,backendResult:r};
   const c=vm.createContext({state:{asset:'A',step:5,decisionGroup:'with_message'},current:()=>record,
-    MarketDecisionView:view,MarketReplayControl:view.ReplayControl,batchArchivedExperiment:null,esc:String,icon:()=>'',newButton:()=>'',
+    MarketDecisionView:view,MarketReplayControl:view.ReplayControl,MarketExperimentScenario:require('../design/experiment-scenario.js'),batchArchivedExperiment:null,esc:String,icon:()=>'',newButton:()=>'',
     format:n=>n.toLocaleString('zh-CN'),signed:n=>view.formatNumber(n,6,true),heading:()=>'',
     experimentStrategyPanel:()=>'',experimentEvidence:()=>'',savedPriceChart:()=>'',marketStepCards:()=>''});
   const method=source.slice(source.indexOf('  function marketAnalysis(){'),source.indexOf('  function savedAnalysis(){'));

@@ -236,6 +236,9 @@ body[data-theme=dark]{--canvas:#101b25;--surface:#172530;--surface-alt:#1b2c39;-
 .parameter-range::-moz-range-track{height:6px;border-radius:6px;background:linear-gradient(to right,var(--role) 0 var(--parameter-fill),var(--line) var(--parameter-fill) 100%)}
 .parameter-range::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:19px;height:19px;border:4px solid var(--role);background:var(--surface);border-radius:50%;margin-top:-6.5px;box-shadow:0 1px 5px #19334525}
 .parameter-range::-moz-range-thumb{width:11px;height:11px;border:4px solid var(--role);background:var(--surface);border-radius:50%;box-shadow:0 1px 5px #19334525}
+.parameter-range:focus-visible{outline:0}
+.parameter-range:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 5px color-mix(in srgb,var(--role) 22%,transparent)}
+.parameter-range:focus-visible::-moz-range-thumb{box-shadow:0 0 0 5px color-mix(in srgb,var(--role) 22%,transparent)}
 
 .parameter-bounds{display:flex;justify-content:space-between;gap:8px;font-size:9px;color:var(--faint);font-variant-numeric:tabular-nums}
 .parameter-number-wrap{display:flex;align-items:center;gap:3px;width:90px;flex-shrink:0;height:36px;background:var(--surface-alt);border:1px solid var(--line);border-radius:7px;padding-right:9px}
@@ -262,6 +265,16 @@ body[data-theme=dark]{--canvas:#101b25;--surface:#172530;--surface-alt:#1b2c39;-
 .strategy-preview-status-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:12px}
 .strategy-preview-status{color:var(--muted);font-size:11px;line-height:1.8}
 .strategy-preview-status.ready{color:var(--teal)}.strategy-preview-status.error,.strategy-preview-status.invalid{color:var(--orange)}
+.strategy-preview-actions{display:flex;align-items:center;gap:16px;flex-shrink:0}
+.experiment-market-fields{padding-top:20px;margin-top:20px;border-top:1px solid var(--line)}
+.experiment-market-summary{padding:13px 15px;background:var(--surface-alt);border:1px solid var(--line);border-radius:8px;margin:14px 0;color:var(--ink);font-size:12px;line-height:1.9}
+.experiment-preview-reference{border:1px solid var(--line);border-radius:8px;margin:18px 0;padding:13px 15px;background:var(--surface-alt);font-size:12px;color:var(--muted);line-height:1.9}
+.experiment-preview-reference summary{cursor:pointer;font-weight:500;color:var(--teal)}
+.experiment-preview-reference p{margin-top:9px}
+.experiment-preview-reference table{margin-top:12px}.experiment-preview-reference th,.experiment-preview-reference td{font-size:11px}
+.scenario-parameter input.parameter-range{appearance:none;-webkit-appearance:none;width:100%;height:36px;margin:0;padding:0;border:0;background:transparent;cursor:pointer}
+.scenario-parameter .parameter-number-wrap input{width:100%;min-width:0;padding:7px 8px;background:none;border:0;font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums}
+.scenario-parameter .parameter-number-wrap:has(input[aria-invalid=true]){border-color:var(--orange)}
 .strategy-rule-preview{border-top:1px solid var(--line);padding-top:22px;margin-top:20px;font-variant-numeric:tabular-nums}
 [data-preview-role]{display:flow-root}
 .strategy-rule-preview.placeholder{min-height:145px}.strategy-rule-preview.placeholder p{font-size:12px;color:var(--muted);margin-top:20px;line-height:1.8}
@@ -284,3 +297,5 @@ body[data-theme=dark]{--canvas:#101b25;--surface:#172530;--surface-alt:#1b2c39;-
 .strategy-preview-limit{margin-top:14px;font-size:10px;color:var(--faint);line-height:1.8}
 @media(max-width:800px){.strategy-preview-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.strategy-preview-body{padding:18px}.strategy-preview-fields{grid-template-columns:1fr;gap:13px}.strategy-preview-fields input,.strategy-preview-fields select{font-size:16px}.strategy-preview-status-row{align-items:flex-start}.strategy-preview-status-row .subtle-link{flex-shrink:0}.strategy-rule-preview{margin-top:18px;padding-top:18px}}
+@media(max-width:800px){.strategy-preview-status-row{align-items:flex-start;flex-direction:column}.strategy-preview-actions{justify-content:space-between;width:100%;flex-wrap:wrap}}
+@media(max-width:560px){.scenario-parameter .parameter-number-wrap input{font-size:16px}.experiment-market-fields input,.experiment-market-fields select{font-size:16px}.strategy-preview-actions .btn{min-height:42px}}
