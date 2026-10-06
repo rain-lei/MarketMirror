@@ -188,3 +188,149 @@
   }
   return {render,viewModel,sync,bind};
 });
+
+/* Compare immutable experiment exports; never rerun or synthesize missing data. */
+(function(root,factory){const api=factory(typeof module==='object'&&module.exports?module.exports:root.MarketDecisionView);if(typeof module==='object'&&module.exports)module.exports.ExperimentComparison=api;else root.MarketExperimentComparison=api;})
+(typeof globalThis!=='undefined'?globalThis:this,function(decisions){
+  'use strict';
+  const roles=['aggressive','conservative','institutional'],names={aggressive:'激进型',conservative:'保守型',institutional:'机构型'},assets=['A','B','C'];
+  const fields=['text_sensitivity','base_weight','risk_budget'],labels={text_sensitivity:'文本敏感度',base_weight:'基础股票权重',risk_budget:'风险预算'};
+  const numeric=v=>typeof v==='number'&&Number.isFinite(v),integer=v=>Number.isSafeInteger(v)&&v>=0;
+  const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
+  const clone=v=>JSON.parse(JSON.stringify(v));
+  const hash=v=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v),id=v=>typeof v==='string'&&/^[a-f0-9]{32}$/.test(v);
+  const canonical=v=>JSON.stringify(object(v)?Object.fromEntries(Object.keys(v).sort().map(k=>[k,JSON.parse(canonical(v[k]))])):Array.isArray(v)?v.map(x=>JSON.parse(canonical(x))):v);
+  const equal=(a,b)=>canonical(a)===canonical(b);
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const number=(v,d=4,signed=false)=>decisions.formatNumber(v,d,signed);
+  const percent=v=>numeric(v)?number(v*100,2)+'%':'未存档';
+  async function verifySources(records,cryptoApi=globalThis.crypto){
+    if(!cryptoApi?.subtle)throw new Error('当前浏览器无法核验原文标识');
+    await Promise.all(records.map(async record=>{
+      if(typeof record?.source!=='string'||!hash(record.source_sha256))throw new Error('原文依据未完整存档');
+      const bytes=await cryptoApi.subtle.digest('SHA-256',new TextEncoder().encode(record.source));
+      const digest=Array.from(new Uint8Array(bytes),v=>v.toString(16).padStart(2,'0')).join('');
+      if(digest!==record.source_sha256)throw new Error('原文内容与保存的标识不一致');
+    }));
+  }
+  function assumptions(record){return record.market_assumptions??{scope:'A',market:0,volatility:.01};}
+  function validateRecord(record){
+    const r=record?.backendResult,p=r?.provenance;
+    if(!id(record?.id)||typeof record.title!=='string'||typeof record.source!=='string'||typeof record.type!=='string'||typeof record.published_at!=='string'||record.run_status!=='completed'
+      ||r?.mode!=='synthetic_market'||r.status!=='completed'||r.audit?.passed!==true||!Number.isInteger(record.sessions)||record.sessions<1||record.sessions>60
+      ||p?.experiment_id!==record.id||!id(record.result_id)||p.result_id!==record.result_id||r.audit.days_checked!==record.sessions*2)
+      throw new Error('须选择运行完成、版本明确且审计通过的撮合实验');
+    for(const key of ['source_sha256','strategy_parameters_sha256'])if(!hash(record[key])||p[key]!==record[key])throw new Error('原文或策略依据不完整，无法可靠比较');
+    if(!hash(record.mechanism_config_sha256)||r.mechanism_config_sha256!==record.mechanism_config_sha256||r.strategy_parameters_sha256!==record.strategy_parameters_sha256)
+      throw new Error('运行配置标识与实验记录不一致');
+    for(const key of ['analysis_sha256','market_assumptions_sha256','decision_preview_sha256'])if(record[key]!=null&&p[key]!==record[key])throw new Error('运行依据与实验快照不一致');
+    if(!equal(record.strategy_parameters,r.strategy_parameters)||!roles.every(role=>fields.every(key=>numeric(record.strategy_parameters?.[role]?.[key]))))throw new Error('三类策略参数未完整存档');
+    for(const key of ['signal','uncertainty','duration','seed','cash'])if(!numeric(record[key]))throw new Error('实验条件未完整存档');
+    if(![-1,1].every((bound,i)=>i?record.signal<=bound:record.signal>=bound)||record.uncertainty<0||record.uncertainty>1||![3,6,9].includes(record.duration)
+      ||!Number.isInteger(record.seed)||record.seed<0||record.seed>999999||record.cash<10000||record.cash>100000000)throw new Error('实验条件超出平台允许范围');
+    const a=assumptions(record);
+    if(!object(a)||!['A','public'].includes(a.scope)||!numeric(a.market)||a.market< -1||a.market>1||!numeric(a.volatility)||a.volatility<.001||a.volatility>.5
+      ||(record.market_assumptions!=null&&!equal(a,r.market_assumptions)))throw new Error('市场假设与运行快照不一致');
+    if(!Number.isInteger(r.assumptions?.accounts_per_role)||r.assumptions.accounts_per_role<1)throw new Error('账户初始条件未存档');
+    const metrics={};
+    for(const group of ['baseline','with_message']){
+      const path=r.paths?.[group],summary=path?.summary;
+      if(!Array.isArray(path?.trace)||path.trace.length!==record.sessions||summary?.sessions!==record.sessions||!equal(summary.assets,assets)||summary.use_text!==(group==='with_message'))throw new Error('实验路径或信息条件不完整');
+      const roster=Object.keys(path.participant_specs||{}).filter(n=>roles.includes(path.participant_specs[n]?.parameters?.role));
+      if(!roles.every(role=>roster.filter(n=>path.participant_specs[n].parameters.role===role).length===r.assumptions.accounts_per_role))throw new Error('策略账户来源不完整');
+      const totals=Object.fromEntries(roles.map(role=>[role,{requested:0,accepted:0,filled:0,initial:0,final:0}]));
+      for(let step=0;step<path.trace.length;step++){
+        const day=path.trace[step];
+        if(!object(day.decisions)||!equal(Object.keys(day.decisions).sort(),roster.slice().sort()))throw new Error('逐步决策缺少策略账户');
+        for(const name of roster){
+          const spec=path.participant_specs[name],d=day.decisions[name];
+          if(!fields.every(k=>spec.parameters[k]===record.strategy_parameters[spec.parameters.role][k])||!numeric(d?.nav_minor)||d.nav_minor<=0
+            ||!assets.every(asset=>numeric(d.current_weights?.[asset])&&d.current_weights[asset]>=0&&d.current_weights[asset]<=1
+              &&numeric(d.desired_weights?.[asset])&&d.desired_weights[asset]>=0&&d.desired_weights[asset]<=1
+              &&numeric(d.order_weight_changes?.[asset])&&numeric(d.beliefs?.[asset])))throw new Error('账户决策数值或参数来源不完整');
+        }
+        for(const asset of assets){
+          const o=day.observations?.[asset],orders=day.portfolio_auction?.asset_calls?.[asset]?.orders;
+          const exposed=group==='with_message'&&(a.scope==='public'||asset==='A')&&step>=4&&step<4+record.duration;
+          if(o?.text_signal!==(exposed?record.signal:0)||o?.text_uncertainty!==(exposed?record.uncertainty:0)
+            ||(o?.scenario_shock??0)!==a.market||!numeric(day.covariance?.[asset]?.[asset])||day.covariance[asset][asset]+1e-15<a.volatility**2||!Array.isArray(orders))throw new Error('已存档输入或波动率与实验条件不一致');
+          for(const order of orders){
+            if(!integer(order.quantity)||!integer(order.accepted_quantity)||!integer(order.filled_quantity)||order.filled_quantity>order.accepted_quantity||order.accepted_quantity>order.quantity)throw new Error('订单执行字段缺失或数量不一致');
+            if(roster.includes(order.owner)){
+              const total=totals[path.participant_specs[order.owner].parameters.role];
+              total.requested+=order.quantity;total.accepted+=order.accepted_quantity;total.filled+=order.filled_quantity;
+            }else if(!path.participant_specs?.[order.owner])throw new Error('订单账户来源未存档');
+          }
+        }
+      }
+      for(const name of roster){
+        const account=summary.accounts?.[name],role=path.participant_specs[name].parameters.role;
+        if(account?.role!==role||!integer(account.initial_wealth_minor)||account.initial_wealth_minor<=0||!integer(account.final_wealth_minor)
+          ||!object(account.wallets)||!Object.values(account.wallets).every(integer)||!assets.every(a=>integer(account.shares?.[a])&&integer(summary.final_prices_minor?.[a])))throw new Error('期末账户账本不完整');
+        const wealth=Object.values(account.wallets).reduce((s,v)=>s+v,0)+assets.reduce((s,a)=>s+account.shares[a]*summary.final_prices_minor[a],0);
+        if(wealth!==account.final_wealth_minor)throw new Error('期末现金、持仓与净资产不一致');
+        totals[role].initial+=account.initial_wealth_minor;totals[role].final+=wealth;
+      }
+      for(const key of ['requested','accepted','filled'])if(roles.reduce((s,role)=>s+totals[role][key],0)!==summary['strategy_'+key])throw new Error('订单汇总与逐步账本不一致');
+      for(const role of roles){
+        const total=totals[role],wealth=total.final/total.initial;
+        if(!numeric(summary.role_wealth_multiple?.[role])||Math.abs(summary.role_wealth_multiple[role]-wealth)>1e-12)throw new Error('策略收益汇总与期末账户不一致');
+        total.return_pp=(wealth-1)*100;
+      }
+      metrics[group]=totals;
+    }
+    return metrics;
+  }
+  function configuration(record){
+    const a=assumptions(record),r=record.backendResult;
+    const roster={};
+    for(const group of ['baseline','with_message'])roster[group]=Object.fromEntries(Object.entries(r.paths[group].participant_specs).map(([name,spec])=>[name,{...spec,parameters:spec.parameters?Object.fromEntries(Object.entries(spec.parameters).filter(([key])=>!fields.includes(key))):null}]));
+    return {source:record.source,type:record.type,published_at:record.published_at,source_sha256:record.source_sha256,analysis_sha256:record.analysis_sha256??null,
+      signal:record.signal,uncertainty:record.uncertainty,duration:record.duration,sessions:record.sessions,seed:record.seed,cash:record.cash,
+      scope:a.scope,market:a.market,volatility:a.volatility,mechanism_config_sha256:record.mechanism_config_sha256,
+      assumptions:record.backendResult.assumptions?Object.fromEntries(Object.entries(record.backendResult.assumptions).filter(([k])=>!['exposed_asset','common_market_offset','volatility_floor','market_offset_first_step','memory_initial_state','volatility_is_floor','price_feedback_enabled'].includes(k))):null,
+      roster,initial_accounts:Object.fromEntries(Object.entries(r.paths.baseline.summary.accounts).map(([name,a])=>[name,a.initial_wealth_minor]))};
+  }
+  function compare(left,right){
+    const leftMetrics=validateRecord(left),rightMetrics=validateRecord(right);
+    if(left.id===right.id)throw new Error('请选择两份不同的实验');
+    const a=configuration(left),b=configuration(right);
+    const differences=Object.keys(a).filter(key=>!equal(a[key],b[key])).map(key=>({key,left:a[key],right:b[key]}));
+    const parameters=roles.flatMap(role=>fields.filter(key=>left.strategy_parameters[role][key]!==right.strategy_parameters[role][key])
+      .map(key=>({role,key,left:left.strategy_parameters[role][key],right:right.strategy_parameters[role][key]})));
+    return {left_metrics:leftMetrics,right_metrics:rightMetrics,conditions_match:differences.length===0,differences,parameters,
+      left_version:left.result_id,right_version:right.result_id};
+  }
+  class ComparisonState{
+    constructor(){this.leftId='';this.rightId='';this.generation=0;this.status='idle';this.error='';this.left=null;this.right=null;this.comparison=null;this.asset='A';this.group='with_message';this.step=5;this.loadedAt=null;}
+    select(side,value){if(!['left','right'].includes(side)||value!==''&&!id(value))return false;this[side+'Id']=value;this.invalidate();return true;}
+    invalidate(){this.generation++;this.status='idle';this.error='';this.left=null;this.right=null;this.comparison=null;this.loadedAt=null;}
+    swap(){[this.leftId,this.rightId]=[this.rightId,this.leftId];this.invalidate();}
+    begin(){if(!this.leftId||!this.rightId)return null;if(this.leftId===this.rightId){this.status='error';this.error='请选择两份不同的实验';return null;}this.status='loading';this.error='';return {generation:this.generation,leftId:this.leftId,rightId:this.rightId};}
+    accept(ticket,left,right){if(ticket.generation!==this.generation)return false;try{if(left?.id!==ticket.leftId||right?.id!==ticket.rightId)throw new Error('返回的快照不属于所选实验');const l=clone(left),r=clone(right),c=compare(l,r);this.left=l;this.right=r;this.comparison=c;this.step=Math.max(1,Math.min(this.step,left.sessions,right.sessions));this.status='ready';this.loadedAt=new Date().toISOString();return true;}catch(e){this.fail(ticket,e.message);return false;}}
+    fail(ticket,message){if(ticket.generation!==this.generation)return false;this.status='error';this.error=message;this.left=null;this.right=null;this.comparison=null;return true;}
+  }
+  const conditionLabels={source:'消息原文',type:'消息类型',published_at:'发布时间',source_sha256:'原文标识',analysis_sha256:'事实参考',signal:'文本方向',uncertainty:'不确定性',duration:'消息持续步数',sessions:'总步数',seed:'随机种子',cash:'每类初始现金',scope:'消息影响范围',market:'共同市场偏移',volatility:'波动率下限',mechanism_config_sha256:'基础配置',assumptions:'初始条件',roster:'账户与固定规则',initial_accounts:'账户初始净资产'};
+  function conditionValue(key,value){if(value==null)return '未关联';if(key==='source')return `${value.length} 字符 · ${value.slice(0,60)}${value.length>60?'…':''}`;if(key.endsWith('sha256'))return String(value).slice(0,12);if(key==='scope')return value==='public'?'全部三资产':'仅资产 A';if(key==='volatility')return percent(value);if(object(value))return '详见导出的完整快照';return String(value);}
+  function renderPicker(state,records){
+    const choices=records.filter(r=>!r.corrupt&&r.run_status==='completed'&&r.backendResult?.mode==='synthetic_market');
+    return `<section class="panel experiment-compare-picker"><div class="panel-header"><div><h2>选择两份已完成实验</h2><p class="panel-subtitle">左侧作为基准，右侧作为待比较配置。读取的是已保存的撮合版本。</p></div></div><div class="summary-content"><div class="form-two">${[['left','基准实验',state.leftId],['right','比较实验',state.rightId]].map(([side,label,selected])=>`<div class="form-field"><label for="compare-${side}">${label}</label><select id="compare-${side}" data-comparison-select="${side}"><option value="">选择实验</option>${choices.map(r=>`<option value="${esc(r.id)}" ${selected===r.id?'selected':''}>${esc(r.title)} · ${r.sessions} 步 / 种子 ${r.seed}</option>`).join('')}</select></div>`).join('')}</div><div class="comparison-picker-actions"><span class="form-hint">${state.status==='loading'?'正在读取并核对两份快照…':choices.length<2?'至少需要两份已完成的撮合实验。':'比较不调用模型，也不重新运行市场。'}</span><div><button class="btn compact" type="button" data-comparison-action="swap" ${!state.leftId||!state.rightId?'disabled':''}>交换左右</button><button class="btn compact" type="button" data-comparison-action="refresh" ${!state.leftId||!state.rightId?'disabled':''}>刷新所选版本</button></div></div></div></section>`;
+  }
+  function renderStepCards(state){
+    if(state.status!=='ready')return '';
+    const selected=decisions.buildStep(state.left.backendResult,state.group,state.asset,state.step),candidate=decisions.buildStep(state.right.backendResult,state.group,state.asset,state.step);
+    return roles.map((role,i)=>{const a=selected.roles[i],b=candidate.roles[i];return `<article class="experiment-comparison-step ${role}"><h3>${names[role]}</h3><div class="comparison-target-row"><span>基准</span><div class="comparison-weight-track"><i style="width:${a.target*100}%"></i></div><strong>${percent(a.target)}</strong></div><div class="comparison-target-row"><span>比较</span><div class="comparison-weight-track candidate"><i style="width:${b.target*100}%"></i></div><strong>${percent(b.target)}</strong></div><p>目标差 ${number((b.target-a.target)*100,6,true)} pp</p><div class="comparison-step-values"><span>分值 ${number(a.belief,4,true)} → ${number(b.belief,4,true)}</span><span>实际成交 ${a.filled} → ${b.filled} 股</span></div></article>`;}).join('');
+  }
+  function renderBody(state){
+    if(state.status!=='ready')return `<section class="panel"><div class="summary-content comparison-empty" role="status"><h2>${state.status==='loading'?'正在核对实验依据':state.status==='error'?'这两份记录暂时无法比较':'从一次参数调整开始'}</h2><p>${esc(state.error||'先选择基准实验，再选择另一份已完成实验。也可以在结果页使用“调整策略再跑”，保持消息和市场条件继续实验。')}</p></div></section>`;
+    const {left,right,comparison:c,group,asset,step}=state;
+    const cfg=record=>{const a=assumptions(record);return `<article><small>${record===left?'基准实验':'比较实验'}</small><h3>${esc(record.title)}</h3><p>种子 ${record.seed} · ${record.sessions} 步 · 信号 ${record.signal} · 不确定性 ${record.uncertainty}</p><p>${a.scope==='public'?'全部三资产':'仅资产 A'} · 市场 ${a.market} · 波动下限 ${percent(a.volatility)}</p><span>结果版本 ${esc(record.result_id.slice(0,10))}</span><button class="subtle-link" type="button" data-comparison-open="${record.id}">打开完整账本 →</button></article>`;};
+    return `<section class="panel comparison-conditions"><div class="panel-header"><div><h2>先核对比较条件</h2><p class="panel-subtitle">${c.conditions_match?'消息、种子、市场条件与固定账户规则一致':'两份实验的输入条件存在差异'}</p></div><span class="badge ${c.conditions_match?'neutral':'orange'}">${c.conditions_match?'条件一致':'条件有差异'}</span></div><div class="summary-content"><div class="comparison-run-cards">${cfg(left)}${cfg(right)}</div>${c.differences.length?`<div class="table-wrap comparison-config-diff"><table><thead><tr><th>不同条件</th><th>基准</th><th>比较</th></tr></thead><tbody>${c.differences.map(d=>`<tr><th>${conditionLabels[d.key]}</th><td>${esc(conditionValue(d.key,d.left))}</td><td>${esc(conditionValue(d.key,d.right))}</td></tr>`).join('')}</tbody></table></div><p class="comparison-note">下方为两次运行的描述性差异，不能只归因于策略参数。可以复制基准实验，保持这些条件后重新运行。</p>`:'<p class="comparison-note">可观察本次参数调整对应的仿真变化。价格、成交与后续仓位存在反馈；单个种子的差异不能证明普遍收益改善。</p>'}<details class="comparison-parameter-diff"><summary>策略参数变化 · ${c.parameters.length} 项</summary>${c.parameters.length?`<div class="table-wrap"><table><thead><tr><th>策略</th><th>参数</th><th>基准</th><th>比较</th></tr></thead><tbody>${c.parameters.map(d=>`<tr><td>${names[d.role]}</td><td>${labels[d.key]}</td><td>${d.key==='text_sensitivity'?number(d.left,5):percent(d.left)}</td><td>${d.key==='text_sensitivity'?number(d.right,5):percent(d.right)}</td></tr>`).join('')}</tbody></table></div>`:'<p>三类可调策略参数相同。</p>'}</details></div></section>`
+      +`<section class="panel comparison-view-controls"><div class="panel-header"><div><h2>三类策略 · 全程结果</h2><p class="panel-subtitle">收益从期末现金和持仓核对，订单从逐步账本累计</p></div><div class="segmented" role="group" aria-label="实验比较信息条件">${[['with_message','有消息'],['baseline','无消息对照']].map(([key,label])=>`<button type="button" data-comparison-group="${key}" class="${group===key?'active':''}" aria-pressed="${group===key}">${label}</button>`).join('')}</div></div><div class="experiment-comparison-role-grid">${roles.map(role=>{const a=c.left_metrics[group][role],b=c.right_metrics[group][role];return `<article class="experiment-comparison-role ${role}"><h3>${names[role]}</h3><span class="comparison-metric-label">收益变化 · 比较 − 基准</span><strong class="comparison-primary-metric">${number(b.return_pp-a.return_pp,6,true)}<small> pp</small></strong><div class="comparison-return-values"><span>基准 ${number(a.return_pp,4,true)}%</span><span>比较 ${number(b.return_pp,4,true)}%</span></div><table><thead><tr><th>全程股数</th><th>基准</th><th>比较</th><th>差值</th></tr></thead><tbody>${[['requested','请求'],['accepted','接受'],['filled','成交']].map(([key,label])=>`<tr><th>${label}</th><td>${a[key].toLocaleString('zh-CN')}</td><td>${b[key].toLocaleString('zh-CN')}</td><td>${number(b[key]-a[key],0,true)}</td></tr>`).join('')}</tbody></table></article>`;}).join('')}</div></section>`
+      +`<section class="panel comparison-step-panel"><div class="panel-header"><div><h2>同一步目标仓位 · 第 ${step} 步</h2><p class="panel-subtitle">按各次运行的决策前净资产加权；账户状态可能已不同</p></div><div class="segmented" role="group" aria-label="比较资产">${assets.map(a=>`<button type="button" data-comparison-asset="${a}" class="${asset===a?'active':''}" aria-pressed="${asset===a}">资产 ${a}</button>`).join('')}</div></div><div class="summary-content"><div class="comparison-step-input"><label for="comparison-step">查看决策步</label><input id="comparison-step" type="number" min="1" max="${Math.min(left.sessions,right.sessions)}" step="1" value="${step}" data-comparison-step aria-describedby="comparison-step-error"><span>共有 ${Math.min(left.sessions,right.sessions)} 步可并列查看</span></div><p id="comparison-step-error" class="form-error" role="alert"></p><div class="experiment-comparison-role-grid" data-comparison-step-cards>${renderStepCards(state)}</div></div></section>`;
+  }
+  function exportSnapshot(state){if(state.status!=='ready')return null;return clone({artifact:'MarketMirror experiment comparison',schema_version:'platform-comparison-v1',read_at:state.loadedAt,
+    conditions_match:state.comparison.conditions_match,differences:state.comparison.differences,parameter_changes:state.comparison.parameters,metrics:{left:state.comparison.left_metrics,right:state.comparison.right_metrics},
+    view:{group:state.group,asset:state.asset,step:state.step},left:state.left,right:state.right,interpretation:'descriptive_simulation_comparison'});}
+  return {ComparisonState,validateRecord,verifySources,compare,assumptions,configuration,renderPicker,renderBody,renderStepCards,exportSnapshot};
+});

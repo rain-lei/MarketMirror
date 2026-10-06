@@ -41,6 +41,7 @@ $nodeTests = @(
     "tests/test_platform_replay_control.cjs",
     "tests/test_platform_submission.cjs",
     "tests/test_platform_comparison.cjs",
+    "tests/test_platform_experiment_comparison.cjs",
     "tests/test_platform_model_view.cjs",
     "tests/test_platform_draft_cache.cjs"
 )

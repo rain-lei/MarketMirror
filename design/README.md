@@ -12,7 +12,7 @@
 
 浏览器打开 `http://127.0.0.1:8770`。脚本会检查端口并在当前终端前台运行服务，按 `Ctrl+C` 停止；也可直接执行 `python -B -X utf8 -m design.server --port 8770`。服务默认只监听本机；不指定端口时使用 8770。
 
-当前交付状态（2026-10-06）：本机撮合记录、批量情景、6 个真实原文案例和 1 个真实历史收益实验已接通。三类策略支持彩色范围滑块及精确数值输入；页面说明共享的规则引擎与 DeepSeek 事实提取之间的关系。逐步账本、共用消息时间轴、同一步对照和草稿刷新恢复可用。最新平台回归为 Python 82 项、Node 104 项通过。干净 Git 副本已验证无需研究归档也能完成合成实验和导出；缺少历史归档时相应页面明确提示。最终浏览器视觉检查的剩余范围见[历史行情接入核验](OBSERVED_PLATFORM_VALIDATION_20261006.md)与[参数编辑核验](PARAMETER_EDITOR_VALIDATION_20261006.md)。
+当前交付状态（2026-10-07）：本机撮合记录、批量情景、6 个真实原文案例和 1 个真实历史收益实验已接通。三类策略支持范围滑块、精确数值输入和同状态决策预览；预览可带入完整实验，完成后可复制并调整策略，在“实验比较”中核对条件、保存版本与实际执行。页面说明共享规则引擎与 DeepSeek 事实提取之间的关系。逐步账本、共用消息时间轴、同一步对照和草稿刷新恢复可用。当前平台回归为 Python 99 项、Node 132 项通过。干净 Git 副本已验证无需研究归档也能完成合成实验和导出；缺少历史归档时相应页面明确提示。实际页面与实验检查见[预览衔接核验](PREVIEW_HANDOFF_VALIDATION_20261007.md)及[实验比较核验](EXPERIMENT_COMPARISON_VALIDATION_20261007.md)。
 
 本机已完成一条当前平台的真实原文端到端运行：武汉交通通告经 DeepSeek 提取 4 条事实，创建带分析快照的实验并完成 36 个市场日审计。详细编号和边界见[真实原文端到端实验核验](REAL_SOURCE_EXPERIMENT_VALIDATION_20261006.md)。
 
@@ -85,8 +85,8 @@
 等价的分步命令如下：
 
 ```powershell
-python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_observed_experiments tests.test_platform_submission tests.test_platform_model_connection tests.test_platform_draft_recovery -q
-node --test tests/test_platform_strategy_state.cjs tests/test_platform_parameter_controls.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_observed_view.cjs tests/test_platform_replay_control.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs tests/test_platform_draft_cache.cjs
+python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_strategy_preview tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_experiment_scenario tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_observed_experiments tests.test_platform_submission tests.test_platform_model_connection tests.test_platform_draft_recovery -q
+node --test tests/test_platform_strategy_state.cjs tests/test_platform_strategy_preview.cjs tests/test_platform_experiment_scenario.cjs tests/test_platform_parameter_controls.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_observed_view.cjs tests/test_platform_replay_control.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_experiment_comparison.cjs tests/test_platform_model_view.cjs tests/test_platform_draft_cache.cjs
 node --check design/app.js
 # 本机有真实原文归档时再执行
 python -B -X utf8 -m design.source_cases --verify-all
@@ -180,7 +180,7 @@ python -B -X utf8 -m design.observed_experiments --verify-all
 
 刷新后先从本机列表与完整快照核对原提交。已完成实验打开原结果，运行中的实验只查看进度，失败实验从原记录恢复；保存状态未确认时保留同一提交编号。缓存中的旧运行状态不作为成功凭证，配置不匹配的服务端记录不认作本次提交。
 
-草稿阶段回归为 Python 75 项、Node 84 项通过。实际 HTTP 丢失响应检查、真实浏览器刷新流程、一次虚构文字模型提取与三种窗口宽度验收见[草稿与浏览器核验](DRAFT_RECOVERY_VALIDATION_20261006.md)。当前完整平台回归为 Python 99 项、Node 119 项通过。
+草稿阶段回归为 Python 75 项、Node 84 项通过。实际 HTTP 丢失响应检查、真实浏览器刷新流程、一次虚构文字模型提取与三种窗口宽度验收见[草稿与浏览器核验](DRAFT_RECOVERY_VALIDATION_20261006.md)。当前平台回归为 Python 99 项、Node 132 项通过。
 
 ## 同状态决策预览
 
@@ -204,3 +204,15 @@ python -B -X utf8 -m design.observed_experiments --verify-all
 预览参考保存为 `preview_reference`，包含原参数、情景（含人工观察历史）和机制配置标识。提交时后端重建六份规则决策，存为 `decision_preview` 并冻结哈希。完整实验每类 4 个账户，重新从第 1 步积累观察记忆；人工预览记忆不写入完整市场。确认与结果页说明账户差异，后续调整的实验配置与原预览分别保留。
 
 2026-10-07 真实浏览器完成从预览、刷新、提交到结果的 18 步撮合，36 个市场日审计通过。配置与重新独立运行逐步一致，有消息成交 7,300 股，无消息成交 4,400 股。这是明确标注的人工情景，本轮未调用大模型，也不证明预测能力。当前验收服务使用 8773 和独立工作区副本，原 8770 服务及其存档保留。详见[预览衔接核验](PREVIEW_HANDOFF_VALIDATION_20261007.md)。
+
+## 已保存实验比较与策略调整
+
+结果页的“调整策略再跑”复制原文、发布时间、情景变量、种子、市场假设与三类参数，进入新草稿的策略编辑步骤。新标题带“策略调整”后缀；后续编辑和运行生成独立实验，原实验与工作区默认保持各自的保存值。模型分析与预览参考按原快照保留，页面标明参考是否已与当前配置不同。
+
+“实验比较”只读取两份已完成的 `synthetic_market` 实验导出。打开前核对来源标识、运行版本、完整决策与订单字段、逐步文本和市场输入、期末现金及持仓；缺失或不一致时显示无法比较，不以零值代替。消息、发布时间、分析依据、情景、种子、初始条件及机制配置不同会列在条件表中；可调参数变化单独显示。
+
+全程收益按各角色期末净资产与初始净资产合计计算；请求、接受、成交为全部资产、全部步骤的买卖合计。切换有消息或无消息组、资产、共同步数后，目标仓位按各次运行的决策前净资产加权。输入两位步数不中断输入焦点；空值或越界保留最后有效视图并显示提示。两条市场路径可能已经形成不同账户与价格，结果是带反馈的仿真比较。
+
+所选实验编号在当前标签页保存，刷新后重新读取结果。旧请求不能覆盖新选择。完整账本始终打开比较时捕获的版本；刷新所选版本才重新读取当前存档。比较 JSON 包含两份完整快照、条件差异、参数变化、指标、读取时间与当前视图。比较及打开旧账本均不调用 LLM 或重跑实验。
+
+实际调整激进型文本敏感度 1.35791 → 1.80，其余条件一致，两次实验共核对 72 个市场日；无消息组逐步账本完全相同。有消息组中激进型成交 4,800 → 7,200 股，收益差为 −0.027868 个百分点。这是单一种子的人工情景结果，不是参数最优性证明。HTTP、桌面和窄屏验收范围详见[实验比较核验](EXPERIMENT_COMPARISON_VALIDATION_20261007.md)。
