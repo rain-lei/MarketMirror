@@ -14,6 +14,35 @@ def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
+def write_report(output, manifest):
+    labels = {'neutral': '中性', 'positive': '正向', 'negative': '负向', 'uncertain': '高不确定性'}
+    statuses = {'completed': '完成', 'running': '运行中', 'failed': '失败'}
+    rows = manifest['records']
+    completed = sum(row['status'] == 'completed' for row in rows)
+    total = len(manifest['seeds']) * len(manifest['scenarios'])
+    lines = ['# MarketMirror 合成情景对照', '',
+             f"批次状态：{statuses[manifest['status']]}。完成 {completed}/{total} 项；每项 {manifest['sessions']} 步。", '',
+             '信号与不确定性均为预设假设，未调用大模型，不代表历史预测或真实投资者表现。', '',
+             '| 情景 | 种子 | 状态 | 请求/接受/成交（股） | 激进收益差 pp | 保守收益差 pp | 机构收益差 pp | 实验编号 |',
+             '| --- | --- | --- | --- | --- | --- | --- | --- |']
+    for row in rows:
+        if row['status'] == 'completed':
+            quantities = f"{row['requested']}/{row['accepted']}/{row['filled']}"
+            differences = [f"{row['role_return_difference_pp'][role]:+.6f}"
+                           for role in ('aggressive', 'conservative', 'institutional')]
+        else:
+            quantities, differences = '未完成', ['—'] * 3
+        cells = [labels[row['scenario']], str(row['seed']), statuses[row['status']], quantities,
+                 *differences, row['experiment_id']]
+        lines.append('| ' + ' | '.join(cells) + ' |')
+    lines += ['', '收益差为有消息减无消息，以百分点表示；订单数量为策略账户汇总。',
+              '未启动项不出现在表格中，可用计划总数与完成数区分。失败项不填零收益。',
+              '同一种子的各情景核对无消息基线哈希；完整配置与账本保存在 workspace/，汇总及路径哈希见 batch.json。', '']
+    temporary = output / 'report.md.tmp'
+    temporary.write_text('\n'.join(lines), encoding='utf-8')
+    temporary.replace(output / 'report.md')
+
+
 def run_batch(output, seeds=(1, 7, 19), sessions=18):
     seeds = tuple(seeds)
     if not seeds or len(set(seeds)) != len(seeds) or any(type(s) is not int or not 0 <= s <= 999999 for s in seeds):
@@ -27,6 +56,7 @@ def run_batch(output, seeds=(1, 7, 19), sessions=18):
                 'seeds': seeds, 'sessions': sessions, 'scenarios': SCENARIOS,
                 'mode': 'synthetic_market', 'llm_called': False, 'records': []}
     atomic_json(output / 'batch.json', manifest)
+    write_report(output, manifest)
     baselines = {}
     try:
         for seed in seeds:
@@ -39,6 +69,7 @@ def run_batch(output, seeds=(1, 7, 19), sessions=18):
                 row = {'scenario': name, 'seed': seed, 'experiment_id': record['id'], 'status': 'running'}
                 manifest['records'].append(row)
                 atomic_json(output / 'batch.json', manifest)
+                write_report(output, manifest)
                 result = store.run(record['id'])
                 baseline, message = result['paths']['baseline'], result['paths']['with_message']
                 baseline_hash = digest(baseline)
@@ -53,14 +84,17 @@ def run_batch(output, seeds=(1, 7, 19), sessions=18):
                     accepted=message['summary']['strategy_accepted'],
                     filled=message['summary']['strategy_filled'])
                 atomic_json(output / 'batch.json', manifest)
+                write_report(output, manifest)
         manifest['status'] = 'completed'
     except Exception as exc:
         manifest.update(status='failed', error_type=type(exc).__name__)
         if manifest['records'] and manifest['records'][-1]['status'] == 'running':
             manifest['records'][-1].update(status='failed', error_type=type(exc).__name__)
         atomic_json(output / 'batch.json', manifest)
+        write_report(output, manifest)
         raise
     atomic_json(output / 'batch.json', manifest)
+    write_report(output, manifest)
     return manifest
 
 

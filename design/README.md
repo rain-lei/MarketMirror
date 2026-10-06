@@ -81,4 +81,4 @@ node --check design/app.js
 
 ## 批量情景对照
 
-运行 `python -B -X utf8 -m design.scenario_batch --output research_outputs/my_scenario_batch`，创建四情景、三种子的独立实验目录。支持 `--seeds` 与 `--sessions`；输出目录必须不存在。实际运行结果与限制见 [批次报告](SCENARIO_BATCH_20261006.md)。
+运行 `python -B -X utf8 -m design.scenario_batch --output research_outputs/my_scenario_batch`，创建四情景、三种子的独立实验目录。每项完成后更新 `batch.json` 和中文 `report.md`，失败项保留状态且收益留空。支持 `--seeds` 与 `--sessions`；输出目录必须不存在。实际运行结果与限制见 [批次报告](SCENARIO_BATCH_20261006.md)。
