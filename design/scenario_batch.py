@@ -56,6 +56,8 @@ def run_batch(output, seeds=(1, 7, 19), sessions=18):
         manifest['status'] = 'completed'
     except Exception as exc:
         manifest.update(status='failed', error_type=type(exc).__name__)
+        if manifest['records'] and manifest['records'][-1]['status'] == 'running':
+            manifest['records'][-1].update(status='failed', error_type=type(exc).__name__)
         atomic_json(output / 'batch.json', manifest)
         raise
     atomic_json(output / 'batch.json', manifest)
