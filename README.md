@@ -16,6 +16,7 @@ MarketMirror 是一个本地运行的可视化金融仿真实验平台。输入�
 | 文本分析 | 可选 DeepSeek 事实提取，展示原文引文、位置及分析快照 |
 | 模型设置 | 查看后端模型与本机凭据状态，手动检测实际连接，查看具体失败原因 |
 | 三类 Agent | 带范围标注的彩色滑块与精确数值输入，调整敏感度、基础权重和风险预算，每个实验保存独立参数 |
+| 决策预览 | 策略页选择消息与风险情景，参数变化后用现有引擎重算三类策略的分值、目标仓位与拟调仓量 |
 | 对照仿真 | 使用相同初始条件与种子运行有消息 / 无消息两组市场 |
 | 批量对照 | 页面创建四情景 × 多种子批次，查看进度、策略范围图、失败原因与报告 |
 | 真实原文案例 | 查看六个归档案例的来源、模型原始提取、复核修订及四条件 × 五种子决策路径 |
@@ -37,14 +38,16 @@ MarketMirror 是一个本地运行的可视化金融仿真实验平台。输入�
 
 参数可以拖动滑块或直接输入。权重与风险预算按百分比显示，例如输入风险预算 `0.83%` 会保存为内部数值 `0.0083`，不会取整到原滑块刻度。空值或越界值保留最后有效参数，并阻止保存或进入确认步骤；工作区默认、实验草稿和已存档实验各自保留参数。
 
+策略页提供**同状态决策预览**：选择正向消息、负向消息、高不确定性或高波动，也可以编辑市场信号、作用范围和共同观察状态。每类账户使用相同的资金、持仓、价格、波动假设和决策前记忆，分别计算有消息与无文本结果；修改未保存参数也会自动重算。预览展示目标仓位、拟调仓幅度和约束原因，实际订单与成交需运行完整实验。该入口不调用 LLM，也不创建或修改实验记录。
+
 ## 快速启动
 
-当前平台已同步到默认 **`main`** 分支；`codex/research-rebuild` 保留同一版本的开发分支。
+持续开发版本位于 **`codex/research-rebuild`** 分支；以下命令获取当前开发版本。
 
 准备 Python 3.10 或更高版本，在 PowerShell 或终端执行：
 
 ```powershell
-git clone https://github.com/rain-lei/MarketMirror.git
+git clone --branch codex/research-rebuild https://github.com/rain-lei/MarketMirror.git
 cd MarketMirror
 python -m pip install -r requirements-research.txt
 .\scripts\start-platform.ps1
@@ -126,8 +129,8 @@ research_outputs/ 本地生成数据与运行产物（Git 忽略）
 脚本会依次运行 Python 平台回归、Node 状态与视图回归、JavaScript 语法检查；检测到本机研究归档时，还会核验 120 条真实原文路径，以及历史行情实验的 270 次决策与文本依据。新克隆没有相应的 `research_outputs/` 归档时明确跳过相应核验，页面显示缺少归档，不补充演示数据。也可以按下面的命令分别执行：
 
 ```powershell
-python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_observed_experiments tests.test_platform_submission tests.test_platform_model_connection tests.test_platform_draft_recovery -q
-node --test tests/test_platform_strategy_state.cjs tests/test_platform_parameter_controls.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_observed_view.cjs tests/test_platform_replay_control.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs tests/test_platform_draft_cache.cjs
+python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_strategy_preview tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_observed_experiments tests.test_platform_submission tests.test_platform_model_connection tests.test_platform_draft_recovery -q
+node --test tests/test_platform_strategy_state.cjs tests/test_platform_strategy_preview.cjs tests/test_platform_parameter_controls.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_observed_view.cjs tests/test_platform_replay_control.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs tests/test_platform_draft_cache.cjs
 python -B -X utf8 -m design.source_cases --verify-all
 python -B -X utf8 -m design.observed_experiments --verify-all
 ```
@@ -146,4 +149,4 @@ python -B -X utf8 -m design.observed_experiments --verify-all
 
 后端配置、连接检测与真实模型请求见[模型连接核验](design/MODEL_CONNECTION_VALIDATION_20261006.md)。
 
-草稿刷新恢复、实际浏览器流程与结果对照直达入口见[草稿与浏览器核验](design/DRAFT_RECOVERY_VALIDATION_20261006.md)。最新平台回归为 Python 75 项、Node 84 项通过。
+草稿刷新恢复、实际浏览器流程与结果对照直达入口见[草稿与浏览器核验](design/DRAFT_RECOVERY_VALIDATION_20261006.md)。同状态决策预览、实际引擎计算与交互验收见[决策预览核验](design/STRATEGY_PREVIEW_VALIDATION_20261007.md)。最新平台回归为 Python 91 项、Node 111 项通过。

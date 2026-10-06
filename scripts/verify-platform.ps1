@@ -11,6 +11,7 @@ $node = (Get-Command node -ErrorAction Stop).Source
 
 $pythonTests = @(
     "tests.test_platform_strategies",
+    "tests.test_platform_strategy_preview",
     "tests.test_platform_analysis_binding",
     "tests.test_platform_text",
     "tests.test_platform_engine",
@@ -26,6 +27,7 @@ $pythonTests = @(
 
 $nodeTests = @(
     "tests/test_platform_strategy_state.cjs",
+    "tests/test_platform_strategy_preview.cjs",
     "tests/test_platform_parameter_controls.cjs",
     "tests/test_platform_analysis_state.cjs",
     "tests/test_platform_decision_view.cjs",
@@ -57,6 +59,8 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & $node --check design/decision-view.js
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & $node --check design/strategy-state.js
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+& $node --check design/strategy-preview.js
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 if ($SkipSourceCases) {

@@ -16,6 +16,7 @@ from .workspace_lease import WorkspaceLease
 from .text_analysis import analyze, ModelAnalysisError, source_digest, validate_analysis_id, validate_saved_analysis, validate_source
 from .model_connection import ModelConnection, ModelCheckInProgress
 from .strategy_config import defaults, load_model, parameters_digest, profile_view, validate_parameters
+from .strategy_preview import preview_decisions
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA = ROOT / "research_outputs/platform_workspace"
@@ -411,7 +412,7 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                     else: payload = store.get(tail)
                     self.json(200 if payload is not None else 404, payload or {"error": "实验不存在"}); return
                 name = "index.html" if path == "/" else path.removeprefix("/")
-                types = {"index.html":"text/html","app.js":"text/javascript","observed-view.js":"text/javascript","draft-cache.js":"text/javascript","model-view.js":"text/javascript","case-view.js":"text/javascript","batch-view.js":"text/javascript","analysis-state.js":"text/javascript","strategy-state.js":"text/javascript","decision-view.js":"text/javascript","styles.css":"text/css","README.md":"text/markdown"}
+                types = {"index.html":"text/html","app.js":"text/javascript","observed-view.js":"text/javascript","draft-cache.js":"text/javascript","model-view.js":"text/javascript","case-view.js":"text/javascript","batch-view.js":"text/javascript","analysis-state.js":"text/javascript","strategy-state.js":"text/javascript","strategy-preview.js":"text/javascript","decision-view.js":"text/javascript","styles.css":"text/css","README.md":"text/markdown"}
                 if name not in types: self.json(404, {"error": "资源不存在"}); return
                 raw = (SITE / name).read_bytes(); self.send_response(200); self.send_header("Content-Type", types[name] + '; charset=utf-8'); self.send_header("Cache-Control", "no-store"); self.send_header("Content-Length", str(len(raw))); self.end_headers(); self.wfile.write(raw)
             except FileNotFoundError: self.json(404, {'error': '记录或归档结果不存在'})
@@ -425,6 +426,8 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                 length = int(self.headers.get("Content-Length", "0"))
                 if length < 1 or length > MAX_BODY: raise ValueError("请求过大")
                 payload = json.loads(self.rfile.read(length)); path = self.path.split("?", 1)[0]
+                if path == '/api/platform/strategy-preview':
+                    self.json(200, preview_decisions(payload)); return
                 if path == '/api/platform/model/check':
                     if payload != {}: raise ValueError('连接检测只接受空对象')
                     self.json(200, model_connection.check()); return

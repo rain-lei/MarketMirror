@@ -248,3 +248,39 @@ body[data-theme=dark]{--canvas:#101b25;--surface:#172530;--surface-alt:#1b2c39;-
 .strategy-parameter .parameter-error:empty{display:none}.strategy-parameter.invalid .parameter-number-wrap{border-color:var(--orange)}
 .parameter-range:disabled,.parameter-number-wrap input:disabled{cursor:wait;opacity:.5}
 @media(max-width:560px){.parameter-input-row{gap:11px}.parameter-number-wrap{width:85px}.strategy-editor-grid .role-description{margin-bottom:20px}}
+
+.strategy-preview-controls{margin-bottom:20px}
+.strategy-preview-body{padding:20px 22px}
+.strategy-preview-presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.strategy-preview-presets .btn{background:var(--surface-alt);font-size:11px}
+.strategy-preview-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 18px}
+.strategy-preview-fields .form-field{margin:0;min-width:0}
+.strategy-preview-fields label{font-size:11px}
+.strategy-preview-fields input,.strategy-preview-fields select{width:100%;font-size:12px;min-height:38px}
+.strategy-preview-fields input[aria-invalid=true]{border-color:var(--orange)}
+.strategy-preview-assumption{margin:16px 0 0;color:var(--muted);font-size:11px;line-height:1.9}
+.strategy-preview-status-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:12px}
+.strategy-preview-status{color:var(--muted);font-size:11px;line-height:1.8}
+.strategy-preview-status.ready{color:var(--teal)}.strategy-preview-status.error,.strategy-preview-status.invalid{color:var(--orange)}
+.strategy-rule-preview{border-top:1px solid var(--line);padding-top:22px;margin-top:20px;font-variant-numeric:tabular-nums}
+[data-preview-role]{display:flow-root}
+.strategy-rule-preview.placeholder{min-height:145px}.strategy-rule-preview.placeholder p{font-size:12px;color:var(--muted);margin-top:20px;line-height:1.8}
+.strategy-preview-role-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.strategy-preview-role-heading .badge{font-size:10px;color:var(--role)}
+.strategy-preview-score{display:flex;align-items:baseline;gap:10px;margin:16px 0 8px}
+.strategy-preview-score strong{font-size:25px;line-height:1.2;font-weight:600;color:var(--role)}
+.strategy-preview-score>span{font-size:10px;color:var(--muted)}
+.strategy-preview-terms{font-size:10px;color:var(--muted);line-height:1.9;overflow-wrap:anywhere}
+.strategy-preview-target{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:20px;font-size:11px}
+.strategy-preview-target strong{font-size:18px;font-weight:600}
+.strategy-preview-weight-bar{display:flex;height:10px;background:var(--line);overflow:hidden;border-radius:5px;margin:10px 0}
+.strategy-preview-weight-bar .asset-A{background:var(--role)}
+.strategy-preview-weight-bar .asset-B{background:color-mix(in srgb,var(--role) 65%,var(--surface))}
+.strategy-preview-weight-bar .asset-C{background:color-mix(in srgb,var(--role) 40%,var(--surface))}
+.strategy-preview-baseline{font-size:10px;color:var(--muted);line-height:1.9}.strategy-preview-baseline>span{display:block;color:var(--role)}
+.strategy-preview-assets{margin-top:16px}.strategy-preview-assets table{width:100%;table-layout:fixed}.strategy-preview-assets th,.strategy-preview-assets td{padding:8px 5px;font-size:11px;font-weight:400;text-align:right}.strategy-preview-assets th:first-child,.strategy-preview-assets td:first-child{text-align:left;width:20%}
+.strategy-preview-turnover{font-size:11px;margin-top:12px;color:var(--muted)}.strategy-preview-turnover strong{color:var(--ink);float:right;font-weight:500}
+.strategy-preview-reasons{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}.strategy-preview-reasons>span{background:var(--surface-alt);border:1px solid var(--line);padding:3px 6px;border-radius:4px;color:var(--muted);font-size:10px;line-height:1.6}
+.strategy-preview-limit{margin-top:14px;font-size:10px;color:var(--faint);line-height:1.8}
+@media(max-width:800px){.strategy-preview-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.strategy-preview-body{padding:18px}.strategy-preview-fields{grid-template-columns:1fr;gap:13px}.strategy-preview-fields input,.strategy-preview-fields select{font-size:16px}.strategy-preview-status-row{align-items:flex-start}.strategy-preview-status-row .subtle-link{flex-shrink:0}.strategy-rule-preview{margin-top:18px;padding-top:18px}}

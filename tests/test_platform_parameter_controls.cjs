@@ -49,7 +49,7 @@ function context(scope='workspace',key='text_sensitivity'){
   const document={querySelector(selector){if(selector==='[data-action="save-roles"]')return elements.save;if(selector==='[data-action="next"]')return elements.next;
     return selector.includes(`data-strategy-scope="${scope}"`)&&p.attributes['aria-invalid']==='true'?p.input:null;},getElementById:()=>elements.status};
   const c=vm.createContext({strategyFields:fields,strategyWorkspace:workspace,StrategyParameterControls:controls,document,
-    state:{draft:{strategy_parameters:structuredClone(saved)}},persistDraft(){persisted++;},toast(message){messages.push(message);}});
+    state:{draft:{strategy_parameters:structuredClone(saved)}},persistDraft(){persisted++;},toast(message){messages.push(message);},scheduleStrategyPreview(){}});
   const source=fs.readFileSync('design/app.js','utf8');
   vm.runInContext(source.slice(source.indexOf('  function strategyInputValid('),source.indexOf('  function draftStrategyPanel(){')),c);
   return {...p,c,workspace,elements,messages,get persisted(){return persisted;}};
