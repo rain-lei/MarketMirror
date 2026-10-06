@@ -108,8 +108,15 @@ research_outputs/ 本地生成数据与运行产物（Git 忽略）
 在仓库根目录执行平台相关检查。JavaScript 测试需要支持 `node --test` 的 Node.js：
 
 ```powershell
+.\scripts\verify-platform.ps1
+```
+
+脚本会依次运行完整 Python 平台回归、Node 状态与视图回归、JavaScript 语法检查；检测到本机真实原文归档时，还会运行 120 条路径的全量归档核验。新克隆仓库没有 `research_outputs/` 时会明确跳过最后一步。也可以按下面的命令分别执行：
+
+```powershell
 python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_submission tests.test_platform_model_connection tests.test_platform_draft_recovery -q
 node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs tests/test_platform_draft_cache.cjs
+python -B -X utf8 -m design.source_cases --verify-all
 ```
 
 具体实验结论、运行条件和限制见[研究总结](research/RESEARCH_SUMMARY_2026.md)、[平台验证记录](design/PLATFORM_VALIDATION_20261005.md)、[批量对照核验](design/BATCH_PLATFORM_VALIDATION_20261006.md)、[真实原文案例核验](design/SOURCE_CASE_PLATFORM_VALIDATION_20261006.md)与[真实原文端到端实验核验](design/REAL_SOURCE_EXPERIMENT_VALIDATION_20261006.md)。

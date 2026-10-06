@@ -67,6 +67,14 @@
 
 ## 验证
 
+在项目根目录执行 `.\scripts\verify-platform.ps1` 可一次运行完整平台回归、前端语法检查和本机真实原文归档核验。没有本地研究归档的新克隆会自动跳过最后一步。
+
+```powershell
+.\scripts\verify-platform.ps1
+```
+
+等价的分步命令如下：
+
 ```powershell
 python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_submission tests.test_platform_model_connection tests.test_platform_draft_recovery -q
 node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs tests/test_platform_draft_cache.cjs
