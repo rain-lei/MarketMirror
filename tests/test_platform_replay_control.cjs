@@ -34,22 +34,29 @@ test('native slider semantics, date ticks and the real source window are exposed
   assert.match(html,/data-replay-progress>当前进度 6 \/ 12 步/);
   assert.match(html,/data-replay-completion>已定位 50%/);
   assert.match(html,/data-replay-current>第 6 步/);
+  assert.match(html,/replay-step-grid/);
+  assert.match(html,/data-replay-cell aria-label="第 6 步 · 消息作用中" title="第 6 步 · 2020-07-25 · 消息作用中" aria-current="step"/);
+  assert.match(html,/class="replay-step-cell [^"]*active[^"]*entry/);
+  assert.match(html,/拖动滑块或点击步骤/);
   assert.doesNotMatch(html,/<img|NaN|undefined/);
   const untrusted=replay.render({id:'test-step',rows:[{date:'</script><img src=x onerror=bad()>',visible:true,active:true}]});
   assert.equal((untrusted.match(/<\/script>/g)||[]).length,1);assert.doesNotMatch(untrusted,/<img/);
   assert.throws(()=>replay.render({id:'x" onclick="bad()',rows}),/Invalid/);
   assert.match(replay.render({id:'short-step',rows:rows.slice(0,3)}),/本窗口消息未进入/);
+  assert.match(replay.render({id:'unknown-step',rows:[{}]}),/aria-label="第 1 步 · 信息时点未存档"/);
 });
 
 function fakeControl(){
   const handlers={input:[],click:[]},elements=new Map(),calls=[];
+  const cells=rows.map((row,index)=>({dataset:{replayTo:String(index+1)},attributes:{},current:false,
+    classList:{toggle(key,current){cells[index].current=current;}},setAttribute(key,value){this.attributes[key]=value;},removeAttribute(key){delete this.attributes[key];}}));
   const root={addEventListener(type,handler){handlers[type].push(handler);}};
-  const control={dataset:{unit:'日'},style:{setProperty(key,value){calls.push({key,value});}},querySelector(selector){return elements.get(selector);}};
+  const control={dataset:{unit:'日'},style:{setProperty(key,value){calls.push({key,value});}},querySelector(selector){return elements.get(selector);},querySelectorAll(selector){return selector==='[data-replay-cell]'?cells:[];}};
   const input={value:'1',max:'12',setAttribute(key,value){this[key]=value;},matches:()=>true,closest:()=>control,
     dispatchEvent(event){assert.equal(event.type,'input');assert.equal(event.bubbles,true);handlers.input.forEach(handler=>handler({target:this}));}};
   elements.set('[data-replay-input]',input);elements.set('[data-replay-rows]',{textContent:JSON.stringify(rows)});
   for(const selector of ['[data-replay-position]','[data-replay-date]','[data-replay-status]','[data-replay-current]','[data-replay-progress]','[data-replay-completion]','[data-replay-progress-note]','[data-replay-delta="-1"]','[data-replay-delta="1"]'])elements.set(selector,{});
-  return {root,control,input,elements,handlers,calls,click(dataset,disabled=false){const button={dataset,disabled,closest:()=>control};handlers.click.forEach(handler=>handler({target:{closest:()=>button}}));}};
+  return {root,control,input,elements,handlers,calls,cells,click(dataset,disabled=false){const button={dataset,disabled,closest:()=>control};handlers.click.forEach(handler=>handler({target:{closest:()=>button}}));}};
 }
 
 test('buttons dispatch the same input update as dragging, and duplicate binding cannot double-step',()=>{
@@ -58,6 +65,9 @@ test('buttons dispatch the same input update as dragging, and duplicate binding 
   assert.equal(f.handlers.click.length,1);
   f.click({replayDelta:'1'});assert.equal(decisionStep,2);
   f.click({replayTo:'6'});assert.equal(decisionStep,6);
+  assert.deepEqual(f.cells.filter(c=>c.current).map(c=>c.dataset.replayTo),['6']);
+  assert.equal(f.cells[5].attributes['aria-current'],'step');
+  assert.equal(f.cells[1].attributes['aria-current'],undefined);
   assert.equal(f.elements.get('[data-replay-position]').textContent,'第 6 / 12 日');
   assert.equal(f.elements.get('[data-replay-date]').textContent,'2020-07-25');
   assert.equal(f.elements.get('[data-replay-status]').textContent,'消息作用中');
@@ -68,6 +78,7 @@ test('buttons dispatch the same input update as dragging, and duplicate binding 
   assert.match(f.input['aria-valuetext'],/第 6 日/);
   assert.ok(f.calls.some(c=>c.key==='--replay-progress'&&c.value.startsWith('45.45')));
   f.click({replayTo:'999'});assert.equal(decisionStep,12);
+  assert.deepEqual(f.cells.filter(c=>c.current).map(c=>c.dataset.replayTo),['12']);
   assert.equal(f.elements.get('[data-replay-delta="1"]').disabled,true);
   f.click({replayTo:'1'});assert.equal(decisionStep,1);
   assert.equal(f.elements.get('[data-replay-delta="-1"]').disabled,true);
@@ -79,6 +90,7 @@ test('a native keyboard or drag input updates the timeline date and status witho
   assert.equal(f.elements.get('[data-replay-status]').textContent,'消息作用已结束');
   assert.equal(f.elements.get('[data-replay-date]').textContent,'2020-07-28');
   assert.equal(f.elements.get('[data-replay-position]').textContent,'第 9 / 12 日');
+  assert.deepEqual(f.cells.filter(c=>c.current).map(c=>c.dataset.replayTo),['9']);
 });
 
 test('strategy page distinguishes shared LLM facts from three untrained rule profiles',()=>{
@@ -87,6 +99,7 @@ test('strategy page distinguishes shared LLM facts from three untrained rule pro
     strategyWorkspace:{parameters:null},strategyUnavailable:()=>'<p>参数未加载</p>'});
   vm.runInContext(method,context);const html=context.agentsPage();
   assert.match(html,/DeepSeek-V4-Flash-0731-W8A8/);assert.match(html,/没有分别训练三个投资者模型/);
+  assert.match(html,/1 个共享 LLM/);assert.match(html,/仓位与订单由本地决策引擎计算/);
   assert.match(html,/角色差异来自预设规则/);assert.match(html,/文本方向和不确定性由你设定/);
   assert.match(html,/归档研究案例使用已登记的事实映射/);
   assert.match(html,/激进型/);assert.match(html,/保守型/);assert.match(html,/机构型/);
