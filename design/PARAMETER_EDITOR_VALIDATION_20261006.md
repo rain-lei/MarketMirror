@@ -26,4 +26,4 @@
 
 ## 检查范围
 
-本轮完成状态、数值、真实引擎参数和服务文件核验。策略配置页已在本机服务上实际打开，桌面截图 `research_outputs/platform_workspace/validation/parameters_20261006/agents-model-live.jpg` 显示模型说明和三张角色参数卡；实际 DOM 检查确认 9 个范围／精确输入控件、三类角色和 DeepSeek 模型名均已载入。窄屏最终几何仍应在后续响应式验收中补充，不用单元检查替代窄屏视觉检查。页面刷新即可读取更新。
+本轮完成状态、数值、真实引擎参数和服务文件核验。策略配置页已在本机服务上实际打开，桌面截图 `research_outputs/platform_workspace/validation/parameters_20261006/agents-model-live.jpg` 显示模型说明和三张角色参数卡；实际 DOM 检查确认 9 个范围／精确输入控件、三类角色和 DeepSeek 模型名均已载入。390×844 移动视口实际验收通过：模型说明纵向排列，三张参数卡单列，文档宽度 375px、没有横向溢出；截图为 `research_outputs/platform_workspace/validation/parameters_20261006/agents-mobile-live.jpg` 与 `agents-mobile-parameters-live.jpg`。页面刷新即可读取更新。

@@ -47,9 +47,9 @@
 - `research_outputs/platform_workspace/validation/observed_20261006/browser_export_verification.json`：实际下载比对回执。
 - `research_outputs/platform_workspace/validation/observed_20261006/served_bundle_verification.json`：当前后台健康状态、历史归档目录及六个前端文件与磁盘逐字节一致的回执。
 
-## 尚未完成的视觉验收
+## 视觉验收状态
 
-普通结果页、真实原文案例和策略模型说明已完成默认桌面浏览器外观验收；历史行情页完成新版时间轴的默认桌面验收，并实际验证“下一步”从第 5 日到第 6 日同步更新日期、气泡和进度说明。修复后的窄屏几何复核仍待补充，临时浏览器测试视口已成功恢复。
+普通结果页、真实原文案例和策略模型说明已完成默认桌面浏览器外观验收；历史行情页完成新版时间轴的默认桌面验收，并实际验证“下一步”从第 5 日到第 6 日同步更新日期、气泡和进度说明。390×844 移动视口也已实际检查历史回放、普通结果、真实原文案例和策略配置：四页文档宽度均为 375px，没有横向溢出，回放按钮和进度说明均可见。移动截图保存在 `research_outputs/platform_workspace/validation/parameters_20261006/observed-mobile-timeline-live.jpg`、`case-mobile-timeline-live.jpg` 和 `agents-mobile-live.jpg`。测试结束后视口已恢复默认。
 
 停止服务的操作曾被自动审批策略拒绝；前端控件加入已提供的 `decision-view.js`，首次更新不依赖停止旧服务。随后续接工作时确认旧进程已退出且 8770 无监听，再安全启动本机服务；当前后台健康、归档入口及六个前端文件的字节一致性已另行核验。上述剩余视觉检查不影响已核验的研究归档，但不能据此宣称所有页面视觉验收完成。
 
