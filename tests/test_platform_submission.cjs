@@ -28,7 +28,7 @@ function context(options={}){
     icon:()=>'',esc:String,saveDraft(){},rememberExperiment(){},location:{hash:''},window:{scrollTo(){}},
     document:{getElementById:id=>c.state.page==='new'?elements.get(id)||null:null,
       querySelector:()=>({classList:{remove(){}}})},
-    render(){renders.push(c.state.page);},toast(message){notices.push(message);},async hydrateExperiments(){},
+    render(){renders.push(c.state.page);},persistDraft(){},toast(message){notices.push(message);},async hydrateExperiments(){},
     async apiJson(url,request){calls.push({url,request});return request.headers?record(request):result(url.split('/').at(-2));},...options});
   c.current=()=>c.batchArchivedExperiment||c.experiments[c.state.selected];
   vm.runInContext(helpers+preview+retry+navigate+input,c);

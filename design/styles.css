@@ -120,3 +120,5 @@ body[data-theme=dark]{--canvas:#101b25;--surface:#172530;--surface-alt:#1b2c39;-
 .model-check-result{border:1px solid var(--line);border-radius:8px;padding:17px;margin:18px 0;background:var(--surface-alt)}
 .model-check-result.passed{border-color:var(--teal);background:var(--teal-soft)}.model-check-result strong{font-size:13px}.model-check-result p{font-size:12px;line-height:1.8;margin:8px 0}.model-check-result small{font-size:10px;color:var(--muted)}
 .model-error{padding:14px;border:1px solid var(--line);border-radius:7px;color:var(--orange);font-size:12px;line-height:1.8;margin-bottom:18px;overflow-wrap:anywhere}.model-boundary{border-top:1px solid var(--line);padding-top:16px;font-size:11px}
+.draft-cache-status{font-size:11px;line-height:1.8;color:var(--muted);margin:-8px 0 18px;overflow-wrap:anywhere}.draft-cache-status.error{color:var(--orange)}
+.result-shortcuts{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;margin:-6px 0 22px}.result-shortcuts>span{font-size:11px;color:var(--muted)}#market-decision-controls{scroll-margin-top:76px}#market-decision-controls:focus-visible{outline:2px solid var(--teal);outline-offset:3px}

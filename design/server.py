@@ -202,15 +202,25 @@ class PlatformStore:
             atomic_json(self.data_dir / 'analyses' / (analysis_id + '.json'), record)
         return record
 
-    def bound_analysis(self, analysis_id: str, source: str) -> dict:
+    def get_analysis(self, analysis_id: str) -> dict | None:
         validate_analysis_id(analysis_id)
         path = self.data_dir / 'analyses' / (analysis_id + '.json')
-        if not path.is_file():
-            raise ValueError('关联的文本分析不存在，请重新分析或取消关联')
-        record = validate_saved_analysis(source, load_json(path))
+        with self.lock:
+            if not path.is_file():
+                return None
+            record = load_json(path)
+        if not isinstance(record, dict):
+            raise ValueError('文本分析存档结构不完整')
+        record = validate_saved_analysis(record.get('source'), record)
         if record.get('analysis_id', analysis_id) != analysis_id:
             raise ValueError('文本分析 ID 与存档不一致')
         return {**record, 'analysis_id': analysis_id}
+
+    def bound_analysis(self, analysis_id: str, source: str) -> dict:
+        record = self.get_analysis(analysis_id)
+        if record is None:
+            raise ValueError('关联的文本分析不存在，请重新分析或取消关联')
+        return validate_saved_analysis(source, record)
 
     def create(self, payload: dict, submission_id: str | None = None) -> dict:
         config = validate_experiment(payload)
@@ -351,6 +361,9 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                 if path == "/api/platform/health": self.json(200, {"status": "ok", "platform_version": "v3", "mode": "local"}); return
                 if path == '/api/platform/strategies': self.json(200, store.strategies()); return
                 if path == '/api/platform/model': self.json(200, model_connection.configuration()); return
+                if path.startswith('/api/platform/analyses/'):
+                    payload = store.get_analysis(path.removeprefix('/api/platform/analyses/'))
+                    self.json(200 if payload is not None else 404, payload if payload is not None else {'error': '文本分析不存在'}); return
                 if path == '/api/platform/source-cases': self.json(200, source_cases.catalog()); return
                 if path.startswith('/api/platform/source-cases/'):
                     case_id = path.removeprefix('/api/platform/source-cases/')
@@ -386,7 +399,7 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                     else: payload = store.get(tail)
                     self.json(200 if payload is not None else 404, payload or {"error": "实验不存在"}); return
                 name = "index.html" if path == "/" else path.removeprefix("/")
-                types = {"index.html":"text/html","app.js":"text/javascript","model-view.js":"text/javascript","case-view.js":"text/javascript","batch-view.js":"text/javascript","analysis-state.js":"text/javascript","strategy-state.js":"text/javascript","decision-view.js":"text/javascript","styles.css":"text/css","README.md":"text/markdown"}
+                types = {"index.html":"text/html","app.js":"text/javascript","draft-cache.js":"text/javascript","model-view.js":"text/javascript","case-view.js":"text/javascript","batch-view.js":"text/javascript","analysis-state.js":"text/javascript","strategy-state.js":"text/javascript","decision-view.js":"text/javascript","styles.css":"text/css","README.md":"text/markdown"}
                 if name not in types: self.json(404, {"error": "资源不存在"}); return
                 raw = (SITE / name).read_bytes(); self.send_response(200); self.send_header("Content-Type", types[name] + '; charset=utf-8'); self.send_header("Cache-Control", "no-store"); self.send_header("Content-Length", str(len(raw))); self.end_headers(); self.wfile.write(raw)
             except FileNotFoundError: self.json(404, {'error': '记录或归档结果不存在'})

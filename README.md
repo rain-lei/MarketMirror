@@ -12,7 +12,7 @@ MarketMirror 是一个本地运行的可视化金融仿真实验平台。输入�
 
 | 功能 | 当前实现 |
 | --- | --- |
-| 实验空间 | 新建、搜索、复制实验，查看运行状态，失败后重试 |
+| 实验空间 | 新建、搜索、复制实验，自动保存草稿，刷新后继续，查看运行状态与失败重试 |
 | 文本分析 | 可选 DeepSeek 事实提取，展示原文引文、位置及分析快照 |
 | 模型设置 | 查看后端模型与本机凭据状态，手动检测实际连接，查看具体失败原因 |
 | 三类 Agent | 调整文本敏感度、基础股票权重和风险预算，每个实验保存独立参数 |
@@ -45,7 +45,7 @@ python -m pip install -r requirements-research.txt
 python -B -X utf8 -m design.server --port 8770
 ```
 
-打开 **http://127.0.0.1:8770/**。已有仓库时，在项目根目录执行最后一条启动命令即可。
+打开 **http://127.0.0.1:8770/**。已有仓库时，在项目根目录执行最后一条启动命令即可。更新代码后请重启服务，再刷新页面。
 
 当前本地平台使用 Python 标准库 HTTP 服务和原生 HTML/CSS/JavaScript，无需前端构建。共享研究模块依赖 `openpyxl`，由上述安装命令提供。跳过文本分析即可运行合成市场实验；不需要原始 Excel 或历史研究产物。
 
@@ -75,11 +75,13 @@ MARKETMIRROR_LLM_API_KEY=your_api_key
 
 运行期间可以切换页面或新建另一份草稿。已提交的原文、参数和模型关联保持固定，结果保存到实验空间；离开确认页后完成不会强制跳转。同一草稿等待期间防止重复提交；保存响应丢失后重试沿用同一编号，已保存的失败实验从原记录恢复运行。
 
+草稿在当前浏览器标签页自动保存，刷新后恢复原文、参数和创建步骤。实验空间的**继续草稿**可以返回原编辑位置；模型事实按原分析编号从本机重新读取，不因刷新重复调用模型。提交状态从本机实验记录确认，已完成的实验打开原结果。该缓存用于当前标签页，不是跨浏览器同步；浏览器无法保存时页面会明确提示。
+
 要检验种子敏感性，打开左侧**批量对照**。输入种子、总步数及资金，四种固定情景共享每个种子的无消息基线；页面显示三类策略的均值与最小最大范围。单项失败后继续后续项，重试只处理未完成项；每项可以打开当时归档的决策账本，并下载批次报告。该入口使用人工设定情景，不调用 LLM。
 
 要查看已实施的真实文本实验，打开**真实原文案例**。本机归档涵盖资管政策答记者问、武汉交通通告、春节休市公告和三条公司回复；可切换无文本、关键词、复核后 LLM 与资产暴露置换条件，再查看各步骤的仓位、订单和成交。引文可以定位到完整原文，原始模型判断与助手修订分别展示，并可导出所选路径。读取旧归档不重新调用模型，也不重跑市场。
 
-普通结果与真实原文案例均提供**同一步决策对照**：切换资产和步骤，同时查看两组的目标权重、判断分值与订单执行差异。收益及权重差保留微小非零值，缺失账本字段不补零。两条路径的账户状态可能已不同，对照包含先前交易与价格反馈。
+普通结果与真实原文案例均提供**同一步决策对照**：切换资产和步骤，同时查看两组的目标权重、判断分值与订单执行差异。普通结果页上方的**查看同一步决策对照**可直接跳到时间轴和对照区。收益及权重差保留微小非零值，缺失账本字段不补零。两条路径的账户状态可能已不同，对照包含先前交易与价格反馈。
 
 这些案例需要原有本地研究归档，新克隆仓库不会附带原文和完整实验结果；缺少归档时页面明确提示。研究产物的恢复与复现见[复现说明](research/PROTOTYPE_REPRODUCTION_2026.md)。本机完整核验命令为 `python -B -X utf8 -m design.source_cases --verify-all`。
 
@@ -106,8 +108,8 @@ research_outputs/ 本地生成数据与运行产物（Git 忽略）
 在仓库根目录执行平台相关检查。JavaScript 测试需要支持 `node --test` 的 Node.js：
 
 ```powershell
-python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_submission tests.test_platform_model_connection -q
-node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs
+python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_submission tests.test_platform_model_connection tests.test_platform_draft_recovery -q
+node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs tests/test_platform_draft_cache.cjs
 ```
 
 具体实验结论、运行条件和限制见[研究总结](research/RESEARCH_SUMMARY_2026.md)、[平台验证记录](design/PLATFORM_VALIDATION_20261005.md)、[批量对照核验](design/BATCH_PLATFORM_VALIDATION_20261006.md)与[真实原文案例核验](design/SOURCE_CASE_PLATFORM_VALIDATION_20261006.md)。
@@ -119,3 +121,5 @@ node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_
 两组同一步的三类策略及微小差异展示见[决策对照核验](design/DECISION_COMPARISON_VALIDATION_20261006.md)。
 
 后端配置、连接检测与真实模型请求见[模型连接核验](design/MODEL_CONNECTION_VALIDATION_20261006.md)。
+
+草稿刷新恢复、实际浏览器流程与结果对照直达入口见[草稿与浏览器核验](design/DRAFT_RECOVERY_VALIDATION_20261006.md)。最新平台回归为 Python 74 项、Node 84 项通过。

@@ -14,7 +14,7 @@ function snapshot(id,mode='synthetic_market'){
 function context(options={}){
   const value=vm.createContext({experiments:[{...example}],state:{page:'experiments',selected:0,search:'',experimentView:'saved'},
     rememberedExperimentId:null,experimentLoadError:'',experimentLoadVersion:0,experimentLoading:true,experimentsLoaded:false,
-    render(){},esc:String,icon:()=>'',heading:(a,b)=>b,newButton:()=>'',batchArchivedExperiment:null,...options});
+    render(){},persistDraft(){},syncRestoredDraftSubmission(){},esc:String,icon:()=>'',heading:(a,b)=>b,newButton:()=>'',batchArchivedExperiment:null,...options});
   value.current=()=>value.experiments[value.state.selected];
   vm.runInContext(hydrate+rowsFunction+analysisFunction,value);
   return value;
