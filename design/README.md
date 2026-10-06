@@ -60,7 +60,7 @@ python -B -X utf8 -m design.server --port 8770
 
 ```powershell
 python -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server -v
-node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_record_loading.cjs
+node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_record_loading.cjs tests/test_platform_copy.cjs
 node --check design/app.js
 ```
 
