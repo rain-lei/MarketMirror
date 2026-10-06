@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-from design.scenario_batch import run_batch
+from design.scenario_batch import run_batch, summarize_scenarios
 from design.server import PlatformStore
 
 
@@ -38,3 +38,19 @@ class ScenarioBatchTest(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     run_batch(output, seeds=seeds, sessions=sessions)
                 self.assertFalse(output.exists())
+
+
+class ScenarioSummaryTest(unittest.TestCase):
+    def test_failed_samples_are_missing_not_zero(self):
+        def row(value):
+            return {'scenario': 'positive', 'status': 'completed',
+                    'role_return_difference_pp': dict.fromkeys(('aggressive', 'conservative', 'institutional'), value)}
+        manifest = {'seeds': [1, 7, 19], 'scenarios': [('positive', .6, .2), ('neutral', 0, 0)],
+                    'records': [row(-2), row(4), {'scenario': 'positive', 'status': 'failed'}]}
+        summary = summarize_scenarios(manifest)
+        self.assertEqual(summary[0]['mean_pp'], 1)
+        self.assertEqual(summary[0]['min_pp'], -2)
+        self.assertEqual(summary[0]['max_pp'], 4)
+        self.assertEqual(summary[0]['completed'], 2)
+        self.assertEqual(summary[0]['planned'], 3)
+        self.assertIsNone(summary[3]['mean_pp'])

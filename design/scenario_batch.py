@@ -3,6 +3,7 @@ import argparse
 import hashlib
 import json
 import platform
+from statistics import fmean
 from pathlib import Path
 
 from .server import PlatformStore, atomic_json
@@ -14,6 +15,21 @@ SCENARIOS = (("neutral", 0, 0), ("positive", .6, .2),
 
 def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+
+
+def summarize_scenarios(manifest):
+    summary = []
+    for scenario, _, _ in manifest['scenarios']:
+        completed = [r for r in manifest['records']
+                     if r['scenario'] == scenario and r['status'] == 'completed']
+        for role in ('aggressive', 'conservative', 'institutional'):
+            values = [r['role_return_difference_pp'][role] for r in completed]
+            summary.append({'scenario': scenario, 'role': role, 'completed': len(values),
+                            'planned': len(manifest['seeds']),
+                            'mean_pp': fmean(values) if values else None,
+                            'min_pp': min(values) if values else None,
+                            'max_pp': max(values) if values else None})
+    return summary
 
 
 def write_report(output, manifest):
@@ -40,6 +56,17 @@ def write_report(output, manifest):
     lines += ['', '收益差为有消息减无消息，以百分点表示；订单数量为策略账户汇总。',
               '未启动项不出现在表格中，可用计划总数与完成数区分。失败项不填零收益。',
               '同一种子的各情景核对无消息基线哈希；完整配置与账本保存在 workspace/，汇总及路径哈希见 batch.json。', '']
+    lines += ['## 跨种子描述性汇总', '',
+              '仅统计完成项；样本数不足时不能与完整情景直接比较。范围不是置信区间，不代表统计显著性。', '',
+              '| 情景 | 策略 | 完成/计划 | 平均收益差 pp | 最小值 pp | 最大值 pp |',
+              '| --- | --- | --- | --- | --- | --- |']
+    roles = {'aggressive': '激进', 'conservative': '保守', 'institutional': '机构'}
+    for item in summarize_scenarios(manifest):
+        values = ['—' if item[key] is None else f"{item[key]:+.6f}"
+                  for key in ('mean_pp', 'min_pp', 'max_pp')]
+        lines.append('| ' + ' | '.join([labels[item['scenario']], roles[item['role']],
+                     f"{item['completed']}/{item['planned']}", *values]) + ' |')
+    lines.append('')
     lines += ['## 运行配置', '', f"Python：{manifest['python_version']}",
               f"撮合配置 SHA-256：`{manifest['mechanism_config_sha256']}`",
               f"策略参数 SHA-256：`{manifest['strategy_parameters_sha256']}`", '']
