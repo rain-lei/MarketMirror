@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from uuid import uuid4
+from urllib.parse import parse_qs, urlsplit
 from .engine import run_market
 from .workspace_lease import WorkspaceLease
 from .text_analysis import analyze, source_digest, validate_analysis_id, validate_saved_analysis, validate_source
@@ -297,8 +298,10 @@ class PlatformStore:
 
 def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingHTTPServer:
     from .batches import BatchManager, BatchInProgress
+    from .source_cases import SourceCaseLibrary, CaseArchiveIntegrityError
     store = PlatformStore(data_dir)
     batches = BatchManager(store)
+    source_cases = SourceCaseLibrary()
     class Handler(BaseHTTPRequestHandler):
         def json(self, code: int, payload: object, download: str | None = None) -> None:
             raw = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
@@ -323,6 +326,18 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
             try:
                 if path == "/api/platform/health": self.json(200, {"status": "ok", "platform_version": "v3", "mode": "local"}); return
                 if path == '/api/platform/strategies': self.json(200, store.strategies()); return
+                if path == '/api/platform/source-cases': self.json(200, source_cases.catalog()); return
+                if path.startswith('/api/platform/source-cases/'):
+                    case_id = path.removeprefix('/api/platform/source-cases/')
+                    download = case_id.endswith('/export')
+                    if download: case_id = case_id[:-7]
+                    query = parse_qs(urlsplit(self.path).query, keep_blank_values=True)
+                    if set(query) - {'seed', 'mode'} or any(len(v) != 1 for v in query.values()):
+                        raise ValueError('无效的案例查看条件')
+                    seed = query.get('seed', ['7'])[0]
+                    if not seed.isdecimal(): raise ValueError('无效的种子')
+                    payload = source_cases.get(case_id, int(seed), query.get('mode', ['reviewed_llm'])[0])
+                    self.json(200, payload, f'marketmirror-case-{case_id[:16]}-{int(seed)}-{payload["mode"]}.json' if download else None); return
                 if path == '/api/platform/batches': self.json(200, batches.list()); return
                 if path.startswith('/api/platform/batches/'):
                     tail = path.removeprefix('/api/platform/batches/')
@@ -346,10 +361,11 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                     else: payload = store.get(tail)
                     self.json(200 if payload is not None else 404, payload or {"error": "实验不存在"}); return
                 name = "index.html" if path == "/" else path.removeprefix("/")
-                types = {"index.html":"text/html","app.js":"text/javascript","batch-view.js":"text/javascript","analysis-state.js":"text/javascript","strategy-state.js":"text/javascript","decision-view.js":"text/javascript","styles.css":"text/css","README.md":"text/markdown"}
+                types = {"index.html":"text/html","app.js":"text/javascript","case-view.js":"text/javascript","batch-view.js":"text/javascript","analysis-state.js":"text/javascript","strategy-state.js":"text/javascript","decision-view.js":"text/javascript","styles.css":"text/css","README.md":"text/markdown"}
                 if name not in types: self.json(404, {"error": "资源不存在"}); return
                 raw = (SITE / name).read_bytes(); self.send_response(200); self.send_header("Content-Type", types[name] + '; charset=utf-8'); self.send_header("Cache-Control", "no-store"); self.send_header("Content-Length", str(len(raw))); self.end_headers(); self.wfile.write(raw)
             except FileNotFoundError: self.json(404, {'error': '记录或归档结果不存在'})
+            except CaseArchiveIntegrityError: self.json(503, {'error': '案例归档核验未通过，原文件保留；请检查来源与冻结版本。'})
             except (ValueError, OSError, json.JSONDecodeError): self.json(400, {"error": "请求无法处理"})
         def do_POST(self) -> None:
             if not self.local() or self.headers.get("Origin") not in (None, f"http://127.0.0.1:{self.server.server_port}"):

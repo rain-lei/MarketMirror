@@ -17,6 +17,7 @@ MarketMirror 是一个本地运行的可视化金融仿真实验平台。输入�
 | 三类 Agent | 调整文本敏感度、基础股票权重和风险预算，每个实验保存独立参数 |
 | 对照仿真 | 使用相同初始条件与种子运行有消息 / 无消息两组市场 |
 | 批量对照 | 页面创建四情景 × 多种子批次，查看进度、策略范围图、失败原因与报告 |
+| 真实原文案例 | 查看六个归档案例的来源、模型原始提取、复核修订及四条件 × 五种子决策路径 |
 | 决策回放 | 查看信息输入、评分、目标仓位，以及订单请求、接受与实际成交 |
 | 结果归档 | 导出实验配置、文本依据、参数标识和撮合账本 |
 
@@ -69,9 +70,13 @@ MARKETMIRROR_LLM_API_KEY=your_api_key
 
 要检验种子敏感性，打开左侧**批量对照**。输入种子、总步数及资金，四种固定情景共享每个种子的无消息基线；页面显示三类策略的均值与最小最大范围。单项失败后继续后续项，重试只处理未完成项；每项可以打开当时归档的决策账本，并下载批次报告。该入口使用人工设定情景，不调用 LLM。
 
+要查看已实施的真实文本实验，打开**真实原文案例**。本机归档涵盖资管政策答记者问、武汉交通通告、春节休市公告和三条公司回复；可切换无文本、关键词、复核后 LLM 与资产暴露置换条件，再查看各步骤的仓位、订单和成交。引文可以定位到完整原文，原始模型判断与助手修订分别展示，并可导出所选路径。读取旧归档不重新调用模型，也不重跑市场。
+
+这些案例需要原有本地研究归档，新克隆仓库不会附带原文和完整实验结果；缺少归档时页面明确提示。研究产物的恢复与复现见[复现说明](research/PROTOTYPE_REPRODUCTION_2026.md)。本机完整核验命令为 `python -B -X utf8 -m design.source_cases --verify-all`。
+
 ## 当前边界
 
-- 当前市场采用三资产合成情景，消息从第 5 步作用于资产 A；保存的发布时间不等于历史交易日回放。
+- 新建及批量实验采用三资产合成情景，消息从第 5 步作用于资产 A；保存的发布时间不等于历史交易日回放。真实原文案例读取各自归档日历与信息截点，市场价格仍为合成数据。
 - LLM 提取结果只作为设定情景的参考，不自动转换为价格冲击。引文匹配通过也不代表语义判断一定正确。
 - 研究目录保留历史实验、负结果与原有验证门槛；平台可用不等于历史预测或高保真验证通过。
 - 当前服务仅监听本机，适合个人研究和演示，尚未提供多用户部署与权限管理。
@@ -92,8 +97,8 @@ research_outputs/ 本地生成数据与运行产物（Git 忽略）
 在仓库根目录执行平台相关检查。JavaScript 测试需要支持 `node --test` 的 Node.js：
 
 ```powershell
-python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches -q
-node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs
+python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases -q
+node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs
 ```
 
-具体实验结论、运行条件和限制见[研究总结](research/RESEARCH_SUMMARY_2026.md)、[平台验证记录](design/PLATFORM_VALIDATION_20261005.md)与[批量对照核验](design/BATCH_PLATFORM_VALIDATION_20261006.md)。
+具体实验结论、运行条件和限制见[研究总结](research/RESEARCH_SUMMARY_2026.md)、[平台验证记录](design/PLATFORM_VALIDATION_20261005.md)、[批量对照核验](design/BATCH_PLATFORM_VALIDATION_20261006.md)与[真实原文案例核验](design/SOURCE_CASE_PLATFORM_VALIDATION_20261006.md)。
