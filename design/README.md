@@ -81,4 +81,14 @@ node --check design/app.js
 
 ## 批量情景对照
 
+左侧“批量对照”页面支持创建和查看持久化批次：1–10 个不重复种子、每项 1–60 步、消息持续 3/6/9 步和每类初始资金。每个种子运行中性（0/0）、正向（0.6/0.2）、负向（−0.6/0.2）及高不确定性（0/0.8）四种情景，数字分别为信号与不确定性。创建时复制工作区已保存的策略配置并冻结哈希，不使用未保存的草稿，也不调用 LLM。
+
+后台按项运行；关闭页面不停止计算，停止本机服务后未完成批次标记为中断。单项失败继续后续项，重试跳过已完成项。页面显示完成数、失败原因、逐项订单量，以及三类策略的跨种子均值与最小最大范围。缺失项不补零、不进入汇总。范围仅作描述性比较，不表示置信区间。
+
+“查看决策”读取批次冻结的 `result_id` 及路径哈希，即使该实验之后单独重跑，原批次及其归档视图也保持不变；在归档视图导出同一份已保存结果。批次记录存于 `research_outputs/platform_workspace/batches/<id>/batch.json`，实验账本仍在各实验目录，可下载中文 Markdown 报告。
+
+接口：`POST /api/platform/batches` 创建，`POST /api/platform/batches/{id}/run` 异步启动或重试（202），`GET /api/platform/batches` 列表，`GET /api/platform/batches/{id}` 进度和统计，`GET /api/platform/batches/{id}/results/{experiment_id}` 固定归档，`GET /api/platform/batches/{id}/report` 报告。重复启动正在运行或已完成批次返回 409。
+
+本轮自动化核验及实际 12 项批次见 [页面批次核验](BATCH_PLATFORM_VALIDATION_20261006.md)。
+
 运行 `python -B -X utf8 -m design.scenario_batch --output research_outputs/my_scenario_batch`，创建四情景、三种子的独立实验目录。每项完成后更新 `batch.json` 和中文 `report.md`，失败项保留状态且收益留空。支持 `--seeds` 与 `--sessions`；输出目录必须不存在。实际运行结果与限制见 [批次报告](SCENARIO_BATCH_20261006.md)。

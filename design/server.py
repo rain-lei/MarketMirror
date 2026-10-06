@@ -255,16 +255,18 @@ class PlatformStore:
             if record['analysis_sha256'] != analysis_digest(record['text_analysis']):
                 raise ValueError('实验的文本分析快照已改变')
         provenance = {'experiment_id': experiment_id, 'source_sha256': source_digest(record['source']),
+                      'run_attempts': record.get('run_attempts'),
                       'analysis_id': record.get('analysis_id'), 'analysis_sha256': record.get('analysis_sha256'),
                       'text_analysis_role': 'reference_only' if record.get('text_analysis') else 'none',
                       'scenario_variables_origin': 'manual',
                       'strategy_parameters_sha256': record.get('strategy_parameters_sha256')}
+        result_id = uuid4().hex
+        provenance['result_id'] = result_id
         result = {**run_market(record), 'generated_at': utc_now(), 'provenance': provenance}
         record = {**record, "run_status": "completed", "last_run_at": result["generated_at"],
                   'run_finished_at': utc_now(), 'run_error': None}
         # Publish only after the immutable result is safely stored. A failed
         # record commit leaves the previous successful result selected.
-        result_id = uuid4().hex
         atomic_json(self.data_dir / experiment_id / 'runs' / (result_id + '.json'), result)
         record['result_id'] = result_id
         with self.lock:
@@ -294,7 +296,9 @@ class PlatformStore:
 
 
 def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingHTTPServer:
+    from .batches import BatchManager, BatchInProgress
     store = PlatformStore(data_dir)
+    batches = BatchManager(store)
     class Handler(BaseHTTPRequestHandler):
         def json(self, code: int, payload: object, download: str | None = None) -> None:
             raw = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
@@ -304,12 +308,31 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
             self.send_header("Content-Length", str(len(raw))); self.send_header("Cache-Control", "no-store"); self.end_headers(); self.wfile.write(raw)
         def local(self) -> bool:
             return self.headers.get("Host") == f"127.0.0.1:{self.server.server_port}"
+        def report(self, batch_id: str) -> None:
+            raw = batches.report(batch_id).encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/markdown; charset=utf-8')
+            self.send_header('Content-Disposition', f'attachment; filename="marketmirror-batch-{batch_id}.md"')
+            self.send_header('Content-Length', str(len(raw)))
+            self.send_header('Cache-Control', 'no-store')
+            self.end_headers()
+            self.wfile.write(raw)
         def do_GET(self) -> None:
             if not self.local(): self.json(403, {"error": "仅允许本机访问"}); return
             path = self.path.split("?", 1)[0]
             try:
                 if path == "/api/platform/health": self.json(200, {"status": "ok", "platform_version": "v3", "mode": "local"}); return
                 if path == '/api/platform/strategies': self.json(200, store.strategies()); return
+                if path == '/api/platform/batches': self.json(200, batches.list()); return
+                if path.startswith('/api/platform/batches/'):
+                    tail = path.removeprefix('/api/platform/batches/')
+                    if tail.endswith('/report'):
+                        self.report(tail[:-7]); return
+                    if '/results/' in tail:
+                        batch_id, experiment_id = tail.split('/results/', 1)
+                        self.json(200, batches.result(batch_id, experiment_id)); return
+                    payload = batches.get(tail)
+                    self.json(200 if payload is not None else 404, payload or {'error': '批次不存在'}); return
                 if path == "/api/platform/experiments": self.json(200, store.list()); return
                 if path.startswith("/api/platform/experiments/"):
                     tail = path.removeprefix("/api/platform/experiments/")
@@ -323,9 +346,10 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                     else: payload = store.get(tail)
                     self.json(200 if payload is not None else 404, payload or {"error": "实验不存在"}); return
                 name = "index.html" if path == "/" else path.removeprefix("/")
-                types = {"index.html":"text/html","app.js":"text/javascript","analysis-state.js":"text/javascript","strategy-state.js":"text/javascript","decision-view.js":"text/javascript","styles.css":"text/css","README.md":"text/markdown"}
+                types = {"index.html":"text/html","app.js":"text/javascript","batch-view.js":"text/javascript","analysis-state.js":"text/javascript","strategy-state.js":"text/javascript","decision-view.js":"text/javascript","styles.css":"text/css","README.md":"text/markdown"}
                 if name not in types: self.json(404, {"error": "资源不存在"}); return
                 raw = (SITE / name).read_bytes(); self.send_response(200); self.send_header("Content-Type", types[name] + '; charset=utf-8'); self.send_header("Cache-Control", "no-store"); self.send_header("Content-Length", str(len(raw))); self.end_headers(); self.wfile.write(raw)
+            except FileNotFoundError: self.json(404, {'error': '记录或归档结果不存在'})
             except (ValueError, OSError, json.JSONDecodeError): self.json(400, {"error": "请求无法处理"})
         def do_POST(self) -> None:
             if not self.local() or self.headers.get("Origin") not in (None, f"http://127.0.0.1:{self.server.server_port}"):
@@ -334,6 +358,10 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                 length = int(self.headers.get("Content-Length", "0"))
                 if length < 1 or length > MAX_BODY: raise ValueError("请求过大")
                 payload = json.loads(self.rfile.read(length)); path = self.path.split("?", 1)[0]
+                if path == '/api/platform/batches': self.json(201, batches.create(payload)); return
+                if path.startswith('/api/platform/batches/') and path.endswith('/run'):
+                    if payload != {}: raise ValueError('运行批次只接受空对象')
+                    self.json(202, batches.start(path[len('/api/platform/batches/'):-4])); return
                 if path == '/api/platform/strategies':
                     if not isinstance(payload, dict) or set(payload) != {'parameters'}:
                         raise ValueError('仅接受完整策略参数')
@@ -348,8 +376,9 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                 if path.startswith(prefix) and path.endswith("/run"):
                     result = store.run(path[len(prefix):-4]); self.json(202, result); return
                 self.json(404, {"error": "接口不存在"})
-            except FileNotFoundError: self.json(404, {"error": "实验不存在"})
+            except FileNotFoundError: self.json(404, {"error": "记录不存在"})
             except RunInProgress as exc: self.json(409, {'error': str(exc)})
+            except BatchInProgress as exc: self.json(409, {'error': str(exc)})
             except RuntimeError: self.json(502, {'error': '运行服务暂不可用，请刷新状态后重试'})
             except OSError: self.json(500, {'error': '本机记录读写失败，请检查存储目录'})
             except (ValueError, TypeError, json.JSONDecodeError) as exc: self.json(400, {"error": str(exc)})
@@ -361,6 +390,7 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
             try:
                 super().server_close()
             finally:
+                batches.close()
                 if self.lease is not None:
                     self.lease.close()
 
@@ -368,6 +398,7 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
     try:
         server.lease = WorkspaceLease(store.data_dir)
         store.recover_interrupted()
+        batches.recover_interrupted()
     except Exception:
         server.server_close()
         raise

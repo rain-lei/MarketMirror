@@ -44,6 +44,11 @@
   const state = {page:'analysis',selected:0,step:8,asset:'A',decisionGroup:'with_message',signalVisible:true,baselineVisible:true,table:'decisions',wizard:1,search:'',sourceFilter:'all',draft:{title:'',source:'',type:'政策消息',published:'2026-10-05T09:00',signal:0,uncertainty:.2,duration:6,sessions:18,seed:7,cash:1000000}};
   const analysisBinding = new SourceAnalysisBinding(state.draft.source);
   const strategyWorkspace = new StrategyWorkspace();
+  const batchWorkspace = new MarketBatchView.BatchState();
+  const batchForm = {title:'三类策略情景对照',seeds:'1, 7, 19',sessions:18,duration:6,cash:1000000};
+  let batchFormError='', batchListLoading=false, batchListVersion=0, batchPollTimer;
+  let batchArchivedExperiment=null, batchOpenVersion=0;
+  try { batchWorkspace.selectedId=sessionStorage.getItem('marketmirror:selected-batch'); } catch (_) {}
   const content = document.getElementById('content');
   const dialog = document.getElementById('detail-dialog');
   let chartObserver, toastTimer, rememberedExperimentId = null;
@@ -52,8 +57,8 @@
     rememberedExperimentId = current().id;
     try { sessionStorage.setItem('marketmirror:selected-experiment', rememberedExperimentId); } catch (_) {}
   }
-  const current = () => experiments[state.selected];
-  const labels = {analysis:'结果分析',experiments:'实验空间',sources:'消息资料',agents:'策略配置',new:'新建实验'};
+  const current = () => batchArchivedExperiment || experiments[state.selected];
+  const labels = {analysis:'结果分析',experiments:'实验空间',batches:'批量对照',sources:'消息资料',agents:'策略配置',new:'新建实验'};
   const format = n => n.toLocaleString('zh-CN');
   const signed = n => `${n >= 0 ? '+' : ''}${n.toFixed(2)}`;
   const heading = (eyebrow, title, caption, actions = '') => `<div class="page-heading"><div><div class="eyebrow">${eyebrow}</div><h1>${title}</h1><div class="heading-caption">${caption}</div></div><div class="heading-actions">${actions}</div></div>`;
@@ -83,7 +88,7 @@
   }
   function analysis() {
     if(current().corrupt)return `<section class="panel"><div class="summary-content"><h1>实验记录需要恢复</h1><p>记录编号：${esc(current().id)}</p><p>配置文件无法读取，不能运行、复制或导出此实验。原文件仍保留在本机；请从已知完整的备份恢复后重新加载。</p><button class="btn" data-action="refresh-runs">重新加载记录</button></div></section>`;
-    if(current().custom)return runStatusPanel(current())+savedAnalysis();
+    if(current().custom)return (batchArchivedExperiment?`<div class="callout"><div><strong>正在查看批次归档结果</strong><p>结果版本 ${esc(current().backendResult.provenance.result_id.slice(0,10))}。本页读取批次保存的版本；之后单独重跑不会改变此归档。</p><button class="btn compact" data-action="back-to-batch">返回批量对照</button></div></div>`:'')+runStatusPanel(current())+savedAnalysis();
     const e=current(),v=values(),delta=v.signal.at(-1)-100,impact=v.signal.at(-1)-v.baseline.at(-1);
     return heading('EXPERIMENT ANALYSIS',esc(e.title),`<span>${e.id}</span><span class="sep"></span><span>${e.sessions||18} 个决策步</span><span class="sep"></span><span>三资产模拟市场</span><span class="badge">${e.custom?'本机平台预览':'对照实验 · 示例'}</span>`, `<button class="btn" type="button" data-action="export">${icon('download')}导出</button>${newButton()}`)
       +(e.custom?'<div class="callout">'+icon('help')+'实验配置已保存，并生成了本机 platform_preview 结果。当前图表仍是高保真展示图层，尚未接入 DeepSeek 或冻结研究协议。</div>':'')
@@ -188,9 +193,92 @@
       <div class="form-field"><label for="draft-title">实验名称</label><input id="draft-title" data-draft="title" maxlength="70" value="${esc(d.title)}" placeholder="例如：流动性宽松消息对三类策略的影响"></div><div class="form-two"><div class="form-field"><label for="draft-type">消息类型</label><select id="draft-type" data-draft="type">${['政策消息','宏观消息','公司问答','其他消息'].map(x=>`<option ${x===d.type?'selected':''}>${x}</option>`).join('')}</select></div><div class="form-field"><label for="draft-time">发布时间 · 北京时间</label><input id="draft-time" type="datetime-local" data-draft="published" value="${esc(d.published)}"></div></div><div class="form-field"><label for="draft-source">消息原文</label><button class="btn" type="button" data-action="analyze-source">使用 DeepSeek 提取事实</button><textarea id="draft-source" data-draft="source" maxlength="12000" placeholder="粘贴政策、新闻或公司问答原文。公司问答请同时保留提问和回复。">${esc(d.source)}</textarea><small>保留原文，便于在决策详情中查看证据与信息可见时间。</small></div><div id="draft-analysis-panel">${draftAnalysisPanel()}</div><div class="form-hint">也可以从示例开始</div><div class="sample-picker">${experiments.filter(e=>!e.custom).map(e=>`<button type="button" data-sample="${experiments.indexOf(e)}">${esc(e.title.split(' · ')[0])}</button>`).join('')}</div>
       `:state.wizard===2?`<h2>文本变量与情景假设</h2><div class="review-box"><strong>情景假设 · 变量由你设定</strong><p>参考下方事实设定方向与强度。新建实验从中性信号 0 开始；复制实验保留原参数。模型提取不会替你判断利好或利空，也不会改动这些参数。</p></div><div id="draft-analysis-panel">${draftAnalysisPanel()}</div><div class="form-two"><div class="form-field"><label for="draft-signal">情景方向与强度 <span id="signal-value">${d.signal.toFixed(2)}</span></label><input id="draft-signal" type="range" data-draft="signal" min="-1" max="1" step=".05" value="${d.signal}"><small>−1 负向 · 0 中性 · +1 正向。信号为 0 时，不确定性仍可能影响策略。</small></div><div class="form-field"><label for="draft-uncertainty">信息不确定性 <span id="uncertainty-value">${d.uncertainty.toFixed(2)}</span></label><input id="draft-uncertainty" type="range" data-draft="uncertainty" min="0" max="1" step=".05" value="${d.uncertainty}"><small>0 低不确定性 · 1 高不确定性</small></div></div><div class="form-two"><div class="form-field"><label for="draft-duration">消息持续步数</label><select id="draft-duration" data-draft="duration">${[3,6,9].map(n=>`<option value="${n}" ${Number(d.duration)===n?'selected':''}>${n} 个决策步</option>`).join('')}</select></div><div class="form-field"><label for="draft-seed">随机种子</label><input id="draft-seed" type="number" data-draft="seed" min="0" max="999999" value="${d.seed}"></div></div><div class="form-field"><label for="draft-sessions">实验总步数</label><input id="draft-sessions" type="number" data-draft="sessions" min="1" max="60" step="1" value="${d.sessions||18}"><small>支持 1–60 步。第 5 步消息可见；运行不足 5 步可检查消息公开前的对照。</small></div><div class="form-field"><label for="draft-cash">每类策略初始资金（模型元）</label><input id="draft-cash" type="number" data-draft="cash" min="10000" max="100000000" step="10000" value="${d.cash}"></div><div class="summary-assumption">模拟资产 A / B / C，消息作用于资产 A。包含有消息与无消息两组，按上方总步数运行。三类策略同时参与。</div>${draftStrategyPanel()}`:`<h2>确认实验配置</h2><div class="review-box"><strong>${esc(d.title)}</strong><p>${esc(d.source.slice(0,180))}${d.source.length>180?'…':''}</p></div>${[['消息类型',d.type],['发布时间',d.published.replace('T',' ')+'（北京时间）'],['参与策略','激进型 / 保守型 / 机构型'],['信息条件','有消息 / 无消息'],['情景变量',`信号 ${Number(d.signal).toFixed(2)} · 不确定性 ${Number(d.uncertainty).toFixed(2)}`],['消息持续时间',`${d.duration} 步`],['实验总步数',`${d.sessions} 步`],['初始资金',format(d.cash)+' 模型元 / 类'],['随机种子',d.seed]].map(([a,b])=>`<div class="review-field"><span class="form-hint">${a}</span><span>${esc(b)}</span></div>`).join('')}<div id="draft-analysis-panel">${draftAnalysisPanel()}</div>${d.strategy_parameters?strategyTable(d.strategy_parameters):strategyUnavailable()}<label class="checkline"><input id="confirm-demo" type="checkbox">我理解这是合成市场实验，情景变量由我设定，结果不代表真实市场预测。</label>`}</div><div class="form-error" id="form-error" role="alert"></div><div class="form-footer">${state.wizard>1?'<button class="btn" type="button" data-action="previous">上一步</button>':'<span class="form-hint">提交后保存到本机</span>'}<button class="btn primary" type="button" data-action="${state.wizard===3?'preview-run':'next'}">${state.wizard===3?'运行市场实验':'下一步'} ${icon('arrow')}</button></div></section><aside class="guide-block"><div class="eyebrow">EXPERIMENT GUIDE</div><h2>先明确假设，再观察结果</h2><p>让消息、策略和执行之间的每一个环节都可见。</p><div class="guide-item">${icon('document')}保留事实与原文证据</div><div class="guide-item">${icon('clock')}明确消息可见时间</div><div class="guide-item">${icon('agents')}比较三类策略的差异</div><div class="guide-item">${icon('layers')}保留无消息对照组</div><div class="guide-item">${icon('replay')}保存参数以便复现</div><div class="summary-assumption">可先用 DeepSeek 提取事实，再设定情景变量。运行后保存消息、分析依据、参数与撮合账本。</div></aside></div>`;}
   let experimentLoadError='';
-  function render(){document.querySelector('.nav-count').textContent=experiments.length;document.querySelector('.preview-tag').textContent=current().custom&&state.page==='analysis'?'已保存实验':'本机研究空间';if(chartObserver)chartObserver.disconnect();document.getElementById('breadcrumb-current').textContent=labels[state.page]||'结果分析';document.querySelectorAll('[data-nav]').forEach(a=>{const active=a.dataset.nav===state.page;a.classList.toggle('active',active);active?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current');});content.innerHTML=(experimentLoadError&&['experiments','analysis','sources'].includes(state.page)?`<div class="callout" role="alert"><div><strong>本机实验记录未能完整加载</strong><p>${esc(experimentLoadError)}。现有页面内容可能不是最新状态，不代表记录已丢失。</p><button class="btn" data-action="refresh-runs">重新加载记录</button></div></div>`:'')+({analysis,experiments:experimentsPage,sources:sourcesPage,agents:agentsPage,new:wizardPage}[state.page]||analysis)();icons();if(state.page==='new')updateDraftAnalysisPanel();if(state.page==='analysis'){drawChart();chartObserver=new ResizeObserver(drawChart);const chart=document.getElementById('price-chart');if(chart)chartObserver.observe(chart);}}
-  function useSample(index){const e=experiments[index];state.draft={...state.draft,title:e.title,source:e.source,type:e.type,seed:e.seed,signal:e.signal??(e.kind==='negative'?-.6:e.kind==='uncertain'?0:.6),uncertainty:e.uncertainty??(e.kind==='uncertain'?.8:.2),duration:e.duration??6,cash:e.cash??1000000,sessions:e.sessions??18,published:e.published_at||state.draft.published,strategy_parameters:parametersFromExperiment(e)||(strategyWorkspace.parameters?strategyWorkspace.snapshot():null)};analysisBinding.reset(e.source);if(e.text_analysis)analysisBinding.finish(analysisBinding.begin(e.source),e.text_analysis);state.wizard=1;navigate('new');}
+  function render(){document.querySelector('.nav-count').textContent=experiments.length;document.querySelector('.preview-tag').textContent=current().custom&&state.page==='analysis'?'已保存实验':'本机研究空间';if(chartObserver)chartObserver.disconnect();document.getElementById('breadcrumb-current').textContent=labels[state.page]||'结果分析';document.querySelectorAll('[data-nav]').forEach(a=>{const active=a.dataset.nav===state.page;a.classList.toggle('active',active);active?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current');});content.innerHTML=(experimentLoadError&&['experiments','analysis','sources'].includes(state.page)?`<div class="callout" role="alert"><div><strong>本机实验记录未能完整加载</strong><p>${esc(experimentLoadError)}。现有页面内容可能不是最新状态，不代表记录已丢失。</p><button class="btn" data-action="refresh-runs">重新加载记录</button></div></div>`:'')+({analysis,experiments:experimentsPage,batches:batchesPage,sources:sourcesPage,agents:agentsPage,new:wizardPage}[state.page]||analysis)();icons();if(state.page==='new')updateDraftAnalysisPanel();if(state.page==='analysis'){drawChart();chartObserver=new ResizeObserver(drawChart);const chart=document.getElementById('price-chart');if(chart)chartObserver.observe(chart);}clearTimeout(batchPollTimer);if(state.page==='batches'){if(!batchListLoading&&!batchWorkspace.busy)hydrateBatches();else scheduleBatchPoll();}}
+  function useSample(index,record=experiments[index]){const e=record;state.draft={...state.draft,title:e.title,source:e.source,type:e.type,seed:e.seed,signal:e.signal??(e.kind==='negative'?-.6:e.kind==='uncertain'?0:.6),uncertainty:e.uncertainty??(e.kind==='uncertain'?.8:.2),duration:e.duration??6,cash:e.cash??1000000,sessions:e.sessions??18,published:e.published_at||state.draft.published,strategy_parameters:parametersFromExperiment(e)||(strategyWorkspace.parameters?strategyWorkspace.snapshot():null)};analysisBinding.reset(e.source);if(e.text_analysis)analysisBinding.finish(analysisBinding.begin(e.source),e.text_analysis);state.wizard=1;navigate('new');}
   async function apiJson(path, options={}) { const response=await fetch(path,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})}}); const body=await response.json(); if(!response.ok){const error=new Error(body.error||`API ${response.status}`);error.status=response.status;throw error;} return body; }
+  function batchesPage(){
+    return heading('SCENARIO COMPARISON','批量对照','固定参数、多种种子，比较三类策略在不同情景下的响应',`<button class="btn" data-nav="agents">查看策略配置</button>`)
+      +'<div class="batch-scenario-strip">'+[['中性','0 / 0'],['正向','+0.6 / 0.2'],['负向','−0.6 / 0.2'],['高不确定性','0 / 0.8']].map(([name,value])=>`<div><strong>${name}</strong><span>信号 / 不确定性 ${value}</span></div>`).join('')+'</div>'
+      +'<p class="batch-help">四种情景均为人工假设，未使用真实公告，也不调用大模型。每项包含有消息与无消息两条撮合路径。</p>'
+      +`<div class="batch-setup-grid">${MarketBatchView.renderForm(batchForm,batchWorkspace.busy,batchFormError)}<section class="panel" id="batch-history">${MarketBatchView.renderHistory(batchWorkspace.rows,batchWorkspace.selectedId,batchListLoading,batchWorkspace.listError)}</section></div>`
+      +`<div id="batch-live">${MarketBatchView.renderDetail(batchWorkspace.detail,batchWorkspace)}</div>`;
+  }
+  function updateBatchPanels(){
+    if(state.page!=='batches')return;
+    const history=document.getElementById('batch-history'),live=document.getElementById('batch-live');
+    if(history)history.innerHTML=MarketBatchView.renderHistory(batchWorkspace.rows,batchWorkspace.selectedId,batchListLoading,batchWorkspace.listError);
+    if(live){
+      const same=live.dataset.batchId===batchWorkspace.detail?.id;
+      const opened=same?Array.from(live.querySelectorAll('[data-batch-disclosure][open]')).map(el=>el.dataset.batchDisclosure):[];
+      const active=document.activeElement,focused=same&&live.contains(active)?{action:active.dataset.action,experiment:active.dataset.batchExperiment,href:active.getAttribute('href'),disclosure:active.parentElement?.dataset.batchDisclosure}:null;
+      live.innerHTML=MarketBatchView.renderDetail(batchWorkspace.detail,batchWorkspace);
+      live.dataset.batchId=batchWorkspace.detail?.id||'';
+      live.querySelectorAll('[data-batch-disclosure]').forEach(el=>{el.open=opened.includes(el.dataset.batchDisclosure);});
+      if(focused){const target=Array.from(live.querySelectorAll('button,a,summary')).find(el=>focused.action?el.dataset.action===focused.action:focused.experiment?el.dataset.batchExperiment===focused.experiment:focused.href?el.getAttribute('href')===focused.href:focused.disclosure&&el.parentElement?.dataset.batchDisclosure===focused.disclosure);target?.focus({preventScroll:true});}
+    }
+    const button=document.getElementById('batch-create-button'),error=document.getElementById('batch-form-error');
+    if(button){button.disabled=batchWorkspace.busy;button.textContent=batchWorkspace.busy?'正在提交…':'创建并运行批次';}
+    if(error)error.textContent=batchFormError;
+  }
+  function rememberBatch(){try{sessionStorage.setItem('marketmirror:selected-batch',batchWorkspace.selectedId);}catch(_) {}}
+  function scheduleBatchPoll(){
+    clearTimeout(batchPollTimer);
+    if(state.page==='batches'&&batchWorkspace.detail?.status==='running')
+      batchPollTimer=setTimeout(()=>loadBatch(batchWorkspace.selectedId,true),batchWorkspace.error?5000:2000);
+  }
+  async function loadBatch(id,quiet=false){
+    if(!id)return;
+    clearTimeout(batchPollTimer);
+    const ticket=batchWorkspace.begin(id);rememberBatch();if(!quiet)updateBatchPanels();
+    try{batchWorkspace.accept(ticket,await apiJson(`/api/platform/batches/${id}`));}
+    catch(error){batchWorkspace.fail(ticket,error.message);}
+    finally{updateBatchPanels();scheduleBatchPoll();}
+  }
+  async function hydrateBatches(){
+    const version=++batchListVersion;batchListLoading=true;batchWorkspace.listError='';updateBatchPanels();
+    try{
+      const rows=await apiJson('/api/platform/batches');if(version!==batchListVersion)return;
+      batchWorkspace.rows=rows;
+      const id=rows.some(r=>r.id===batchWorkspace.selectedId)?batchWorkspace.selectedId:rows[0]?.id;
+      if(id)await loadBatch(id);
+      else{batchWorkspace.selectedId=null;batchWorkspace.detail=null;batchWorkspace.generation++;}
+    }catch(error){if(version===batchListVersion)batchWorkspace.listError='批次列表读取失败：'+error.message;}
+    finally{if(version===batchListVersion){batchListLoading=false;updateBatchPanels();scheduleBatchPoll();}}
+  }
+  async function createAndRunBatch(){
+    if(batchWorkspace.busy)return;
+    let payload;
+    try{payload={title:batchForm.title,seeds:MarketBatchView.parseSeeds(batchForm.seeds),sessions:Number(batchForm.sessions),duration:Number(batchForm.duration),cash:Number(batchForm.cash)};}
+    catch(error){batchFormError=error.message;updateBatchPanels();return;}
+    batchWorkspace.busy=true;batchFormError='';updateBatchPanels();let created=null;
+    try{
+      created=await apiJson('/api/platform/batches',{method:'POST',body:JSON.stringify(payload)});
+      const ticket=batchWorkspace.begin(created.id);batchWorkspace.accept(ticket,created);rememberBatch();updateBatchPanels();
+      const started=await apiJson(`/api/platform/batches/${created.id}/run`,{method:'POST',body:'{}'});
+      batchWorkspace.accept(ticket,started);toast('批次已提交，在本机服务中继续运行。');
+    }catch(error){batchFormError=created?'批次已保存，请刷新确认状态后重试未完成项。'+error.message:error.message;}
+    finally{batchWorkspace.busy=false;await hydrateBatches();updateBatchPanels();}
+  }
+  async function runBatch(){
+    const id=batchWorkspace.selectedId;if(!id||batchWorkspace.busy)return;
+    batchWorkspace.busy=true;const ticket=batchWorkspace.begin(id);updateBatchPanels();
+    try{batchWorkspace.accept(ticket,await apiJson(`/api/platform/batches/${id}/run`,{method:'POST',body:'{}'}));}
+    catch(error){batchWorkspace.fail(ticket,error.message);toast(error.message);try{batchWorkspace.accept(ticket,await apiJson(`/api/platform/batches/${id}`));}catch(_) {}}
+    finally{batchWorkspace.busy=false;updateBatchPanels();scheduleBatchPoll();}
+  }
+  async function openBatchExperiment(batchId,experimentId){
+    const version=++batchOpenVersion;
+    try{
+      const [record,result]=await Promise.all([apiJson(`/api/platform/experiments/${experimentId}`),apiJson(`/api/platform/batches/${batchId}/results/${experimentId}`)]);
+      if(version!==batchOpenVersion||state.page!=='batches'||batchWorkspace.selectedId!==batchId)return;
+      let index=experiments.findIndex(e=>e.id===experimentId);
+      if(index<0){index=experiments.length;experiments.push({...record,custom:true,backendResult:result});}
+      batchArchivedExperiment={...record,result_id:result.provenance.result_id,last_run_at:result.generated_at,
+        run_status:'completed',run_error:null,run_attempts:result.provenance.run_attempts??null,run_finished_at:null,
+        batch_archive:{batch_id:batchId,result_id:result.provenance.result_id},custom:true,backendResult:result};
+      state.selected=index;state.step=8;navigate('analysis');
+    }catch(error){toast('无法读取归档结果：'+error.message);}
+  }
   const activeRuns=new Set();
   function runStatusPanel(e){
     const status=e.run_status||'not_started';
@@ -217,7 +305,7 @@
     try{
       const {record,result}=await persistAndRun();
       const index=experiments.findIndex(e=>e.id===record.id);experiments[index]={...experiments[index],...record,run_status:'completed',backendResult:result};state.selected=index;
-      navigate('analysis');toast('实验完成，撮合账本已审计并保存。');
+      batchArchivedExperiment=null;navigate('analysis');toast('实验完成，撮合账本已审计并保存。');
     }catch(error){document.getElementById('form-error').textContent='保存或运行失败：'+error.message+'。已保存的实验可在实验空间中打开并重试。';await hydrateExperiments();}
     finally{button.disabled=false;}
   }
@@ -257,7 +345,7 @@
     const label={aggressive:'激进型',conservative:'保守型',institutional:'机构型'};
     const allPrices=[...priceRows(active),...priceRows(base)].map(row=>row.price);
     const bounds={low:Math.min(...allPrices)-.2,high:Math.max(...allPrices)+.2};
-    return heading('MARKET EXPERIMENT',esc(e.title),'<span class="badge">合成市场 · 撮合计算</span>',`<a class="btn" href="/api/platform/experiments/${e.id}/export" download>${icon('download')}导出账本</a><button class="btn" data-action="duplicate">复制为新实验</button>${newButton()}`)
+    return heading('MARKET EXPERIMENT',esc(e.title),'<span class="badge">合成市场 · 撮合计算</span>',`${batchArchivedExperiment?`<button class="btn" data-action="export">${icon('download')}导出归档账本</button>`:`<a class="btn" href="/api/platform/experiments/${e.id}/export" download>${icon('download')}导出账本</a>`}<button class="btn" data-action="duplicate">复制为新实验</button>${newButton()}`)
       +`<div class="callout">账本审计通过：${r.audit.days_checked} 个市场日。消息从第 5 步作用于资产 A；信号与暴露为人工情景假设，${e.text_analysis?'已关联模型事实作为参考':'未关联模型分析'}。</div>`
       +`<section class="panel"><div class="panel-header"><h2>实验条件</h2></div><div class="summary-content"><p>${esc(e.source)}</p><p>信号 ${e.signal} · 不确定性 ${e.uncertainty} · 持续 ${e.duration} 步 · 种子 ${e.seed}</p><p>每类 4 个账户，每类初始现金合计 ${format(r.assumptions.effective_initial_cash_per_role)} 元，另有每账户每资产 500 股初始库存。</p></div></section>`
       +experimentStrategyPanel(e)+experimentEvidence(e.text_analysis)
@@ -279,7 +367,9 @@
   }
   document.addEventListener('click',async e=>{
     const nav=e.target.closest('[data-nav]');if(nav){e.preventDefault();navigate(nav.dataset.nav);return;}
-    const open=e.target.closest('[data-open]');if(open){state.selected=Number(open.dataset.open);state.step=8;navigate('analysis');return;}
+    const batchSelect=e.target.closest('[data-batch-select]');if(batchSelect){await loadBatch(batchSelect.dataset.batchSelect);return;}
+    const batchExperiment=e.target.closest('[data-batch-experiment]');if(batchExperiment){await openBatchExperiment(batchExperiment.dataset.batchId,batchExperiment.dataset.batchExperiment);return;}
+    const open=e.target.closest('[data-open]');if(open){batchArchivedExperiment=null;state.selected=Number(open.dataset.open);state.step=8;navigate('analysis');return;}
     const sample=e.target.closest('[data-sample],[data-use]');if(sample){saveDraft();useSample(Number(sample.dataset.sample??sample.dataset.use));return;}
     const group=e.target.closest('[data-decision-group]');if(group){state.decisionGroup=group.dataset.decisionGroup;render();return;}
     const asset=e.target.closest('[data-asset]');if(asset){state.asset=asset.dataset.asset;render();return;}
@@ -287,6 +377,9 @@
     const table=e.target.closest('[data-table]');if(table){state.table=table.dataset.table;document.querySelectorAll('[data-table]').forEach(b=>b.classList.toggle('active',b===table));document.getElementById('execution-table').innerHTML=executionTable();return;}
     const role=e.target.closest('[data-role]');if(role){const i=Number(role.dataset.role),r=roles[i],d=roleDecision(i);modal(`${r.name} · 第 ${state.step} 步决策`, `<div class="eyebrow">DECISION TRACE · 展示数据</div><p>${r.desc}</p><div class="review-field"><span>决策动作</span><strong>${d.action}</strong></div><div class="review-field"><span>目标股票仓位</span><strong>${d.weight}%</strong></div><div class="flow-line"><span>请求 ${d.quantity} 股</span>${icon('arrow')}<span>成交 ${d.filled} 股</span></div><div class="review-box"><strong>决策解释</strong><p>${d.reason}</p><p>${d.quantity>d.filled?'示例中订单只获得部分匹配，因此请求量大于成交量。':'本步示例没有未成交的新增数量。'}</p></div><p>这是决策详情的设计示例，尚未读取真实实验账本。</p>`);return;}
     const b=e.target.closest('[data-action]');if(!b)return;const action=b.dataset.action;
+    if(action==='refresh-batches'){await hydrateBatches();return;}
+    if(action==='run-batch'){await runBatch();return;}
+    if(action==='back-to-batch'){batchArchivedExperiment=null;navigate('batches');return;}
     if(action==='retry-run'){await retryRun();return;}
     if(action==='refresh-runs'){await hydrateExperiments();return;}
     if(action==='analyze-source'){
@@ -306,9 +399,9 @@
     if(action==='menu')document.querySelector('.sidebar').classList.toggle('open');
     if(action==='theme'){document.body.dataset.theme=document.body.dataset.theme==='dark'?'light':'dark';drawChart();}
     if(action==='cancel-new')navigate('experiments');
-    if(action==='duplicate')useSample(state.selected);
+    if(action==='duplicate')useSample(state.selected,current());
     if(action==='source')modal('消息原文',`<span class="badge neutral">${esc(current().type)} · 虚构展示文本</span><p class="quote">${esc(current().source)}</p><p>正式版在此保留来源链接、发布时间、文本版本及提取证据。当前未绑定真实来源。</p>`, `<button class="btn" type="button" data-action="close">关闭</button><button class="btn primary" type="button" data-action="source-new">用此消息新建</button>`);
-    if(action==='source-new'){dialog.close();useSample(state.selected);}
+    if(action==='source-new'){dialog.close();useSample(state.selected,current());}
     if(action==='help')modal('关于这个设计预览',`<div class="eyebrow">MARKETMIRROR · PRODUCT CONCEPT</div><p>这是金融仿真实验平台的高保真交互原型。你可以浏览实验、拖动决策时间轴、查看三类策略、调整配置，并走完新建实验流程。</p><div class="review-box"><strong>当前可体验</strong><p>实验搜索、消息选择、分步表单、曲线切换、决策详情、主题切换与预览配置导出。</p></div><p>新建实验可提取 DeepSeek 事实并运行合成市场撮合，配置与账本保存在本机。内置示例仍用于界面展示。事实引文可核对，情景强度由用户设定。</p>`);
     if(action==='settings')modal('模型设置',`<div class="eyebrow">MODEL CONNECTION · 界面示意</div><div class="form-field"><label for="model-name">模型</label><input id="model-name" value="DeepSeek-V4-Flash-0731-W8A8" readonly></div><div class="form-field"><label for="model-endpoint">接口地址</label><input id="model-endpoint" value="http://aigw.dlut.edu.cn/v1" readonly></div><div class="review-box"><strong>后端读取本地保存的密钥</strong><p>新建实验中点击“使用 DeepSeek 提取事实”即可调用，无需每次输入。浏览器不读取密钥。</p></div><span class="badge neutral">连接状态：尚未在此页检测</span>`);
     if(action==='export'){const record=current();const data={artifact:record.custom?'MarketMirror experiment':'MarketMirror UI prototype',schema_version:'platform-export-v2',mode:record.backendResult?.mode||'design_fixture',experiment:record,selected_asset:state.asset,selected_step:state.step,fixture:record.custom?null:values()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`marketmirror-${record.id}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('已导出当前记录及其数据类型标识。');}
@@ -319,6 +412,9 @@
     if(action==='previous'){saveDraft();state.wizard--;render();}
     if(action==='preview-run')previewRun();
   });
+  document.addEventListener('submit',e=>{if(e.target.id==='batch-create-form'){e.preventDefault();createAndRunBatch();}});
+  document.addEventListener('input',e=>{if(e.target.dataset.batchField)batchForm[e.target.dataset.batchField]=e.target.value;});
+  document.addEventListener('change',e=>{if(e.target.dataset.batchField)batchForm[e.target.dataset.batchField]=e.target.value;});
   document.addEventListener('input',e=>{if(e.target.id==='draft-source'){state.draft.source=e.target.value;analysisBinding.setSource(e.target.value);updateDraftAnalysisPanel();}if(e.target.id==='market-step'){state.step=Number(e.target.value);document.getElementById('market-step-label').textContent=`第 ${state.step} / ${current().backendResult.paths.with_message.trace.length} 步`;document.getElementById('market-step-cards').innerHTML=marketStepCards();}if(e.target.id==='time-slider')setStep(Number(e.target.value));if(e.target.id==='experiment-search'){state.search=e.target.value;document.getElementById('experiment-rows').innerHTML=experimentRows();}if(e.target.dataset.strategyScope){const scope=e.target.dataset.strategyScope,role=e.target.dataset.strategyRole,key=e.target.dataset.strategyKey,field=strategyFields.find(f=>f.key===key),value=Number((Number(e.target.value)/field.scale).toFixed(6));try{if(scope==='workspace'){strategyWorkspace.edit(role,key,value);document.getElementById('strategy-save-state').textContent=strategyWorkspace.dirty?'有未保存的修改':'当前参数与保存值一致';}else{state.draft.strategy_parameters[role][key]=strategyWorkspace.validate(role,key,value);}document.getElementById(e.target.id+'-value').textContent=strategyValue(key,value);}catch(error){toast(error.message);}}if(e.target.id==='draft-signal')document.getElementById('signal-value').textContent=Number(e.target.value).toFixed(2);if(e.target.id==='draft-uncertainty')document.getElementById('uncertainty-value').textContent=Number(e.target.value).toFixed(2);});
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
   window.addEventListener('hashchange',()=>{const p=location.hash.slice(1);if(labels[p]&&p!==state.page){state.page=p;render();}});
