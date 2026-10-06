@@ -79,6 +79,8 @@
 python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_submission tests.test_platform_model_connection tests.test_platform_draft_recovery -q
 node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs tests/test_platform_draft_cache.cjs
 node --check design/app.js
+# 本机有真实原文归档时再执行
+python -B -X utf8 -m design.source_cases --verify-all
 ```
 
 早期 27 项后端测试与 14 项前端状态及决策视图测试已通过；当前完整平台回归为 Python 74 项、Node 84 项。覆盖存档恢复、引文位置、缺失或错误分析 ID、篡改快照拒绝、手动参数独立性、HTTP 流程、完整文件导出、原文修改与迟到响应、撮合复现、逐日账本审计、运行失败重试、服务中断恢复，以及真实决策账本的组别切换、账户加权、订单汇总和缺失来源保留。这些检查验证平台机制与数据一致性，不证明模型的市场解释能力。
