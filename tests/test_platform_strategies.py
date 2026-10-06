@@ -19,6 +19,30 @@ def experiment(**overrides):
 
 
 class StrategyConfigurationTest(unittest.TestCase):
+    def test_precise_parameters_survive_save_reload_and_actual_engine_snapshot(self):
+        changed = defaults()
+        changed['aggressive']['text_sensitivity'] = 1.35791
+        changed['conservative']['base_weight'] = .333333
+        changed['institutional']['risk_budget'] = .0083
+        frozen_config = CONFIG.read_bytes()
+        with tempfile.TemporaryDirectory() as tmp:
+            store = PlatformStore(Path(tmp))
+            store.save_strategies(changed)
+            reopened = PlatformStore(Path(tmp))
+            self.assertEqual(reopened.strategies()['parameters'], changed)
+            record = reopened.create(experiment(sessions=6))
+            self.assertEqual(record['strategy_parameters'], changed)
+            result = reopened.run(record['id'])
+            self.assertEqual(result['strategy_parameters_sha256'], parameters_digest(changed))
+            for path in result['paths'].values():
+                for spec in path['participant_specs'].values():
+                    if spec['kind'] == 'strategy':
+                        for key, expected in changed[spec['parameters']['role']].items():
+                            self.assertEqual(spec['parameters'][key], expected)
+            store.save_strategies(defaults())
+            self.assertEqual(reopened.get(record['id'])['strategy_parameters'], changed)
+        self.assertEqual(CONFIG.read_bytes(), frozen_config)
+
     def test_rejects_incomplete_unknown_and_out_of_bounds_parameters(self):
         valid = defaults()
         invalid = [None, [], {}, {**valid, 'another_role': valid['aggressive']}]

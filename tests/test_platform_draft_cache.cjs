@@ -1,6 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const {DraftCache,matchesRecord,KEY}=require('../design/draft-cache.js');
 const {SourceAnalysisBinding}=require('../design/analysis-state.js');
+const {StrategyParameterControls}=require('../design/strategy-state.js');
 const source=fs.readFileSync('design/app.js','utf8');
 const cacheFunctions=source.slice(source.indexOf('  function hasDraftContent(){'),source.indexOf('  function updateModelSettings(){'));
 const submissionFunctions=source.slice(source.indexOf('  function draftPayload('),source.indexOf('  async function hydrateExperiments(){'));
@@ -41,7 +42,9 @@ test('numeric select edits and form saves preserve numbers in the draft cache',(
 test('editing an experiment strategy immediately saves the new value without changing other roles',()=>{
   const {c,elements}=context(),handlers=[],id='strategy-experiment-aggressive-text_sensitivity';
   elements.set(id+'-value',{textContent:''});c.document.addEventListener=(_,handler)=>handlers.push(handler);
-  c.strategyFields=[{key:'text_sensitivity',scale:1}];c.strategyWorkspace={validate:(_role,_key,value)=>value};c.strategyValue=(_key,value)=>String(value);
+  c.strategyFields=[{key:'text_sensitivity',scale:1}];c.strategyWorkspace={validate:(_role,_key,value)=>value,limits:{aggressive:{text_sensitivity:[0,2]}}};
+  c.StrategyParameterControls={...StrategyParameterControls,sync(){},showError(_input,message){throw new Error(message);}};c.document.querySelector=()=>null;
+  vm.runInContext(source.slice(source.indexOf('  function handleStrategyInput('),source.indexOf('  function draftStrategyPanel(){')),c);
   const handler=source.split('\n').find(line=>line.startsWith("  document.addEventListener('input',e=>{if(e.target.id==='draft-source')"));
   vm.runInContext(handler,c);handlers[0]({target:{id,value:'0.65',dataset:{strategyScope:'experiment',strategyRole:'aggressive',strategyKey:'text_sensitivity'}}});
   const saved=c.draftCache.read();assert.equal(saved.draft.strategy_parameters.aggressive.text_sensitivity,.65);

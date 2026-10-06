@@ -15,7 +15,7 @@ MarketMirror 是一个本地运行的可视化金融仿真实验平台。输入�
 | 实验空间 | 新建、搜索、复制实验，自动保存草稿，刷新后继续，查看运行状态与失败重试 |
 | 文本分析 | 可选 DeepSeek 事实提取，展示原文引文、位置及分析快照 |
 | 模型设置 | 查看后端模型与本机凭据状态，手动检测实际连接，查看具体失败原因 |
-| 三类 Agent | 调整文本敏感度、基础股票权重和风险预算，每个实验保存独立参数 |
+| 三类 Agent | 带范围标注的彩色滑块与精确数值输入，调整敏感度、基础权重和风险预算，每个实验保存独立参数 |
 | 对照仿真 | 使用相同初始条件与种子运行有消息 / 无消息两组市场 |
 | 批量对照 | 页面创建四情景 × 多种子批次，查看进度、策略范围图、失败原因与报告 |
 | 真实原文案例 | 查看六个归档案例的来源、模型原始提取、复核修订及四条件 × 五种子决策路径 |
@@ -34,6 +34,8 @@ MarketMirror 是一个本地运行的可视化金融仿真实验平台。输入�
 三个 Agent 共用参数化决策引擎，角色差异来自各自的敏感度、风险预算、确认和再平衡规则，目前没有分别训练三个投资者模型。DeepSeek-V4-Flash-0731-W8A8 用于提取原文事实，仓位和订单由策略规则计算；新建情景的方向和不确定性由用户设定，归档研究案例使用登记的事实映射。
 
 这些差异是可检查的模型假设，不代表已通过真实投资者数据训练。目标仓位改变也不意味着一定产生订单或成交；平台分别展示各阶段结果。策略配置页展示原文理解、决策偏好和交易执行之间的关系。
+
+参数可以拖动滑块或直接输入。权重与风险预算按百分比显示，例如输入风险预算 `0.83%` 会保存为内部数值 `0.0083`，不会取整到原滑块刻度。空值或越界值保留最后有效参数，并阻止保存或进入确认步骤；工作区默认、实验草稿和已存档实验各自保留参数。
 
 ## 快速启动
 
@@ -125,7 +127,7 @@ research_outputs/ 本地生成数据与运行产物（Git 忽略）
 
 ```powershell
 python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_observed_experiments tests.test_platform_submission tests.test_platform_model_connection tests.test_platform_draft_recovery -q
-node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_observed_view.cjs tests/test_platform_replay_control.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs tests/test_platform_draft_cache.cjs
+node --test tests/test_platform_strategy_state.cjs tests/test_platform_parameter_controls.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_observed_view.cjs tests/test_platform_replay_control.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs tests/test_platform_draft_cache.cjs
 python -B -X utf8 -m design.source_cases --verify-all
 python -B -X utf8 -m design.observed_experiments --verify-all
 ```
@@ -139,6 +141,8 @@ python -B -X utf8 -m design.observed_experiments --verify-all
 两组同一步的三类策略及微小差异展示见[决策对照核验](design/DECISION_COMPARISON_VALIDATION_20261006.md)。
 
 历史行情归档、仅有不确定性时的引文、共用回放时间轴与 Agent 模型说明见[历史行情平台接入核验](design/OBSERVED_PLATFORM_VALIDATION_20261006.md)。
+
+参数单位换算、精确编辑、无效输入保护及实际引擎快照见[策略参数编辑核验](design/PARAMETER_EDITOR_VALIDATION_20261006.md)。
 
 后端配置、连接检测与真实模型请求见[模型连接核验](design/MODEL_CONNECTION_VALIDATION_20261006.md)。
 

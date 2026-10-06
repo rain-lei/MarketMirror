@@ -116,14 +116,36 @@
     {key:'risk_budget',label:'风险预算',scale:100,step:.1,hint:'数值越低，对组合波动的约束越强。'}
   ];
   const copyParameters = value => value ? JSON.parse(JSON.stringify(value)) : null;
-  const strategyValue = (key,value) => key==='text_sensitivity'?Number(value).toFixed(2):(Number(value)*100).toFixed(key==='base_weight'?0:2)+'%';
+  const strategyValue = (key,value) => StrategyParameterControls.format(value,strategyFields.find(field=>field.key===key));
   function strategyTable(parameters){
     return `<div class="table-wrap"><table><thead><tr><th>策略</th>${strategyFields.map(f=>`<th>${f.label}</th>`).join('')}</tr></thead><tbody>${roles.map(r=>`<tr><td><span class="row-dot" style="--role:${r.color}"></span>${r.name}</td>${strategyFields.map(f=>`<td>${strategyValue(f.key,parameters[r.key][f.key])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
   }
   function strategyCards(parameters,scope){
-    return `<div class="role-editor-grid strategy-editor-grid">${roles.map(r=>{const rules=strategyWorkspace.fixedRules[r.key];return `<section class="panel role-editor" style="--role:${r.color}"><div class="agent-mark">${icon(r.icon)}</div><h2>${r.name}</h2><p class="role-description">${r.desc}</p>${strategyFields.map(f=>{const bounds=strategyWorkspace.limits[r.key][f.key],id=`strategy-${scope}-${r.key}-${f.key}`,value=parameters[r.key][f.key];return `<div class="form-field"><label for="${id}">${f.label}<span class="role-parameter-value" id="${id}-value">${strategyValue(f.key,value)}</span></label><input id="${id}" type="range" data-strategy-scope="${scope}" data-strategy-role="${r.key}" data-strategy-key="${f.key}" min="${bounds[0]*f.scale}" max="${bounds[1]*f.scale}" step="${f.step}" value="${Number((value*f.scale).toFixed(6))}" ${strategyWorkspace.saving?'disabled':''}><small>${f.hint}</small></div>`;}).join('')}<div class="summary-assumption">最高股票权重 ${Math.round(rules.max_weight*100)}% · 连续确认 ${rules.confirmation_steps} 步 · 每 ${rules.rebalance_interval} 步再平衡</div></section>`;}).join('')}</div>`;
+    return `<div class="role-editor-grid strategy-editor-grid">${roles.map(r=>{const rules=strategyWorkspace.fixedRules[r.key];return `<section class="panel role-editor" style="--role:${r.color}"><div class="agent-mark">${icon(r.icon)}</div><h2>${r.name}</h2><p class="role-description">${r.desc}</p>${strategyFields.map(field=>StrategyParameterControls.render({field,role:r.key,scope,value:parameters[r.key][field.key],bounds:strategyWorkspace.limits[r.key][field.key],disabled:strategyWorkspace.saving})).join('')}<div class="summary-assumption">最高股票权重 ${Math.round(rules.max_weight*100)}% · 连续确认 ${rules.confirmation_steps} 步 · 每 ${rules.rebalance_interval} 步再平衡</div></section>`;}).join('')}</div>`;
   }
   function strategyUnavailable(){return `<div class="analysis-status" role="status">${strategyWorkspace.loading?'正在读取本机策略参数…':esc(strategyWorkspace.error||'策略参数尚未加载')} ${strategyWorkspace.loading?'':'<button class="btn compact" data-action="retry-strategies">重新加载</button>'}</div>`;}
+  function strategyInputValid(scope){
+    const invalid=document.querySelector(`[data-parameter-number][data-strategy-scope="${scope}"][aria-invalid="true"]`);
+    if(invalid){invalid.focus();toast('请先修正标记的策略参数。');return false;}return true;
+  }
+  function handleStrategyInput(input){
+    const {strategyScope:scope,strategyRole:role,strategyKey:key}=input.dataset,field=strategyFields.find(f=>f.key===key),bounds=strategyWorkspace.limits[role][key];
+    try{
+      const value=StrategyParameterControls.parseDisplay(input.value,field,bounds);
+      if(scope==='workspace')strategyWorkspace.edit(role,key,value);
+      else{state.draft.strategy_parameters[role][key]=strategyWorkspace.validate(role,key,value);persistDraft();}
+      StrategyParameterControls.sync(input,value,field,bounds);
+    }catch(error){StrategyParameterControls.showError(input,error.message);}
+    const invalid=Boolean(document.querySelector(`[data-parameter-number][data-strategy-scope="${scope}"][aria-invalid="true"]`));
+    if(scope==='workspace'){
+      const save=document.querySelector('[data-action="save-roles"]');if(save)save.disabled=strategyWorkspace.saving||invalid;
+      document.getElementById('strategy-save-state').textContent=invalid?'有参数输入不完整或超出范围':strategyWorkspace.dirty?'有未保存的修改':'当前参数与保存值一致';
+    }else{
+      const next=document.querySelector('[data-action="next"]');if(next)next.disabled=invalid;
+      const error=document.getElementById('form-error'),message='请先修正策略中输入不完整或超出范围的参数。';
+      if(error&&(invalid||error.textContent===message))error.textContent=invalid?message:'';
+    }
+  }
   function draftStrategyPanel(){
     if(!state.draft.strategy_parameters||!strategyWorkspace.parameters)return strategyUnavailable();
     return `<div class="draft-strategy-section"><h2>本次实验的三类策略</h2><p class="evidence-note">参数将随本次实验独立保存。这里的调整仅用于本次实验。</p><details class="strategy-disclosure"><summary>展开策略参数</summary>${strategyCards(state.draft.strategy_parameters,'experiment')}</details></div>`;
@@ -145,6 +167,7 @@
   }
   async function saveStrategies(){
     if(!strategyWorkspace.parameters||strategyWorkspace.saving)return;
+    if(!strategyInputValid('workspace'))return;
     strategyWorkspace.saving=true;strategyWorkspace.error='';render();
     try{const profile=await apiJson('/api/platform/strategies',{method:'POST',body:JSON.stringify({parameters:strategyWorkspace.draft})});strategyWorkspace.load(profile);toast('工作区策略已保存，将用于之后新建的实验。');}
     catch(error){strategyWorkspace.error='保存失败：'+error.message;}
@@ -648,7 +671,7 @@
     if(action==='save-roles')saveStrategies();
     if(action==='retry-strategies'){hydrateStrategies();render();}
     if(action==='reset-roles'){strategyWorkspace.restoreDefaults();render();toast('已载入平台默认值，保存后生效。');}
-    if(action==='next'){saveDraft();const d=state.draft,error=document.getElementById('form-error');if(state.wizard===1&&(!d.title.trim()||d.source.trim().length<20||!d.published)){error.textContent='请填写实验名称、发布时间，以及至少 20 个字的消息原文。';return;}if(state.wizard===2&&(!Number.isInteger(d.sessions)||d.sessions<1||d.sessions>60)){error.textContent='实验总步数须为 1–60 的整数。';return;}if(state.wizard===2&&(!Number.isInteger(d.seed)||d.seed<0||d.seed>999999||!Number.isFinite(d.cash)||d.cash<10000||d.cash>100000000)){error.textContent='种子须为 0–999999 的整数；初始资金须在 1万–1亿 模型元之间。';return;}state.wizard++;render();}
+    if(action==='next'){if(state.wizard===2&&!strategyInputValid('experiment'))return;saveDraft();const d=state.draft,error=document.getElementById('form-error');if(state.wizard===1&&(!d.title.trim()||d.source.trim().length<20||!d.published)){error.textContent='请填写实验名称、发布时间，以及至少 20 个字的消息原文。';return;}if(state.wizard===2&&(!Number.isInteger(d.sessions)||d.sessions<1||d.sessions>60)){error.textContent='实验总步数须为 1–60 的整数。';return;}if(state.wizard===2&&(!Number.isInteger(d.seed)||d.seed<0||d.seed>999999||!Number.isFinite(d.cash)||d.cash<10000||d.cash>100000000)){error.textContent='种子须为 0–999999 的整数；初始资金须在 1万–1亿 模型元之间。';return;}state.wizard++;render();}
     if(action==='previous'){saveDraft();state.wizard--;render();}
     if(action==='preview-run')previewRun();
   });
@@ -666,12 +689,13 @@
   document.addEventListener('change',e=>{if(e.target.dataset.batchField)batchForm[e.target.dataset.batchField]=e.target.value;});
   document.addEventListener('change',e=>{if(e.target.id==='case-seed'||e.target.id==='case-mode')loadSourceCase(caseWorkspace.selectedId,e.target.id==='case-seed'?Number(e.target.value):caseWorkspace.seed,e.target.id==='case-mode'?e.target.value:caseWorkspace.mode);});
   document.addEventListener('input',e=>{if(e.target.id==='case-step'&&caseWorkspace.detail){caseWorkspace.step=Number(e.target.value);document.getElementById('case-step-label').textContent=`第 ${caseWorkspace.step} / 18 步`;document.getElementById('case-observation').innerHTML=MarketCaseView.renderClock(caseWorkspace.detail,caseWorkspace);document.getElementById('case-decisions').innerHTML=marketStepCards(caseWorkspace.detail.result,{decisionGroup:caseWorkspace.group,asset:caseWorkspace.asset,step:caseWorkspace.step});document.getElementById('case-comparison').innerHTML=MarketDecisionView.renderComparison(caseWorkspace.detail.result,{asset:caseWorkspace.asset,step:caseWorkspace.step,activeLabel:'所选条件',baselineLabel:'无文本参考'});}});
-  document.addEventListener('input',e=>{if(e.target.id==='draft-source'){state.draft.source=e.target.value;analysisBinding.setSource(e.target.value);updateDraftAnalysisPanel();}if(e.target.id==='market-step'){state.step=Number(e.target.value);document.getElementById('market-step-label').textContent=`第 ${state.step} / ${current().backendResult.paths.with_message.trace.length} 步`;document.getElementById('market-step-cards').innerHTML=marketStepCards();document.getElementById('market-comparison').innerHTML=MarketDecisionView.renderComparison(current().backendResult,{asset:state.asset,step:state.step});}if(e.target.id==='experiment-search'){state.search=e.target.value;document.getElementById('experiment-rows').innerHTML=experimentRows();}if(e.target.dataset.strategyScope){const scope=e.target.dataset.strategyScope,role=e.target.dataset.strategyRole,key=e.target.dataset.strategyKey,field=strategyFields.find(f=>f.key===key),value=Number((Number(e.target.value)/field.scale).toFixed(6));try{if(scope==='workspace'){strategyWorkspace.edit(role,key,value);document.getElementById('strategy-save-state').textContent=strategyWorkspace.dirty?'有未保存的修改':'当前参数与保存值一致';}else{state.draft.strategy_parameters[role][key]=strategyWorkspace.validate(role,key,value);persistDraft();}document.getElementById(e.target.id+'-value').textContent=strategyValue(key,value);}catch(error){toast(error.message);}}if(e.target.id==='draft-signal')document.getElementById('signal-value').textContent=Number(e.target.value).toFixed(2);if(e.target.id==='draft-uncertainty')document.getElementById('uncertainty-value').textContent=Number(e.target.value).toFixed(2);});
+  document.addEventListener('input',e=>{if(e.target.id==='draft-source'){state.draft.source=e.target.value;analysisBinding.setSource(e.target.value);updateDraftAnalysisPanel();}if(e.target.id==='market-step'){state.step=Number(e.target.value);document.getElementById('market-step-label').textContent=`第 ${state.step} / ${current().backendResult.paths.with_message.trace.length} 步`;document.getElementById('market-step-cards').innerHTML=marketStepCards();document.getElementById('market-comparison').innerHTML=MarketDecisionView.renderComparison(current().backendResult,{asset:state.asset,step:state.step});}if(e.target.id==='experiment-search'){state.search=e.target.value;document.getElementById('experiment-rows').innerHTML=experimentRows();}if(e.target.dataset.strategyScope)handleStrategyInput(e.target);if(e.target.id==='draft-signal')document.getElementById('signal-value').textContent=Number(e.target.value).toFixed(2);if(e.target.id==='draft-uncertainty')document.getElementById('uncertainty-value').textContent=Number(e.target.value).toFixed(2);});
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
   window.addEventListener('hashchange',()=>{const p=location.hash.slice(1);if(labels[p]&&p!==state.page){if(state.page==='new')saveDraft();navigationVersion++;state.page=p;render();}});
   const initial=location.hash.slice(1);if(labels[initial])state.page=initial;
   restoreDraftFromCache();
   window.addEventListener('pagehide',()=>{if(state.page==='new')saveDraft();persistDraft();});
   MarketReplayControl.bind(document);
+  StrategyParameterControls.bind(document);
   icons();render();hydrateExperiments();hydrateStrategies();
 })();

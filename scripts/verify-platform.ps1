@@ -26,6 +26,7 @@ $pythonTests = @(
 
 $nodeTests = @(
     "tests/test_platform_strategy_state.cjs",
+    "tests/test_platform_parameter_controls.cjs",
     "tests/test_platform_analysis_state.cjs",
     "tests/test_platform_decision_view.cjs",
     "tests/test_platform_copy.cjs",
@@ -54,6 +55,8 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & $node --check design/observed-view.js
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & $node --check design/decision-view.js
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+& $node --check design/strategy-state.js
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 if ($SkipSourceCases) {

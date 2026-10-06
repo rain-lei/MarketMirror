@@ -12,9 +12,15 @@
 
 浏览器打开 `http://127.0.0.1:8770`。脚本会检查端口并在当前终端前台运行服务，按 `Ctrl+C` 停止；也可直接执行 `python -B -X utf8 -m design.server --port 8770`。服务默认只监听本机；不指定端口时使用 8770。
 
-当前交付状态（2026-10-06）：20 个本机撮合实验、1 个已完成批次和 6 个真实原文案例可读取；三类策略配置、DeepSeek 事实提取、逐步账本、同一步决策对照、批量情景和草稿刷新恢复已接通。最新平台回归为 Python 75 项、Node 84 项通过。干净 Git 副本已验证无需研究归档也能完成合成实验和导出。真实模型提取只作为情景依据，不自动生成市场信号。
+当前交付状态（2026-10-06）：本机撮合记录、批量情景、6 个真实原文案例和 1 个真实历史收益实验已接通。三类策略支持彩色范围滑块及精确数值输入；页面说明共享的规则引擎与 DeepSeek 事实提取之间的关系。逐步账本、共用消息时间轴、同一步对照和草稿刷新恢复可用。最新平台回归为 Python 82 项、Node 104 项通过。干净 Git 副本已验证无需研究归档也能完成合成实验和导出；缺少历史归档时相应页面明确提示。最终浏览器视觉检查的剩余范围见[历史行情接入核验](OBSERVED_PLATFORM_VALIDATION_20261006.md)与[参数编辑核验](PARAMETER_EDITOR_VALIDATION_20261006.md)。
 
 本机已完成一条当前平台的真实原文端到端运行：武汉交通通告经 DeepSeek 提取 4 条事实，创建带分析快照的实验并完成 36 个市场日审计。详细编号和边界见[真实原文端到端实验核验](REAL_SOURCE_EXPERIMENT_VALIDATION_20261006.md)。
+
+## 策略与精确参数
+
+三类 Agent 共用参数化决策引擎，以敏感度、风险预算、确认和再平衡约束表达不同偏好，目前没有分别训练三个投资者模型。策略配置页和新实验的策略参数区均支持范围标注、彩色滑块、原生键盘控制和精确数值输入。直接输入不会量化到原有拖动刻度；百分比按字段单位换算，空值和越界值不会覆盖有效参数，也不能直接保存或进入确认。
+
+新建实验采用当时参数的独立快照；调整工作区默认不会改写已创建实验。校验范围从后端配置读取，不另行改动冻结的角色规则或研究结果。
 
 ## 文本分析与依据
 
@@ -64,10 +70,13 @@
 - `GET /api/platform/experiments/{id}/result`：读取结果与依据关联。
 - `GET /api/platform/experiments/{id}/export`：下载归档配置、文本依据和完整结果。
 - `GET /api/platform/health`：本机服务状态。
+- `GET /api/platform/observed-experiments`：登记的历史收益实验目录，读取不调用模型。
+- `GET /api/platform/observed-experiments/{id}`：核验原始归档并返回三条件路径与来源解释。
+- `GET /api/platform/observed-experiments/{id}/export`：导出原始模型、复核、路径及展示层补充解释。
 
 ## 验证
 
-在项目根目录执行 `.\scripts\verify-platform.ps1` 可一次运行完整平台回归、前端语法检查和本机真实原文归档核验。没有本地研究归档的新克隆会自动跳过最后一步。
+在项目根目录执行 `.\scripts\verify-platform.ps1` 可一次运行平台回归、前端语法检查、本机真实原文和历史收益归档核验。没有对应研究归档的新克隆会明确跳过相应步骤。
 
 ```powershell
 .\scripts\verify-platform.ps1
@@ -76,11 +85,12 @@
 等价的分步命令如下：
 
 ```powershell
-python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_submission tests.test_platform_model_connection tests.test_platform_draft_recovery -q
-node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs tests/test_platform_draft_cache.cjs
+python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_observed_experiments tests.test_platform_submission tests.test_platform_model_connection tests.test_platform_draft_recovery -q
+node --test tests/test_platform_strategy_state.cjs tests/test_platform_parameter_controls.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_observed_view.cjs tests/test_platform_replay_control.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs tests/test_platform_model_view.cjs tests/test_platform_draft_cache.cjs
 node --check design/app.js
 # 本机有真实原文归档时再执行
 python -B -X utf8 -m design.source_cases --verify-all
+python -B -X utf8 -m design.observed_experiments --verify-all
 ```
 
 早期 27 项后端测试与 14 项前端状态及决策视图测试已通过；当前完整平台回归为 Python 75 项、Node 84 项。覆盖存档恢复、引文位置、缺失或错误分析 ID、篡改快照拒绝、手动参数独立性、HTTP 流程、完整文件导出、原文修改与迟到响应、撮合复现、逐日账本审计、运行失败重试、服务中断恢复，以及真实决策账本的组别切换、账户加权、订单汇总和缺失来源保留。这些检查验证平台机制与数据一致性，不证明模型的市场解释能力。
