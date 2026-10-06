@@ -1,0 +1,2 @@
+# Optional research figures; not required to launch the platform or replay accounts.
+matplotlib>=3.7,<4.0
