@@ -10,9 +10,11 @@ from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from uuid import uuid4
+from urllib.parse import parse_qs, urlsplit
 from .engine import run_market
 from .workspace_lease import WorkspaceLease
-from .text_analysis import analyze, source_digest, validate_analysis_id, validate_saved_analysis, validate_source
+from .text_analysis import analyze, ModelAnalysisError, source_digest, validate_analysis_id, validate_saved_analysis, validate_source
+from .model_connection import ModelConnection, ModelCheckInProgress
 from .strategy_config import defaults, load_model, parameters_digest, profile_view, validate_parameters
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -135,7 +137,14 @@ class PlatformStore:
     def recover_interrupted(self):
         """Call only after obtaining the exclusive server workspace lease."""
         for path in self.data_dir.glob('*/experiment.json'):
-            record = load_json(path)
+            try:
+                record = load_json(path)
+                if not isinstance(record, dict):
+                    raise ValueError('实验记录必须为对象')
+            except (OSError, ValueError, TypeError):
+                # A damaged record is surfaced by list(); it must not prevent
+                # the rest of the workspace from recovering on startup.
+                continue
             if record.get('run_status') == 'running':
                 atomic_json(path, {**record, 'run_status': 'interrupted',
                                   'run_finished_at': utc_now(),
@@ -147,9 +156,16 @@ class PlatformStore:
         for path in self.data_dir.glob("*/experiment.json"):
             try:
                 row = load_json(path)
+                if (not isinstance(row, dict) or row.get('id') != path.parent.name
+                        or any(not isinstance(row.get(k), str) for k in ('title', 'type', 'created_at'))):
+                    raise ValueError('实验记录摘要字段无效')
                 rows.append({k: row[k] for k in ("id", "title", "type", "created_at", "status", "run_status") if k in row})
             except (OSError, ValueError, KeyError, TypeError):
-                continue
+                # Keep a visible tombstone so the UI can identify a damaged
+                # record instead of silently shrinking the experiment list.
+                rows.append({"id": path.parent.name, "title": "记录损坏 · 需要恢复",
+                             "type": "未知", "created_at": "", "status": "corrupt",
+                             "run_status": "corrupt"})
         return sorted(rows, key=lambda r: r.get("created_at", ""), reverse=True)
 
     def get(self, experiment_id: str) -> dict | None:
@@ -186,19 +202,44 @@ class PlatformStore:
             atomic_json(self.data_dir / 'analyses' / (analysis_id + '.json'), record)
         return record
 
-    def bound_analysis(self, analysis_id: str, source: str) -> dict:
+    def get_analysis(self, analysis_id: str) -> dict | None:
         validate_analysis_id(analysis_id)
         path = self.data_dir / 'analyses' / (analysis_id + '.json')
-        if not path.is_file():
-            raise ValueError('关联的文本分析不存在，请重新分析或取消关联')
-        record = validate_saved_analysis(source, load_json(path))
+        with self.lock:
+            if not path.is_file():
+                return None
+            record = load_json(path)
+        if not isinstance(record, dict):
+            raise ValueError('文本分析存档结构不完整')
+        record = validate_saved_analysis(record.get('source'), record)
         if record.get('analysis_id', analysis_id) != analysis_id:
             raise ValueError('文本分析 ID 与存档不一致')
         return {**record, 'analysis_id': analysis_id}
 
-    def create(self, payload: dict) -> dict:
+    def bound_analysis(self, analysis_id: str, source: str) -> dict:
+        record = self.get_analysis(analysis_id)
+        if record is None:
+            raise ValueError('关联的文本分析不存在，请重新分析或取消关联')
+        return validate_saved_analysis(source, record)
+
+    def create(self, payload: dict, submission_id: str | None = None) -> dict:
         config = validate_experiment(payload)
-        experiment_id = uuid4().hex
+        if submission_id is not None:
+            validate_analysis_id(submission_id)
+        payload_sha256 = analysis_digest(config)
+        experiment_id = submission_id or uuid4().hex
+
+        def existing_submission():
+            existing = self.get(experiment_id) if submission_id is not None else None
+            if existing is not None and (not isinstance(existing, dict) or existing.get('id') != experiment_id
+                                        or existing.get('submission_payload_sha256') != payload_sha256):
+                raise ValueError('提交编号已用于另一份配置，请新建实验')
+            return existing
+
+        with self.lock:
+            existing = existing_submission()
+            if existing is not None:
+                return existing
         analysis = self.bound_analysis(config['analysis_id'], config['source']) if config['analysis_id'] else None
         parameter_origin = 'explicit' if config['strategy_parameters'] is not None else 'workspace_profile'
         config['strategy_parameters'] = config['strategy_parameters'] or self.strategies()['parameters']
@@ -208,7 +249,14 @@ class PlatformStore:
                   'scenario_variables_origin': 'manual', 'strategy_parameters_origin': parameter_origin,
                   'strategy_parameters_sha256': parameters_digest(config['strategy_parameters']),
                   'mechanism_config_sha256': load_model()[1]}
+        if submission_id is not None:
+            record['submission_payload_sha256'] = payload_sha256
         with self.lock:
+            # Simultaneous retries must return the first saved configuration,
+            # including its strategy snapshot and any later run status.
+            existing = existing_submission()
+            if existing is not None:
+                return existing
             atomic_json(self.data_dir / experiment_id / "experiment.json", record)
         return record
 
@@ -241,16 +289,18 @@ class PlatformStore:
             if record['analysis_sha256'] != analysis_digest(record['text_analysis']):
                 raise ValueError('实验的文本分析快照已改变')
         provenance = {'experiment_id': experiment_id, 'source_sha256': source_digest(record['source']),
+                      'run_attempts': record.get('run_attempts'),
                       'analysis_id': record.get('analysis_id'), 'analysis_sha256': record.get('analysis_sha256'),
                       'text_analysis_role': 'reference_only' if record.get('text_analysis') else 'none',
                       'scenario_variables_origin': 'manual',
                       'strategy_parameters_sha256': record.get('strategy_parameters_sha256')}
+        result_id = uuid4().hex
+        provenance['result_id'] = result_id
         result = {**run_market(record), 'generated_at': utc_now(), 'provenance': provenance}
         record = {**record, "run_status": "completed", "last_run_at": result["generated_at"],
                   'run_finished_at': utc_now(), 'run_error': None}
         # Publish only after the immutable result is safely stored. A failed
         # record commit leaves the previous successful result selected.
-        result_id = uuid4().hex
         atomic_json(self.data_dir / experiment_id / 'runs' / (result_id + '.json'), result)
         record['result_id'] = result_id
         with self.lock:
@@ -280,7 +330,12 @@ class PlatformStore:
 
 
 def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingHTTPServer:
+    from .batches import BatchManager, BatchInProgress
+    from .source_cases import SourceCaseLibrary, CaseArchiveIntegrityError
     store = PlatformStore(data_dir)
+    batches = BatchManager(store)
+    source_cases = SourceCaseLibrary()
+    model_connection = ModelConnection()
     class Handler(BaseHTTPRequestHandler):
         def json(self, code: int, payload: object, download: str | None = None) -> None:
             raw = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
@@ -290,12 +345,47 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
             self.send_header("Content-Length", str(len(raw))); self.send_header("Cache-Control", "no-store"); self.end_headers(); self.wfile.write(raw)
         def local(self) -> bool:
             return self.headers.get("Host") == f"127.0.0.1:{self.server.server_port}"
+        def report(self, batch_id: str) -> None:
+            raw = batches.report(batch_id).encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/markdown; charset=utf-8')
+            self.send_header('Content-Disposition', f'attachment; filename="marketmirror-batch-{batch_id}.md"')
+            self.send_header('Content-Length', str(len(raw)))
+            self.send_header('Cache-Control', 'no-store')
+            self.end_headers()
+            self.wfile.write(raw)
         def do_GET(self) -> None:
             if not self.local(): self.json(403, {"error": "仅允许本机访问"}); return
             path = self.path.split("?", 1)[0]
             try:
                 if path == "/api/platform/health": self.json(200, {"status": "ok", "platform_version": "v3", "mode": "local"}); return
                 if path == '/api/platform/strategies': self.json(200, store.strategies()); return
+                if path == '/api/platform/model': self.json(200, model_connection.configuration()); return
+                if path.startswith('/api/platform/analyses/'):
+                    payload = store.get_analysis(path.removeprefix('/api/platform/analyses/'))
+                    self.json(200 if payload is not None else 404, payload if payload is not None else {'error': '文本分析不存在'}); return
+                if path == '/api/platform/source-cases': self.json(200, source_cases.catalog()); return
+                if path.startswith('/api/platform/source-cases/'):
+                    case_id = path.removeprefix('/api/platform/source-cases/')
+                    download = case_id.endswith('/export')
+                    if download: case_id = case_id[:-7]
+                    query = parse_qs(urlsplit(self.path).query, keep_blank_values=True)
+                    if set(query) - {'seed', 'mode'} or any(len(v) != 1 for v in query.values()):
+                        raise ValueError('无效的案例查看条件')
+                    seed = query.get('seed', ['7'])[0]
+                    if not seed.isdecimal(): raise ValueError('无效的种子')
+                    payload = source_cases.get(case_id, int(seed), query.get('mode', ['reviewed_llm'])[0])
+                    self.json(200, payload, f'marketmirror-case-{case_id[:16]}-{int(seed)}-{payload["mode"]}.json' if download else None); return
+                if path == '/api/platform/batches': self.json(200, batches.list()); return
+                if path.startswith('/api/platform/batches/'):
+                    tail = path.removeprefix('/api/platform/batches/')
+                    if tail.endswith('/report'):
+                        self.report(tail[:-7]); return
+                    if '/results/' in tail:
+                        batch_id, experiment_id = tail.split('/results/', 1)
+                        self.json(200, batches.result(batch_id, experiment_id)); return
+                    payload = batches.get(tail)
+                    self.json(200 if payload is not None else 404, payload or {'error': '批次不存在'}); return
                 if path == "/api/platform/experiments": self.json(200, store.list()); return
                 if path.startswith("/api/platform/experiments/"):
                     tail = path.removeprefix("/api/platform/experiments/")
@@ -309,9 +399,11 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                     else: payload = store.get(tail)
                     self.json(200 if payload is not None else 404, payload or {"error": "实验不存在"}); return
                 name = "index.html" if path == "/" else path.removeprefix("/")
-                types = {"index.html":"text/html","app.js":"text/javascript","analysis-state.js":"text/javascript","strategy-state.js":"text/javascript","decision-view.js":"text/javascript","styles.css":"text/css","README.md":"text/markdown"}
+                types = {"index.html":"text/html","app.js":"text/javascript","draft-cache.js":"text/javascript","model-view.js":"text/javascript","case-view.js":"text/javascript","batch-view.js":"text/javascript","analysis-state.js":"text/javascript","strategy-state.js":"text/javascript","decision-view.js":"text/javascript","styles.css":"text/css","README.md":"text/markdown"}
                 if name not in types: self.json(404, {"error": "资源不存在"}); return
                 raw = (SITE / name).read_bytes(); self.send_response(200); self.send_header("Content-Type", types[name] + '; charset=utf-8'); self.send_header("Cache-Control", "no-store"); self.send_header("Content-Length", str(len(raw))); self.end_headers(); self.wfile.write(raw)
+            except FileNotFoundError: self.json(404, {'error': '记录或归档结果不存在'})
+            except CaseArchiveIntegrityError: self.json(503, {'error': '案例归档核验未通过，原文件保留；请检查来源与冻结版本。'})
             except (ValueError, OSError, json.JSONDecodeError): self.json(400, {"error": "请求无法处理"})
         def do_POST(self) -> None:
             if not self.local() or self.headers.get("Origin") not in (None, f"http://127.0.0.1:{self.server.server_port}"):
@@ -320,6 +412,13 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                 length = int(self.headers.get("Content-Length", "0"))
                 if length < 1 or length > MAX_BODY: raise ValueError("请求过大")
                 payload = json.loads(self.rfile.read(length)); path = self.path.split("?", 1)[0]
+                if path == '/api/platform/model/check':
+                    if payload != {}: raise ValueError('连接检测只接受空对象')
+                    self.json(200, model_connection.check()); return
+                if path == '/api/platform/batches': self.json(201, batches.create(payload)); return
+                if path.startswith('/api/platform/batches/') and path.endswith('/run'):
+                    if payload != {}: raise ValueError('运行批次只接受空对象')
+                    self.json(202, batches.start(path[len('/api/platform/batches/'):-4])); return
                 if path == '/api/platform/strategies':
                     if not isinstance(payload, dict) or set(payload) != {'parameters'}:
                         raise ValueError('仅接受完整策略参数')
@@ -329,24 +428,30 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                         raise ValueError('仅接受消息原文')
                     record = store.save_analysis(payload['source'], analyze(payload['source']))
                     self.json(200, record); return
-                if path == "/api/platform/experiments": self.json(201, store.create(payload)); return
+                if path == "/api/platform/experiments":
+                    self.json(201, store.create(payload, self.headers.get('Idempotency-Key'))); return
                 prefix = "/api/platform/experiments/"
                 if path.startswith(prefix) and path.endswith("/run"):
                     result = store.run(path[len(prefix):-4]); self.json(202, result); return
                 self.json(404, {"error": "接口不存在"})
-            except FileNotFoundError: self.json(404, {"error": "实验不存在"})
+            except FileNotFoundError: self.json(404, {"error": "记录不存在"})
             except RunInProgress as exc: self.json(409, {'error': str(exc)})
+            except BatchInProgress as exc: self.json(409, {'error': str(exc)})
+            except ModelCheckInProgress as exc: self.json(409, {'error': str(exc)})
+            except ModelAnalysisError as exc: self.json(502, {'error': str(exc), 'code': exc.code})
             except RuntimeError: self.json(502, {'error': '运行服务暂不可用，请刷新状态后重试'})
             except OSError: self.json(500, {'error': '本机记录读写失败，请检查存储目录'})
             except (ValueError, TypeError, json.JSONDecodeError) as exc: self.json(400, {"error": str(exc)})
         def log_message(self, *_args: object) -> None: return
     class PlatformHTTPServer(ThreadingHTTPServer):
+        request_queue_size = 32
         lease = None
 
         def server_close(self):
             try:
                 super().server_close()
             finally:
+                batches.close()
                 if self.lease is not None:
                     self.lease.close()
 
@@ -354,6 +459,7 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
     try:
         server.lease = WorkspaceLease(store.data_dir)
         store.recover_interrupted()
+        batches.recover_interrupted()
     except Exception:
         server.server_close()
         raise

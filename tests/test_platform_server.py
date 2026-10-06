@@ -39,6 +39,38 @@ class PlatformStoreTest(unittest.TestCase):
                 "published_at": "2026-10-05T09:00", "signal": .6, "uncertainty": .2, "duration": 6,
                 "sessions": 18, "seed": 7, "cash": 1_000_000}
 
+    def test_startup_recovery_skips_corrupt_record(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            directory.joinpath('bad-record').mkdir()
+            directory.joinpath('bad-record', 'experiment.json').write_text('{not-json', encoding='utf-8')
+            store = PlatformStore(directory)
+            store.recover_interrupted()
+            self.assertEqual(store.list()[0]['run_status'], 'corrupt')
+
+    def test_non_object_records_do_not_prevent_real_server_startup(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            for index, value in enumerate((None, [], 7, {}, {'created_at': 42})):
+                atomic_json(directory / str(index) / 'experiment.json', value)
+            server = create_server(directory, 0)
+            try:
+                rows = PlatformStore(directory).list()
+                self.assertEqual(len(rows), 5)
+                self.assertTrue(all(row['run_status'] == 'corrupt' for row in rows))
+            finally:
+                server.server_close()
+
+    def test_list_exposes_corrupt_record_tombstone(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            directory.joinpath('bad-record').mkdir()
+            directory.joinpath('bad-record', 'experiment.json').write_text('{not-json', encoding='utf-8')
+            rows = PlatformStore(directory).list()
+            self.assertEqual(rows[0]['id'], 'bad-record')
+            self.assertEqual(rows[0]['run_status'], 'corrupt')
+            self.assertIn('损坏', rows[0]['title'])
+
     def test_validate_and_persist(self):
         with tempfile.TemporaryDirectory() as tmp:
             store = PlatformStore(Path(tmp)); record = store.create(self.payload())

@@ -9,6 +9,8 @@
       this.pending = false;
       this.outdated = false;
       this.error = '';
+      this.restoring = false;
+      this.restoreError = false;
     }
     setSource(source) {
       if (source === this.source) return false;
@@ -24,6 +26,8 @@
       this.pending = false;
       this.outdated = false;
       this.error = '';
+      this.restoring = false;
+      this.restoreError = false;
     }
     begin(source) {
       this.reset(source);
@@ -40,6 +44,8 @@
       }
       this.analysis = analysis;
       this.pending = false;
+      this.restoring = false;
+      this.restoreError = false;
       return true;
     }
     fail(ticket, message) {

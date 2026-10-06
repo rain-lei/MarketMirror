@@ -1,4 +1,4 @@
-/* MarketMirror platform preview. Scientific protocols remain separate and frozen. */
+/* Local simulation UI. Scientific protocols remain separate and frozen. */
 (() => {
   'use strict';
   const paths = {
@@ -41,80 +41,69 @@
     {name:'保守型',key:'conservative',icon:'shield',color:'var(--blue)',sensitivity:.25,risk:.008,weight:20,desc:'重视消息不确定性，通过等待确认和较低风险预算控制仓位变化。'},
     {name:'机构型',key:'institutional',icon:'building',color:'var(--purple)',sensitivity:.5,risk:.016,weight:35,desc:'结合组合风险和定期再平衡规则，在多个资产之间分配有限资金。'},
   ];
-  const state = {page:'analysis',selected:0,step:8,asset:'A',decisionGroup:'with_message',signalVisible:true,baselineVisible:true,table:'decisions',wizard:1,search:'',sourceFilter:'all',draft:{title:'',source:'',type:'政策消息',published:'2026-10-05T09:00',signal:.6,uncertainty:.2,duration:6,sessions:18,seed:7,cash:1000000}};
+  const state = {page:'experiments',experimentView:'saved',selected:0,step:8,asset:'A',decisionGroup:'with_message',wizard:1,search:'',sourceFilter:'all',draft:{title:'',source:'',type:'政策消息',published:'2026-10-05T09:00',signal:0,uncertainty:.2,duration:6,sessions:18,seed:7,cash:1000000}};
   const analysisBinding = new SourceAnalysisBinding(state.draft.source);
+  const draftSubmissions = new WeakMap(), draftConfirmations = new WeakMap();
+  let draftStorage=null;
+  try{draftStorage=sessionStorage;}catch(_){}
+  const draftCache=new MarketDraftCache.DraftCache(draftStorage);
+  let draftAnalysisRecovery=null;
+  let navigationVersion = 0;
   const strategyWorkspace = new StrategyWorkspace();
+  const batchWorkspace = new MarketBatchView.BatchState();
+  const caseWorkspace = new MarketCaseView.CaseState();
+  const modelSettings = new MarketModelView.ConnectionState();
+  let caseCatalogLoading=false,caseCatalogVersion=0,caseCatalogError='';
+  const batchForm = {title:'三类策略情景对照',seeds:'1, 7, 19',sessions:18,duration:6,cash:1000000};
+  let batchFormError='', batchListLoading=false, batchListVersion=0, batchPollTimer;
+  let batchArchivedExperiment=null, batchOpenVersion=0;
+  try { batchWorkspace.selectedId=sessionStorage.getItem('marketmirror:selected-batch'); } catch (_) {}
   const content = document.getElementById('content');
   const dialog = document.getElementById('detail-dialog');
-  let chartObserver, toastTimer, rememberedExperimentId = null;
+  let toastTimer, rememberedExperimentId = null;
   try { rememberedExperimentId = sessionStorage.getItem('marketmirror:selected-experiment'); } catch (_) {}
   function rememberExperiment() {
     rememberedExperimentId = current().id;
     try { sessionStorage.setItem('marketmirror:selected-experiment', rememberedExperimentId); } catch (_) {}
   }
-  const current = () => experiments[state.selected];
-  const labels = {analysis:'结果分析',experiments:'实验空间',sources:'消息资料',agents:'策略配置',new:'新建实验'};
+  const current = () => batchArchivedExperiment || experiments[state.selected];
+  const labels = {analysis:'结果分析',experiments:'实验空间',batches:'批量对照',cases:'真实原文案例',sources:'消息资料',agents:'策略配置',new:'新建实验'};
   const format = n => n.toLocaleString('zh-CN');
-  const signed = n => `${n >= 0 ? '+' : ''}${n.toFixed(2)}`;
+  const signed = n => MarketDecisionView.formatNumber(n,6,true);
   const heading = (eyebrow, title, caption, actions = '') => `<div class="page-heading"><div><div class="eyebrow">${eyebrow}</div><h1>${title}</h1><div class="heading-caption">${caption}</div></div><div class="heading-actions">${actions}</div></div>`;
   const newButton = () => `<button class="btn primary" type="button" data-action="new">${icon('plus')}新建实验</button>`;
   function toast(message) { const el=document.getElementById('toast');el.textContent=message;el.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('visible'),3500); }
-  function modal(title, body, footer = `<button type="button" class="btn primary" data-action="close">知道了</button>`) {
+  function modal(title, body, footer = `<button type="button" class="btn primary" data-action="close">知道了</button>`, section='') {
+    dialog.dataset.section=section;
     document.getElementById('dialog-content').innerHTML=`<div class="dialog-head"><h2>${title}</h2><button class="icon-button" type="button" data-action="close" aria-label="关闭对话框">${icon('close')}</button></div><div class="dialog-body">${body}</div><div class="dialog-footer">${footer}</div>`;
     if (!dialog.open) dialog.showModal();
   }
-  function navigate(page) { if(page==='analysis')rememberExperiment();state.page=page;location.hash=page;render();document.querySelector('.sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'instant'}); }
-  function values() {
-    const stored=current().backendResult?.sessions;
-    if(Array.isArray(stored)&&stored.length===18){const baseline=stored.map(()=>100);return {baseline,signal:stored.map(row=>Number(row.price))};}
-    const baseline=[100,100.08,99.91,100.04,100.16,100.07,100.25,100.33,100.2,100.39,100.3,100.55,100.47,100.62,100.7,100.58,100.81,100.94];
-    const changes=[0,0,0,0,.12,.34,.72,1.04,.81,1.21,1.44,1.29,1.69,1.53,1.8,1.93,1.72,1.9];
-    const multiplier=(current().kind==='negative'?-.95:current().kind==='uncertain'?.13:1)*(state.asset==='A'?1:state.asset==='B'?.45:.2);
-    return {baseline,signal:baseline.map((v,i)=>v+changes[i]*multiplier)};
-  }
-  function roleDecision(index) {
-    const step=state.step,active=step>=5 && step<=10, negative=current().kind==='negative';
-    const quantities=active?[600,0,300]:step>10?[0,0,100]:[0,0,0];
-    const filled=active?[400,0,200]:step>10?[0,0,100]:[0,0,0];
-    if(current().kind==='uncertain'){quantities[0]=active?100:0;quantities[2]=0;filled[0]=quantities[0];filled[2]=0;}
-    const q=quantities[index];
-    return {action:q?(negative?'卖出':'买入'):'等待',quantity:q,filled:filled[index],weight:roles[index].weight+(active?(negative?-1:1)*[12,0,5][index]:0),
-      reason:step<5?'消息尚未可见，保持原有目标。':index===1?'不确定性尚未消除，等待下一步确认。':q?(index===0?'信息信号触发目标仓位调整。':'按再平衡规则调整资产配置。'):'当前偏差未触发新增交易。'};
-  }
+  function navigate(page) { if(state.page==='new'&&page!=='new')saveDraft();navigationVersion++;if(page==='analysis')rememberExperiment();state.page=page;location.hash=page;render();document.querySelector('.sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'instant'}); }
   function analysis() {
-    if(current().custom)return runStatusPanel(current())+savedAnalysis();
-    const e=current(),v=values(),delta=v.signal.at(-1)-100,impact=v.signal.at(-1)-v.baseline.at(-1);
-    return heading('EXPERIMENT ANALYSIS',esc(e.title),`<span>${e.id}</span><span class="sep"></span><span>${e.sessions||18} 个决策步</span><span class="sep"></span><span>三资产模拟市场</span><span class="badge">${e.custom?'本机平台预览':'对照实验 · 示例'}</span>`, `<button class="btn" type="button" data-action="export">${icon('download')}导出</button>${newButton()}`)
-      +(e.custom?'<div class="callout">'+icon('help')+'实验配置已保存，并生成了本机 platform_preview 结果。当前图表仍是高保真展示图层，尚未接入 DeepSeek 或冻结研究协议。</div>':'')
-      +`<section class="metrics-strip" aria-label="示例实验指标">
-        <div class="metric"><div class="metric-label">期末价格变化 ${icon('chart')}</div><div class="metric-value positive" id="metric-price">${signed(delta)}<span class="unit">%</span></div><div class="metric-foot">相对初始价格 100</div></div>
-        <div class="metric"><div class="metric-label">消息影响差值 ${icon('layers')}</div><div class="metric-value" id="metric-impact">${signed(impact)}<span class="unit">pp</span></div><div class="metric-foot">有消息 − 无消息</div></div>
-        <div class="metric"><div class="metric-label">累计成交股数 ${icon('agents')}</div><div class="metric-value">12,800<span class="unit">股</span></div><div class="metric-foot">含背景账户 · 展示数据</div></div>
-        <div class="metric"><div class="metric-label">市场最大回撤 ${icon('shield')}</div><div class="metric-value" id="metric-drawdown">${drawdown(v.signal).toFixed(2)}<span class="unit">%</span></div><div class="metric-foot">模拟价格收盘序列</div></div>
-      </section>
-      <div class="analysis-grid"><div class="left-stack">
-        <section class="panel"><div class="panel-header"><div><h2>市场价格路径</h2><p class="panel-subtitle">观察同一市场在两种信息条件下的变化</p></div><div class="segmented" role="group" aria-label="选择资产">${['A','B','C'].map(a=>`<button type="button" data-asset="${a}" class="${a===state.asset?'active':''}" aria-pressed="${a===state.asset}">资产 ${a}</button>`).join('')}</div></div>
-        <div class="legend-row"><button class="legend-button" type="button" data-series="signal" aria-pressed="${state.signalVisible}"><span class="legend-line"></span>有消息</button><button class="legend-button" type="button" data-series="baseline" aria-pressed="${state.baselineVisible}"><span class="legend-line baseline"></span>无消息基线</button><small>初始价格 = 100</small></div>
-        <div class="chart-container"><svg class="price-chart" id="price-chart" role="img" aria-label="18个决策步的模拟价格对照示意图"></svg><div class="chart-hover" id="chart-hover" hidden></div></div><div class="chart-caption"><span>价格 · 模型单位</span><span>决策步 →</span></div>
-        <div class="timeline-control"><div class="timeline-label"><span>拖动时间轴，查看当步决策</span><strong id="step-label">第 ${String(state.step).padStart(2,'0')} / 18 步</strong></div><input type="range" id="time-slider" min="1" max="18" value="${state.step}" aria-label="选择决策步"><div class="timeline-ticks"><span>T01 · 初始状态</span><span>T05 · 消息可见</span><span>T18 · 实验结束</span></div></div></section>
-        <section><div class="section-title"><h2>三类策略 · 当步响应</h2><span>点击策略，查看决策详情</span></div><div class="agent-grid" id="agent-cards">${agentCards()}</div></section>
-        <section class="panel"><div class="table-toolbar"><button type="button" data-table="decisions" class="table-tab ${state.table==='decisions'?'active':''}">决策与执行</button><button type="button" data-table="holdings" class="table-tab ${state.table==='holdings'?'active':''}">账户概况</button></div><div class="table-wrap" id="execution-table">${executionTable()}</div></section>
-      </div><aside class="right-stack"><section class="panel"><div class="panel-header"><h2>实验摘要</h2><button class="subtle-link" type="button" data-action="duplicate">复制配置 ${icon('chevron')}</button></div><div class="summary-content"><div class="source-label">${icon('document')}${esc(e.type)} · 示例消息</div><p class="source-preview">${esc(e.source.slice(0,74))}${e.source.length>74?'…':''}</p><button class="subtle-link" type="button" data-action="source">查看消息原文 ${icon('arrow')}</button><div class="summary-list"><div class="summary-row"><span>信息条件</span><b>有消息 / 无消息</b></div><div class="summary-row"><span>影响资产</span><b>资产 A</b></div><div class="summary-row"><span>持续时间</span><b>6 个决策步</b></div><div class="summary-row"><span>随机种子</span><span class="chip">${e.seed}</span></div><div class="summary-row"><span>参与策略</span><div class="chips"><span class="chip">激进</span><span class="chip">保守</span><span class="chip">机构</span></div></div></div><div class="summary-assumption">资产暴露与冲击幅度为情景假设；用于观察机制，不代表真实市场预测。</div></div></section>
-      <section class="panel"><div class="panel-header"><h2>决策溯源</h2><span class="badge neutral" id="trace-step">T${String(state.step).padStart(2,'0')}</span></div><div class="trace-list" id="trace-list">${trace()}</div><div class="trace-footer">${icon('lock')}原文 → 变量 → 决策 → 成交</div></section></aside></div>`;
+    if(!experimentsLoaded)return `<section class="panel"><div class="summary-content"><h1>${experimentLoading?'正在读取本机实验…':'本机实验尚未加载'}</h1><p>读取完成后显示已有撮合记录与结果。</p>${experimentLoading?'':'<button class="btn" data-action="refresh-runs">重新加载记录</button>'}</div></section>`;
+    if(!current().custom)return heading('EXPERIMENT ANALYSIS','选择一个已保存实验','先运行实验，再查看三类策略的决策与成交。',newButton())+'<section class="panel"><div class="summary-content"><p>尚未选择可读取的本机实验。可以新建实验，也可以在实验空间复用示例模板。</p><button class="btn" data-nav="experiments">打开实验空间</button></div></section>';
+    if(current().corrupt)return `<section class="panel"><div class="summary-content"><h1>实验记录需要恢复</h1><p>记录编号：${esc(current().id)}</p><p>配置文件无法读取，不能运行、复制或导出此实验。原文件仍保留在本机；请从已知完整的备份恢复后重新加载。</p><button class="btn" data-action="refresh-runs">重新加载记录</button></div></section>`;
+    return (batchArchivedExperiment?`<div class="callout"><div><strong>正在查看批次归档结果</strong><p>结果版本 ${esc(current().backendResult.provenance.result_id.slice(0,10))}。本页读取批次保存的版本；之后单独重跑不会改变此归档。</p><button class="btn compact" data-action="back-to-batch">返回批量对照</button></div></div>`:'')+runStatusPanel(current())+savedAnalysis();
   }
-  function drawdown(series){let high=series[0],dd=0;series.forEach(v=>{high=Math.max(high,v);dd=Math.max(dd,(high-v)/high*100);});return dd;}
-  function agentCards(){return roles.map((r,i)=>{const d=roleDecision(i);return `<button type="button" class="agent-card" style="--role:${r.color}" data-role="${i}" aria-label="查看${r.name}第${state.step}步决策"><div class="agent-top"><span class="agent-title"><span class="agent-mark">${icon(r.icon)}</span>${r.name}</span><span class="badge ${d.action==='等待'?'neutral':i===0?'orange':'blue'}">${d.action}</span></div><div class="agent-return ${current().kind==='negative'?'':'positive'}">${signed((current().kind==='negative'?-1:1)*[1.86,.42,1.12][i]*state.step/18)}%</div><div class="agent-return-label">截至当步 · 示例账户收益</div><div class="allocation-label"><span>目标股票仓位</span><b>${d.weight}%</b></div><div class="allocation-track"><i style="width:${d.weight}%"></i></div><div class="agent-divider"></div><div class="agent-request"><span>请求 / 实际成交</span><b>${d.quantity} / ${d.filled} 股</b></div><p class="agent-note">${d.reason}</p></button>`}).join('');}
-  function executionTable(){return `<table><thead><tr>${(state.table==='decisions'?['策略','决策','请求股数','实际成交','执行状态']:['策略','初始资金（模型元）','目标仓位','风险预算']).map(s=>`<th>${s}</th>`).join('')}</tr></thead><tbody>${roles.map((r,i)=>{const d=roleDecision(i);return `<tr><td style="--role:${r.color}"><span class="row-dot"></span>${r.name}</td>${state.table==='decisions'?`<td>${d.action}</td><td>${format(d.quantity)}</td><td>${format(d.filled)}</td><td><span class="badge ${d.quantity>d.filled?'orange':'neutral'}">${!d.quantity?'无新增订单':d.quantity>d.filled?'部分成交':'全部成交'}</span></td>`:`<td>1,000,000</td><td>${d.weight}%</td><td>${r.risk.toFixed(3)}</td>`}</tr>`}).join('')}</tbody></table>`;}
-  function trace(){const visible=state.step>=5,active=visible&&state.step<=10;const steps=[['原文与可见时间',visible?'消息已进入本步可见信息集。':'消息尚未公开，不参与本步决策。'],['信息变量',active?`情景信号 <strong>${current().kind==='negative'?'−0.60':current().kind==='uncertain'?'0.00':'+0.60'}</strong> · 不确定性 <strong>0.20</strong>`:visible?'消息作用期已结束。':'信号为 0，等待消息可见。'],['三类策略响应',active?'激进调整仓位，保守等待确认，机构按组合规则响应。':'按各自基础仓位与风险规则行动。'],['订单与实际成交',active?'激进请求 600 股 → 示例成交 400 股。': '是否发单取决于目标仓位与当前持仓。']];return steps.map((s,i)=>`<div class="trace-item"><span class="trace-number">${i+1}</span><div><div class="trace-title">${s[0]}</div><p class="trace-description">${s[1]}</p></div></div>`).join('');}
-  function drawChart(){const svg=document.getElementById('price-chart');if(!svg)return;const w=Math.max(240,svg.clientWidth),h=svg.clientHeight||242,p={l:43,r:20,t:29,b:30},v=values(),all=[...v.baseline,...v.signal];let min=Math.floor((Math.min(...all)-.2)*2)/2,max=Math.ceil((Math.max(...all)+.2)*2)/2;const x=i=>p.l+i*(w-p.l-p.r)/17,y=z=>h-p.b-(z-min)/(max-min)*(h-p.t-p.b);const line=a=>a.map((n,i)=>`${i?'L':'M'}${x(i).toFixed(2)},${y(n).toFixed(2)}`).join(' ');const n=state.step-1;svg.setAttribute('viewBox',`0 0 ${w} ${h}`);const ticks=Array.from({length:5},(_,i)=>min+(max-min)*i/4);const xs=w<400?[0,5,11,17]:[0,3,6,9,12,15,17];svg.innerHTML=`<defs><linearGradient id="area-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--teal)" stop-opacity=".12"/><stop offset="100%" stop-color="var(--teal)" stop-opacity="0"/></linearGradient></defs><rect x="${x(4)}" y="${p.t}" width="${x(9)-x(4)}" height="${h-p.b-p.t}" fill="var(--teal)" opacity=".035"/>${ticks.map(t=>`<path d="M${p.l} ${y(t)}H${w-p.r}" class="chart-grid"/><text x="${p.l-10}" y="${y(t)+3}" text-anchor="end" class="chart-label">${t.toFixed(1)}</text>`).join('')}${xs.map(i=>`<text x="${x(i)}" y="${h-9}" text-anchor="middle" class="chart-label">${String(i+1).padStart(2,'0')}</text>`).join('')}<path d="M${x(4)} ${p.t}V${h-p.b}" stroke="var(--teal)" stroke-opacity=".3" stroke-dasharray="3 4"/><text x="${x(4)+7}" y="17" class="chart-label" style="fill:var(--teal)">消息可见</text>${state.signalVisible?`<path d="${line(v.signal)}L${x(17)} ${h-p.b}L${x(0)} ${h-p.b}Z" fill="url(#area-fill)"/><path d="${line(v.signal)}" fill="none" stroke="var(--teal)" stroke-width="2.4" stroke-linejoin="round"/>`:''}${state.baselineVisible?`<path d="${line(v.baseline)}" fill="none" stroke="#95a5b8" stroke-width="1.7" stroke-dasharray="5 5" stroke-linejoin="round"/>`:''}<path d="M${x(n)} ${p.t}V${h-p.b}" stroke="var(--faint)" stroke-dasharray="3 4"/>${state.signalVisible?`<circle cx="${x(n)}" cy="${y(v.signal[n])}" r="4" fill="var(--surface)" stroke="var(--teal)" stroke-width="2"/>`:''}${state.baselineVisible?`<circle cx="${x(n)}" cy="${y(v.baseline[n])}" r="3" fill="var(--surface)" stroke="#95a5b8" stroke-width="1.6"/>`:''}`;
-    svg.onpointermove=e=>{const box=svg.getBoundingClientRect(),i=Math.max(0,Math.min(17,Math.round(((e.clientX-box.left)-p.l)/(w-p.l-p.r)*17)));const tip=document.getElementById('chart-hover');tip.hidden=false;tip.style.left=Math.min(w-155,Math.max(25,x(i)))+'px';tip.textContent=`T${String(i+1).padStart(2,'0')}　${state.signalVisible?'有消息 '+v.signal[i].toFixed(2):''}${state.baselineVisible?' / 基线 '+v.baseline[i].toFixed(2):''}`;};svg.onpointerleave=()=>{document.getElementById('chart-hover').hidden=true;};svg.onclick=e=>{const box=svg.getBoundingClientRect();setStep(Math.max(1,Math.min(18,Math.round(((e.clientX-box.left)-p.l)/(w-p.l-p.r)*17)+1)));};
+  function experimentRows(){
+    const templates=state.experimentView==='templates',rows=experiments.filter(e=>Boolean(e.custom)!==templates&&(e.title+e.type).toLowerCase().includes(state.search.toLowerCase()));
+    return rows.length?rows.map(e=>{const inconsistent=e.run_status==='completed'&&!e.backendResult,status=e.custom?(e.corrupt?'记录损坏 · 需恢复':e.run_status==='running'?'运行中':e.run_status==='unknown'?'状态待确认':e.run_status==='failed'?'运行失败':e.run_status==='interrupted'?'运行已中断':inconsistent?'结果缺失 · 请刷新':e.backendResult?(e.backendResult.mode==='synthetic_market'?'已完成 · 撮合实验':'已完成 · 历史预览'):'已保存 · 待运行'):'示例模板 · 虚构文本';
+      const action=e.custom?'data-open':'data-use',index=experiments.indexOf(e);
+      return `<tr class="experiment-row"><td>${e.corrupt?`<span class="experiment-name">${esc(e.title)}</span>`:`<button class="subtle-link experiment-name" type="button" ${action}="${index}">${esc(e.title)}</button>`}<small>${esc(e.id)} · ${esc(e.type)}</small>${e.custom&&!e.corrupt?`<small>信号 ${esc(e.signal)} · 不确定性 ${esc(e.uncertainty)}</small>`:''}</td><td><span class="badge neutral">${status}</span></td><td>${e.corrupt?'不可读取':`${e.sessions||18} 步 / 三类策略`}</td><td>${e.corrupt?'—':e.seed}</td><td>${e.custom?esc(e.time):'内置模板'}</td><td>${e.corrupt?'<span class="form-hint">需恢复</span>':`<button class="icon-button" ${action}="${index}" aria-label="${e.custom?'打开':'复用'}${esc(e.title)}">${icon('arrow')}</button>`}</td></tr>`;
+    }).join(''):`<tr><td colspan="6" class="empty">${state.search?'没有找到匹配记录。':templates?'暂无示例模板。':experimentLoading?'正在读取本机实验…':'暂无已加载的本机实验，点击“新建实验”开始，或复用示例模板。'}</td></tr>`;
   }
-  function setStep(step){state.step=step;document.getElementById('time-slider').value=step;document.getElementById('step-label').textContent=`第 ${String(step).padStart(2,'0')} / 18 步`;document.getElementById('trace-step').textContent='T'+String(step).padStart(2,'0');document.getElementById('agent-cards').innerHTML=agentCards();document.getElementById('execution-table').innerHTML=executionTable();document.getElementById('trace-list').innerHTML=trace();drawChart();}
-  function experimentRows(){const rows=experiments.filter(e=>(e.title+e.type).toLowerCase().includes(state.search.toLowerCase()));return rows.length?rows.map(e=>{const inconsistent=e.run_status==='completed'&&!e.backendResult;const status=e.custom?(e.run_status==='running'?'运行中':e.run_status==='failed'?'运行失败':e.run_status==='interrupted'?'运行已中断':inconsistent?'结果缺失 · 请刷新':e.backendResult?(e.backendResult.mode==='synthetic_market'?'已完成 · 撮合实验':'已完成 · 本机预览'):'已保存 · 无可用结果'):'已完成 · 示例';return `<tr class="experiment-row"><td><button class="subtle-link experiment-name" type="button" data-open="${experiments.indexOf(e)}">${esc(e.title)}</button><small>${e.id} · ${esc(e.type)}</small></td><td><span class="badge ${e.custom?'neutral':''}">${status}</span></td><td>${e.sessions||18} 步 / 三类策略</td><td>${e.seed}</td><td>${e.time}</td><td><button class="icon-button" data-open="${experiments.indexOf(e)}" aria-label="打开${esc(e.title)}">${icon('arrow')}</button></td></tr>`;}).join(''):'<tr><td colspan="6" class="empty">没有找到匹配的实验。试试“政策”或“需求”。</td></tr>';}
-  function experimentsPage(){return heading('YOUR EXPERIMENTS','实验空间','每一次实验，都保留信息、假设与结果。',newButton())+`<div class="overview-intro"><div><div class="eyebrow">从一个问题开始</div><h2>同一条消息，不同策略会怎样行动？</h2><p>选择一个示例，或创建自己的消息情景。</p></div><button class="btn" type="button" data-open="${experiments.findIndex(e=>!e.custom)}">打开示例实验 ${icon('arrow')}</button></div><div class="experiment-tools"><div class="searchbox">${icon('search')}<input id="experiment-search" type="search" value="${esc(state.search)}" placeholder="搜索实验名称或消息类型" aria-label="搜索实验"></div><span class="form-hint">${experiments.length} 个实验 · 示例与本机记录</span></div><section class="panel table-wrap"><table><thead><tr><th>实验名称</th><th>状态</th><th>实验范围</th><th>种子</th><th>创建时间</th><th></th></tr></thead><tbody id="experiment-rows">${experimentRows()}</tbody></table></section>`;}
+  function experimentsPage(){
+    const saved=experiments.filter(e=>e.custom),templates=experiments.filter(e=>!e.custom),view=state.experimentView==='templates';
+    const latest=saved.find(e=>!e.corrupt&&e.backendResult?.mode==='synthetic_market'),hint=view?'选择模板后编辑原文和假设，再运行自己的实验。':latest?'打开已有撮合结果，或用新消息比较三类策略。':'输入一段消息，设定假设，运行三类策略的对照。';
+    return heading('YOUR EXPERIMENTS','实验空间','每一次实验，都保留信息、假设与结果。',`${hasDraftContent()?'<button class="btn" type="button" data-action="resume-draft">继续草稿</button>':''}${newButton()}`)
+      +`<div class="overview-intro"><div><div class="eyebrow">从一个问题开始</div><h2>同一条消息，不同策略会怎样行动？</h2><p>${hint}</p></div>${!view&&latest?`<button class="btn" data-open="${experiments.indexOf(latest)}">查看最新撮合实验 ${icon('arrow')}</button>`:`<button class="btn" data-nav="cases">查看真实原文案例 ${icon('arrow')}</button>`}</div>`
+      +`<div class="experiment-tools"><div class="segmented" role="group" aria-label="实验记录范围">${[['saved','本机实验',saved.length],['templates','示例模板',templates.length]].map(([key,label,count])=>`<button type="button" data-experiment-view="${key}" class="${state.experimentView===key?'active':''}" aria-pressed="${state.experimentView===key}">${label} · ${count}</button>`).join('')}</div><div class="searchbox">${icon('search')}<input id="experiment-search" type="search" value="${esc(state.search)}" placeholder="搜索实验名称或消息类型" aria-label="搜索实验"></div></div>`
+      +(view?'<div class="callout">示例模板使用虚构文本；点击复用进入新建流程，保存并运行后生成自己的撮合结果。</div>':'')
+      +`<section class="panel table-wrap"><table><thead><tr><th>实验名称</th><th>状态</th><th>实验范围</th><th>种子</th><th>创建时间</th><th></th></tr></thead><tbody id="experiment-rows">${experimentRows()}</tbody></table></section>`;
+  }
   function sourcesPage(){
     const saved=experiments.filter(e=>e.custom),examples=experiments.filter(e=>!e.custom);
-    const cards=rows=>rows.map(e=>`<article class="panel source-card"><div class="source-label">${icon('document')}<span class="badge neutral">${esc(e.type)}</span><span class="badge neutral">${e.custom?'已保存原文':'虚构示例'}</span></div><h2>${esc(e.title)}</h2><details><summary>展开消息原文 · ${e.source.length} 字符</summary><p style="white-space:pre-wrap">${esc(e.source)}</p></details><p class="form-hint">${e.custom?(e.text_analysis?'已关联事实提取与引文；不代表事实真实性已验证。':'未关联模型分析。'):'仅用于体验操作流程。'}</p><div class="source-card-bottom"><span class="form-hint">实验 ${esc(e.id)}</span><button class="subtle-link" type="button" data-use="${experiments.indexOf(e)}">复制消息与配置 ${icon('arrow')}</button></div><button class="subtle-link" type="button" data-open="${experiments.indexOf(e)}">查看关联实验</button></article>`).join('');
+    const cards=rows=>rows.filter(e=>!e.corrupt&&typeof e.source==='string').map(e=>`<article class="panel source-card"><div class="source-label">${icon('document')}<span class="badge neutral">${esc(e.type)}</span><span class="badge neutral">${e.custom?'已保存原文':'虚构示例'}</span></div><h2>${esc(e.title)}</h2><details><summary>展开消息原文 · ${e.source.length} 字符</summary><p style="white-space:pre-wrap">${esc(e.source)}</p></details><p class="form-hint">${e.custom?(e.text_analysis?'已关联事实提取与引文；不代表事实真实性已验证。':'未关联模型分析。'):'仅用于体验操作流程。'}</p><div class="source-card-bottom"><span class="form-hint">实验 ${esc(e.id)}</span><button class="subtle-link" type="button" data-use="${experiments.indexOf(e)}">复制消息与配置 ${icon('arrow')}</button></div><button class="subtle-link" type="button" data-open="${experiments.indexOf(e)}">查看关联实验</button></article>`).join('');
     return heading('INFORMATION LIBRARY','消息资料','查看已保存消息，复用原文与实验配置。',`<button class="btn primary" type="button" data-action="new">${icon('plus')}使用新消息</button>`)
       +`<div class="section-title"><h2>已保存消息 <small>${saved.length} 条实验记录</small></h2></div><div class="source-cards">${saved.length?cards(saved):'<p class="empty">暂无已加载的本机消息。保存实验后，消息原文会出现在这里。</p>'}</div>`
       +`<div class="section-title"><h2>体验示例</h2></div><div class="callout">以下示例为虚构文本，用于体验三类策略的实验流程。</div><div class="source-cards">${cards(examples)}</div>`;
@@ -160,7 +149,7 @@
     if(!parameters||roles.some(r=>!parameters[r.key]))return '';
     return `<section class="panel experiment-strategies"><div class="panel-header"><h2>本实验策略参数</h2><span class="badge neutral">${e.strategy_parameters?'已随实验保存':'来自历史运行记录'}</span></div><p class="panel-subtitle strategy-table-note">有消息与无消息两组使用同一组策略参数。</p>${strategyTable(parameters)}</section>`;
   }
-  function saveDraft(){document.querySelectorAll('[data-draft]').forEach(el=>{state.draft[el.dataset.draft]=el.type==='range'||el.type==='number'?Number(el.value):el.value;});analysisBinding.setSource(state.draft.source);}
+  function saveDraft(){document.querySelectorAll('[data-draft]').forEach(el=>{state.draft[el.dataset.draft]=['signal','uncertainty','duration','sessions','seed','cash'].includes(el.dataset.draft)?Number(el.value):el.value;});analysisBinding.setSource(state.draft.source);persistDraft();}
   const factStatus = {confirmed:'原文陈述',uncertain:'尚不确定',question:'提问'};
   function analysisEvidence(analysis){
     const time=analysis.created_at?new Date(analysis.created_at).toLocaleString('zh-CN',{timeZone:'Asia/Shanghai',hour12:false}):'未记录';
@@ -170,26 +159,207 @@
       <details class="evidence-version"><summary>分析记录与版本</summary><dl><dt>记录编号</dt><dd>${esc(analysis.analysis_id)}</dd><dt>原文 SHA-256</dt><dd>${esc(analysis.source_sha256)}</dd><dt>提示词 SHA-256</dt><dd>${esc(analysis.prompt_sha256)}</dd></dl></details>`;
   }
   function draftAnalysisPanel(){
-    if(analysisBinding.pending)return '<div class="analysis-status" role="status">正在使用 DeepSeek 提取事实…<button type="button" class="subtle-link" data-action="detach-analysis">取消等待，手动设置</button></div>';
+    if(analysisBinding.pending)return `<div class="analysis-status" role="status">${analysisBinding.restoring?'正在读取本机已保存的事实分析…':'正在使用 DeepSeek 提取事实…'}<button type="button" class="subtle-link" data-action="detach-analysis">取消等待，手动设置</button></div>`;
     if(analysisBinding.analysis)return `<div class="analysis-status"><span>${analysisBinding.analysis.facts.length} 条模型事实将随实验保存</span><button type="button" class="subtle-link" data-action="detach-analysis">取消关联</button></div><details class="evidence-draft" open><summary>事实与原文依据</summary>${analysisEvidence(analysisBinding.analysis)}</details>`;
     const message=analysisBinding.error?'提取失败：'+analysisBinding.error:analysisBinding.outdated?'原文已修改，旧分析已取消关联。可重新提取，或继续手动设置情景。':'可选：提取事实并随实验保存；也可直接手动设置情景。';
-    return `<p class="analysis-status ${analysisBinding.error?'error':''}" role="status">${esc(message)}</p>`;
+    return `<div class="analysis-status ${analysisBinding.error?'error':''}" role="status">${esc(message)}${analysisBinding.restoreError?'<button class="subtle-link" type="button" data-action="retry-restore-analysis">重新读取</button><button class="subtle-link" type="button" data-action="detach-analysis">取消关联，手动设置</button>':''}</div>`;
   }
   function updateDraftAnalysisPanel(){
     const panel=document.getElementById('draft-analysis-panel');if(panel)panel.innerHTML=draftAnalysisPanel();
     const button=document.querySelector('[data-action="analyze-source"]');
-    if(button){button.disabled=analysisBinding.pending;button.textContent=analysisBinding.pending?'正在提取事实…':'使用 DeepSeek 提取事实';}
+    if(button){button.disabled=analysisBinding.pending;button.textContent=analysisBinding.pending?(analysisBinding.restoring?'正在恢复分析…':'正在提取事实…'):'使用 DeepSeek 提取事实';}
+    updateDraftSubmission();
   }
   function experimentEvidence(analysis){
     return `<section class="panel evidence-panel"><div class="panel-header"><h2>文本分析与原文依据</h2><span class="badge neutral">${analysis?'已关联':'手动情景'}</span></div><div class="summary-content">${analysis?analysisEvidence(analysis):'<p class="evidence-note">此实验未关联模型分析，情景变量由用户直接设定。</p>'}</div></section>`;
   }
-  function wizardPage(){const d=state.draft;return heading('NEW EXPERIMENT','从一条消息，建立一个实验','先定义消息与假设，再观察三类策略的响应。',`<button class="btn ghost" data-action="cancel-new" type="button">返回实验空间</button>`)+`<div class="stepper" aria-label="创建步骤">${['消息与来源','情景与策略','确认实验'].map((label,i)=>`<div class="step-item ${state.wizard===i+1?'active':''}"><span>${state.wizard>i+1?'✓':i+1}</span>${label}</div>`).join('')}</div><div class="wizard-layout"><section class="panel"><div class="form-body">${state.wizard===1?`
+  function wizardPage(){const d=state.draft,ticket=draftSubmissions.get(d);return heading('NEW EXPERIMENT','从一条消息，建立一个实验','先定义消息与假设，再观察三类策略的响应。',`<button class="btn ghost" data-action="cancel-new" type="button">返回实验空间</button>`)+`<div id="draft-cache-status" class="draft-cache-status${draftCache.error?' error':''}" role="status">${esc(draftCacheMessage())}</div><div class="stepper" aria-label="创建步骤">${['消息与来源','情景与策略','确认实验'].map((label,i)=>`<div class="step-item ${state.wizard===i+1?'active':''}"><span>${state.wizard>i+1?'✓':i+1}</span>${label}</div>`).join('')}</div><div class="wizard-layout"><section class="panel"><div class="form-body">${state.wizard===1?`
       <div class="form-field"><label for="draft-title">实验名称</label><input id="draft-title" data-draft="title" maxlength="70" value="${esc(d.title)}" placeholder="例如：流动性宽松消息对三类策略的影响"></div><div class="form-two"><div class="form-field"><label for="draft-type">消息类型</label><select id="draft-type" data-draft="type">${['政策消息','宏观消息','公司问答','其他消息'].map(x=>`<option ${x===d.type?'selected':''}>${x}</option>`).join('')}</select></div><div class="form-field"><label for="draft-time">发布时间 · 北京时间</label><input id="draft-time" type="datetime-local" data-draft="published" value="${esc(d.published)}"></div></div><div class="form-field"><label for="draft-source">消息原文</label><button class="btn" type="button" data-action="analyze-source">使用 DeepSeek 提取事实</button><textarea id="draft-source" data-draft="source" maxlength="12000" placeholder="粘贴政策、新闻或公司问答原文。公司问答请同时保留提问和回复。">${esc(d.source)}</textarea><small>保留原文，便于在决策详情中查看证据与信息可见时间。</small></div><div id="draft-analysis-panel">${draftAnalysisPanel()}</div><div class="form-hint">也可以从示例开始</div><div class="sample-picker">${experiments.filter(e=>!e.custom).map(e=>`<button type="button" data-sample="${experiments.indexOf(e)}">${esc(e.title.split(' · ')[0])}</button>`).join('')}</div>
-      `:state.wizard===2?`<h2>文本变量与情景假设</h2><div class="review-box"><strong>情景假设 · 变量由你设定</strong><p>参考下方事实设定方向与强度。模型提取不自动转换为价格冲击。</p></div><div id="draft-analysis-panel">${draftAnalysisPanel()}</div><div class="form-two"><div class="form-field"><label for="draft-signal">情景方向与强度 <span id="signal-value">${d.signal.toFixed(2)}</span></label><input id="draft-signal" type="range" data-draft="signal" min="-1" max="1" step=".05" value="${d.signal}"><small>−1 负向 · 0 中性 · +1 正向</small></div><div class="form-field"><label for="draft-uncertainty">信息不确定性 <span id="uncertainty-value">${d.uncertainty.toFixed(2)}</span></label><input id="draft-uncertainty" type="range" data-draft="uncertainty" min="0" max="1" step=".05" value="${d.uncertainty}"><small>0 低不确定性 · 1 高不确定性</small></div></div><div class="form-two"><div class="form-field"><label for="draft-duration">消息持续步数</label><select id="draft-duration" data-draft="duration">${[3,6,9].map(n=>`<option value="${n}" ${Number(d.duration)===n?'selected':''}>${n} 个决策步</option>`).join('')}</select></div><div class="form-field"><label for="draft-seed">随机种子</label><input id="draft-seed" type="number" data-draft="seed" min="0" max="999999" value="${d.seed}"></div></div><div class="form-field"><label for="draft-cash">每类策略初始资金（模型元）</label><input id="draft-cash" type="number" data-draft="cash" min="10000" max="100000000" step="10000" value="${d.cash}"></div><div class="summary-assumption">模拟资产 A / B / C，消息作用于资产 A。包含有消息与无消息两组、${d.sessions||18} 个决策步。三类策略同时参与。</div>${draftStrategyPanel()}`:`<h2>确认实验配置</h2><div class="review-box"><strong>${esc(d.title)}</strong><p>${esc(d.source.slice(0,180))}${d.source.length>180?'…':''}</p></div>${[['消息类型',d.type],['发布时间',d.published.replace('T',' ')+'（北京时间）'],['参与策略','激进型 / 保守型 / 机构型'],['信息条件','有消息 / 无消息'],['情景变量',`信号 ${Number(d.signal).toFixed(2)} · 不确定性 ${Number(d.uncertainty).toFixed(2)}`],['持续时间',`${d.duration} 步`],['初始资金',format(d.cash)+' 模型元 / 类'],['随机种子',d.seed]].map(([a,b])=>`<div class="review-field"><span class="form-hint">${a}</span><span>${esc(b)}</span></div>`).join('')}<div id="draft-analysis-panel">${draftAnalysisPanel()}</div>${d.strategy_parameters?strategyTable(d.strategy_parameters):strategyUnavailable()}<label class="checkline"><input id="confirm-demo" type="checkbox">我理解这是合成市场实验，情景变量由我设定，结果不代表真实市场预测。</label>`}</div><div class="form-error" id="form-error" role="alert"></div><div class="form-footer">${state.wizard>1?'<button class="btn" type="button" data-action="previous">上一步</button>':'<span class="form-hint">提交后保存到本机</span>'}<button class="btn primary" type="button" data-action="${state.wizard===3?'preview-run':'next'}">${state.wizard===3?'运行市场实验':'下一步'} ${icon('arrow')}</button></div></section><aside class="guide-block"><div class="eyebrow">EXPERIMENT GUIDE</div><h2>先明确假设，再观察结果</h2><p>让消息、策略和执行之间的每一个环节都可见。</p><div class="guide-item">${icon('document')}保留事实与原文证据</div><div class="guide-item">${icon('clock')}明确消息可见时间</div><div class="guide-item">${icon('agents')}比较三类策略的差异</div><div class="guide-item">${icon('layers')}保留无消息对照组</div><div class="guide-item">${icon('replay')}保存参数以便复现</div><div class="summary-assumption">可先用 DeepSeek 提取事实，再设定情景变量。运行后保存消息、分析依据、参数与撮合账本。</div></aside></div>`;}
-  let experimentLoadError='';
-  function render(){document.querySelector('.nav-count').textContent=experiments.length;document.querySelector('.preview-tag').textContent=current().custom&&state.page==='analysis'?'已保存实验':'本机研究空间';if(chartObserver)chartObserver.disconnect();document.getElementById('breadcrumb-current').textContent=labels[state.page]||'结果分析';document.querySelectorAll('[data-nav]').forEach(a=>{const active=a.dataset.nav===state.page;a.classList.toggle('active',active);active?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current');});content.innerHTML=(experimentLoadError&&['experiments','analysis','sources'].includes(state.page)?`<div class="callout" role="alert"><div><strong>本机实验记录未能完整加载</strong><p>${esc(experimentLoadError)}。现有页面内容可能不是最新状态，不代表记录已丢失。</p><button class="btn" data-action="refresh-runs">重新加载记录</button></div></div>`:'')+({analysis,experiments:experimentsPage,sources:sourcesPage,agents:agentsPage,new:wizardPage}[state.page]||analysis)();icons();if(state.page==='new')updateDraftAnalysisPanel();if(state.page==='analysis'){drawChart();chartObserver=new ResizeObserver(drawChart);const chart=document.getElementById('price-chart');if(chart)chartObserver.observe(chart);}}
-  function useSample(index){const e=experiments[index];state.draft={...state.draft,title:e.title,source:e.source,type:e.type,seed:e.seed,signal:e.signal??(e.kind==='negative'?-.6:e.kind==='uncertain'?0:.6),uncertainty:e.uncertainty??(e.kind==='uncertain'?.8:.2),duration:e.duration??6,cash:e.cash??1000000,sessions:e.sessions??18,published:e.published_at||state.draft.published,strategy_parameters:parametersFromExperiment(e)||(strategyWorkspace.parameters?strategyWorkspace.snapshot():null)};analysisBinding.reset(e.source);if(e.text_analysis)analysisBinding.finish(analysisBinding.begin(e.source),e.text_analysis);state.wizard=1;navigate('new');}
+      `:state.wizard===2?`<h2>文本变量与情景假设</h2><div class="review-box"><strong>情景假设 · 变量由你设定</strong><p>参考下方事实设定方向与强度。新建实验从中性信号 0 开始；复制实验保留原参数。模型提取不会替你判断利好或利空，也不会改动这些参数。</p></div><div id="draft-analysis-panel">${draftAnalysisPanel()}</div><div class="form-two"><div class="form-field"><label for="draft-signal">情景方向与强度 <span id="signal-value">${d.signal.toFixed(2)}</span></label><input id="draft-signal" type="range" data-draft="signal" min="-1" max="1" step=".05" value="${d.signal}"><small>−1 负向 · 0 中性 · +1 正向。信号为 0 时，不确定性仍可能影响策略。</small></div><div class="form-field"><label for="draft-uncertainty">信息不确定性 <span id="uncertainty-value">${d.uncertainty.toFixed(2)}</span></label><input id="draft-uncertainty" type="range" data-draft="uncertainty" min="0" max="1" step=".05" value="${d.uncertainty}"><small>0 低不确定性 · 1 高不确定性</small></div></div><div class="form-two"><div class="form-field"><label for="draft-duration">消息持续步数</label><select id="draft-duration" data-draft="duration">${[3,6,9].map(n=>`<option value="${n}" ${Number(d.duration)===n?'selected':''}>${n} 个决策步</option>`).join('')}</select></div><div class="form-field"><label for="draft-seed">随机种子</label><input id="draft-seed" type="number" data-draft="seed" min="0" max="999999" value="${d.seed}"></div></div><div class="form-field"><label for="draft-sessions">实验总步数</label><input id="draft-sessions" type="number" data-draft="sessions" min="1" max="60" step="1" value="${d.sessions||18}"><small>支持 1–60 步。第 5 步消息可见；运行不足 5 步可检查消息公开前的对照。</small></div><div class="form-field"><label for="draft-cash">每类策略初始资金（模型元）</label><input id="draft-cash" type="number" data-draft="cash" min="10000" max="100000000" step="10000" value="${d.cash}"></div><div class="summary-assumption">模拟资产 A / B / C，消息作用于资产 A。包含有消息与无消息两组，按上方总步数运行。三类策略同时参与。</div>${draftStrategyPanel()}`:`<h2>确认实验配置</h2><div class="review-box"><strong>${esc(d.title)}</strong><p>${esc(d.source.slice(0,180))}${d.source.length>180?'…':''}</p></div>${[['消息类型',d.type],['发布时间',d.published.replace('T',' ')+'（北京时间）'],['参与策略','激进型 / 保守型 / 机构型'],['信息条件','有消息 / 无消息'],['情景变量',`信号 ${Number(d.signal).toFixed(2)} · 不确定性 ${Number(d.uncertainty).toFixed(2)}`],['消息持续时间',`${d.duration} 步`],['实验总步数',`${d.sessions} 步`],['初始资金',format(d.cash)+' 模型元 / 类'],['随机种子',d.seed]].map(([a,b])=>`<div class="review-field"><span class="form-hint">${a}</span><span>${esc(b)}</span></div>`).join('')}<div id="draft-analysis-panel">${draftAnalysisPanel()}</div>${d.strategy_parameters?strategyTable(d.strategy_parameters):strategyUnavailable()}<label class="checkline"><input id="confirm-demo" type="checkbox" ${draftConfirmations.get(d)?'checked':''}>我理解这是合成市场实验，情景变量由我设定，结果不代表真实市场预测。</label>`}</div><div id="draft-submission-panel">${draftSubmissionPanel()}</div><div class="form-error" id="form-error" role="alert">${submissionMatches(ticket)?esc(ticket.error||''):''}</div><div class="form-footer">${state.wizard>1?'<button class="btn" type="button" data-action="previous">上一步</button>':'<span class="form-hint">提交后保存到本机</span>'}<span id="draft-submit-control">${draftSubmitControl()}</span></div></section><aside class="guide-block"><div class="eyebrow">EXPERIMENT GUIDE</div><h2>先明确假设，再观察结果</h2><p>让消息、策略和执行之间的每一个环节都可见。</p><div class="guide-item">${icon('document')}保留事实与原文证据</div><div class="guide-item">${icon('clock')}明确消息可见时间</div><div class="guide-item">${icon('agents')}比较三类策略的差异</div><div class="guide-item">${icon('layers')}保留无消息对照组</div><div class="guide-item">${icon('replay')}保存参数以便复现</div><div class="summary-assumption">可先用 DeepSeek 提取事实，再设定情景变量。运行后保存消息、分析依据、参数与撮合账本。</div></aside></div>`;}
+  let experimentLoadError='', experimentLoadVersion=0, experimentLoading=true, experimentsLoaded=false;
+  function render(){document.querySelector('.nav-count').textContent=experiments.filter(e=>e.custom).length;document.querySelector('.preview-tag').textContent=current().custom&&state.page==='analysis'?'已保存实验':'本机研究空间';document.getElementById('breadcrumb-current').textContent=labels[state.page]||'结果分析';document.querySelectorAll('[data-nav]').forEach(a=>{const active=a.dataset.nav===state.page;a.classList.toggle('active',active);active?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current');});content.innerHTML=(experimentLoadError&&['experiments','analysis','sources'].includes(state.page)?`<div class="callout" role="alert"><div><strong>本机实验记录未能完整加载</strong><p>${esc(experimentLoadError)}。现有页面内容可能不是最新状态，不代表记录已丢失。</p><button class="btn" data-action="refresh-runs">重新加载记录</button></div></div>`:'')+({analysis,experiments:experimentsPage,batches:batchesPage,cases:casesPage,sources:sourcesPage,agents:agentsPage,new:wizardPage}[state.page]||analysis)();icons();if(state.page==='new')updateDraftAnalysisPanel();clearTimeout(batchPollTimer);if(state.page==='batches'){if(!batchListLoading&&!batchWorkspace.busy)hydrateBatches();else scheduleBatchPoll();}if(state.page==='cases'&&!caseCatalogLoading)hydrateSourceCases();}
+  function useSample(index,record=experiments[index]){const e=record;state.draft={...state.draft,title:e.title,source:e.source,type:e.type,seed:e.seed,signal:e.signal??(e.kind==='negative'?-.6:e.kind==='uncertain'?0:.6),uncertainty:e.uncertainty??(e.kind==='uncertain'?.8:.2),duration:e.duration??6,cash:e.cash??1000000,sessions:e.sessions??18,published:e.published_at||state.draft.published,strategy_parameters:parametersFromExperiment(e)||(strategyWorkspace.parameters?strategyWorkspace.snapshot():null)};analysisBinding.reset(e.source);if(e.text_analysis)analysisBinding.finish(analysisBinding.begin(e.source),e.text_analysis);state.wizard=1;navigate('new');}
   async function apiJson(path, options={}) { const response=await fetch(path,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})}}); const body=await response.json(); if(!response.ok){const error=new Error(body.error||`API ${response.status}`);error.status=response.status;throw error;} return body; }
+  function hasDraftContent(){return Boolean(state.draft.title.trim()||state.draft.source.trim()||draftSubmissions.has(state.draft));}
+  function draftCacheMessage(){
+    if(draftCache.error)return draftCache.error;
+    return draftCache.savedAt?'草稿已在当前标签页保存，刷新后可继续。提交状态以本机记录为准。':'编辑内容会自动保存到当前标签页；已提交实验保存在本机。';
+  }
+  function persistDraft(){
+    const recovery=draftAnalysisRecovery;
+    const analysisId=analysisBinding.analysisId||(recovery?.draft===state.draft&&recovery.source===state.draft.source&&(analysisBinding.restoring||analysisBinding.restoreError)?recovery.id:null);
+    if(hasDraftContent())draftCache.write({draft:state.draft,wizard:state.wizard,analysisId,analysisPending:analysisBinding.pending,submission:draftSubmissions.get(state.draft)||null});
+    const status=document.getElementById('draft-cache-status');if(status){status.textContent=draftCacheMessage();status.classList.toggle('error',Boolean(draftCache.error));}
+  }
+  function restoreDraftFromCache(){
+    const saved=draftCache.read();if(!saved)return;
+    state.draft=saved.draft;state.wizard=saved.wizard;analysisBinding.reset(saved.draft.source);
+    if(saved.submission)draftSubmissions.set(state.draft,{...saved.submission,draft:state.draft,restored:true,busy:false,status:'unknown',record:null,error:'正在从本机记录确认上次提交。',navigationVersion:-1});
+    if(saved.analysis_id)restoreDraftAnalysis(saved.analysis_id);
+    else if(saved.analysis_pending)analysisBinding.error='刷新前的提取结果尚未确认；不会自动再次调用模型，可重新提取或手动设置情景。';
+  }
+  async function restoreDraftAnalysis(id){
+    const recovery={draft:state.draft,source:state.draft.source,id};draftAnalysisRecovery=recovery;
+    const ticket=analysisBinding.begin(recovery.source);analysisBinding.restoring=true;updateDraftAnalysisPanel();
+    try{analysisBinding.finish(ticket,await apiJson(`/api/platform/analyses/${id}`));}
+    catch(error){if(analysisBinding.fail(ticket,'上次分析未能恢复：'+error.message)){analysisBinding.restoring=false;analysisBinding.restoreError=true;}}
+    finally{if(draftAnalysisRecovery===recovery&&!analysisBinding.restoreError)draftAnalysisRecovery=null;updateDraftAnalysisPanel();}
+  }
+  function syncRestoredDraftSubmission(){
+    const ticket=draftSubmissions.get(state.draft);if(!ticket?.restored||!experimentsLoaded)return;
+    const record=experiments.find(e=>e.id===ticket.id&&e.custom&&!e.corrupt);
+    if(!record){ticket.record=null;ticket.status='save_failed';ticket.error='尚未读到上次提交；相同草稿重试会沿用原编号。';}
+    else if(!MarketDraftCache.matchesRecord(ticket.payload,record)){ticket.record=null;ticket.status='save_failed';ticket.error='已保存记录与上次提交的配置不一致，请核对原记录。';}
+    else{ticket.record=record;ticket.status=record.run_status||'not_started';ticket.error='';}
+    updateDraftSubmission();
+  }
+  function updateModelSettings(){
+    if(!dialog.open||dialog.dataset.section!=='model')return;
+    const panel=document.getElementById('model-settings-panel');if(panel)panel.innerHTML=MarketModelView.render(modelSettings);
+  }
+  function openModelSettings(){
+    modal('模型设置',`<div id="model-settings-panel">${MarketModelView.render(modelSettings)}</div>`,`<button class="btn" type="button" data-action="close">关闭</button>`,'model');
+    loadModelConfiguration();
+  }
+  async function loadModelConfiguration(){
+    const ticket=modelSettings.beginLoad();if(ticket===null){updateModelSettings();return;}
+    updateModelSettings();
+    try{modelSettings.accept(ticket,await apiJson('/api/platform/model'));}
+    catch(error){modelSettings.fail(ticket,'配置读取失败：'+error.message);}
+    finally{updateModelSettings();}
+  }
+  async function checkModelConnection(){
+    const ticket=modelSettings.beginCheck();if(ticket===null)return;
+    updateModelSettings();
+    try{modelSettings.accept(ticket,await apiJson('/api/platform/model/check',{method:'POST',body:'{}'}));}
+    catch(error){modelSettings.fail(ticket,'检测结果未确认：'+error.message+'。请刷新配置查看服务端状态');}
+    finally{updateModelSettings();}
+  }
+  function caseDetail(){
+    const bundle=caseWorkspace.detail;
+    if(!bundle)return MarketCaseView.renderDetail(null,caseWorkspace);
+    const result=bundle.result,rows=group=>result.paths[group].trace.map((day,i)=>({step:i+1,price:day.portfolio_auction.asset_calls[caseWorkspace.asset].price_after_minor/100,date:day.trade_date}));
+    const prices=[...rows('baseline'),...rows('with_message')].map(row=>row.price),bounds={low:Math.min(...prices)-.2,high:Math.max(...prices)+.2};
+    return MarketCaseView.renderDetail(bundle,caseWorkspace,{charts:savedPriceChart(rows('with_message'),'所选条件 · 合成市场价格',bounds)+savedPriceChart(rows('baseline'),'无文本 · 合成市场价格',bounds),comparison:MarketDecisionView.renderComparison(result,{asset:caseWorkspace.asset,step:caseWorkspace.step,activeLabel:'所选条件',baselineLabel:'无文本参考'}),decisionCards:marketStepCards(result,{decisionGroup:caseWorkspace.group,asset:caseWorkspace.asset,step:caseWorkspace.step})});
+  }
+  function casesPage(){
+    return heading('REAL SOURCE CASES','真实原文案例','从归档文本、复核事实到三类决策与真实撮合账本',`<button class="btn" data-action="refresh-cases">重新加载案例</button>`)
+      +'<div class="callout">真实来源文本 · 合成市场实验。六例已用于开发，模型结果经助手修订；角色、资产暴露和数值幅度均为假设。</div>'
+      +`<div id="case-catalog-error" class="form-error" role="alert">${esc(caseCatalogError)}</div><div id="case-library">${MarketCaseView.renderLibrary(caseWorkspace.catalog,caseWorkspace)}</div><div id="case-controls">${caseWorkspace.catalog?.available?MarketCaseView.renderControls(caseWorkspace):''}</div><div id="case-detail">${caseDetail()}</div>`;
+  }
+  function updateCasePanels(){
+    if(state.page!=='cases')return;
+    const library=document.getElementById('case-library'),controls=document.getElementById('case-controls'),detail=document.getElementById('case-detail'),error=document.getElementById('case-catalog-error');
+    if(library)library.innerHTML=MarketCaseView.renderLibrary(caseWorkspace.catalog,caseWorkspace);
+    if(controls)controls.innerHTML=caseWorkspace.catalog?.available?MarketCaseView.renderControls(caseWorkspace):'';
+    if(detail)detail.innerHTML=caseDetail();if(error)error.textContent=caseCatalogError;
+  }
+  async function loadSourceCase(id,seed=caseWorkspace.seed,mode=caseWorkspace.mode){
+    const ticket=caseWorkspace.begin(id,seed,mode);updateCasePanels();
+    try{caseWorkspace.accept(ticket,await apiJson(`/api/platform/source-cases/${encodeURIComponent(id)}?seed=${seed}&mode=${encodeURIComponent(mode)}`));}
+    catch(error){caseWorkspace.fail(ticket,error.message);}
+    finally{updateCasePanels();}
+  }
+  async function hydrateSourceCases(){
+    const version=++caseCatalogVersion;caseCatalogLoading=true;caseCatalogError='';
+    try{
+      const catalog=await apiJson('/api/platform/source-cases');if(version!==caseCatalogVersion)return;
+      caseWorkspace.catalog=catalog;
+      if(catalog.available){const id=catalog.cases.some(c=>c.case_id===caseWorkspace.selectedId)?caseWorkspace.selectedId:(catalog.cases[1]||catalog.cases[0]).case_id;await loadSourceCase(id);}
+      else{caseWorkspace.detail=null;caseWorkspace.selectedId=null;caseWorkspace.loadedCaseId=null;caseWorkspace.loading=false;caseWorkspace.error='';caseWorkspace.evidenceFocus=null;caseWorkspace.generation++;}
+    }catch(error){if(version===caseCatalogVersion)caseCatalogError='案例读取失败：'+error.message;}
+    finally{if(version===caseCatalogVersion){caseCatalogLoading=false;updateCasePanels();}}
+  }
+  function newFromCase(){
+    const bundle=caseWorkspace.detail;if(!bundle)return;
+    const source=bundle.case.segments.map(s=>`${s.source==='question'?'投资者提问':s.source==='reply'?'公司回复':'原文'}：${s.text}`).join('\n\n');
+    analysisBinding.reset(source);batchArchivedExperiment=null;
+    state.draft={title:bundle.case.label,source,type:bundle.case.stock_code?'公司问答':'政策消息',published:bundle.case.available_at.slice(0,16),signal:0,uncertainty:.2,duration:6,sessions:18,seed:bundle.seed,cash:1000000,strategy_parameters:strategyWorkspace.parameters?strategyWorkspace.snapshot():null};
+    state.wizard=1;navigate('new');toast('已复制真实原文；新实验的情景变量由你设定，重新分析后可关联模型事实。');
+  }
+  function batchesPage(){
+    return heading('SCENARIO COMPARISON','批量对照','固定参数、多种种子，比较三类策略在不同情景下的响应',`<button class="btn" data-nav="agents">查看策略配置</button>`)
+      +'<div class="batch-scenario-strip">'+[['中性','0 / 0'],['正向','+0.6 / 0.2'],['负向','−0.6 / 0.2'],['高不确定性','0 / 0.8']].map(([name,value])=>`<div><strong>${name}</strong><span>信号 / 不确定性 ${value}</span></div>`).join('')+'</div>'
+      +'<p class="batch-help">四种情景均为人工假设，未使用真实公告，也不调用大模型。每项包含有消息与无消息两条撮合路径。</p>'
+      +`<div class="batch-setup-grid">${MarketBatchView.renderForm(batchForm,batchWorkspace.busy,batchFormError)}<section class="panel" id="batch-history">${MarketBatchView.renderHistory(batchWorkspace.rows,batchWorkspace.selectedId,batchListLoading,batchWorkspace.listError)}</section></div>`
+      +`<div id="batch-live">${MarketBatchView.renderDetail(batchWorkspace.detail,batchWorkspace)}</div>`;
+  }
+  function updateBatchPanels(){
+    if(state.page!=='batches')return;
+    const history=document.getElementById('batch-history'),live=document.getElementById('batch-live');
+    if(history)history.innerHTML=MarketBatchView.renderHistory(batchWorkspace.rows,batchWorkspace.selectedId,batchListLoading,batchWorkspace.listError);
+    if(live){
+      const same=live.dataset.batchId===batchWorkspace.detail?.id;
+      const opened=same?Array.from(live.querySelectorAll('[data-batch-disclosure][open]')).map(el=>el.dataset.batchDisclosure):[];
+      const active=document.activeElement,focused=same&&live.contains(active)?{action:active.dataset.action,experiment:active.dataset.batchExperiment,href:active.getAttribute('href'),disclosure:active.parentElement?.dataset.batchDisclosure}:null;
+      live.innerHTML=MarketBatchView.renderDetail(batchWorkspace.detail,batchWorkspace);
+      live.dataset.batchId=batchWorkspace.detail?.id||'';
+      live.querySelectorAll('[data-batch-disclosure]').forEach(el=>{el.open=opened.includes(el.dataset.batchDisclosure);});
+      if(focused){const target=Array.from(live.querySelectorAll('button,a,summary')).find(el=>focused.action?el.dataset.action===focused.action:focused.experiment?el.dataset.batchExperiment===focused.experiment:focused.href?el.getAttribute('href')===focused.href:focused.disclosure&&el.parentElement?.dataset.batchDisclosure===focused.disclosure);target?.focus({preventScroll:true});}
+    }
+    const button=document.getElementById('batch-create-button'),error=document.getElementById('batch-form-error');
+    if(button){button.disabled=batchWorkspace.busy;button.textContent=batchWorkspace.busy?'正在提交…':'创建并运行批次';}
+    if(error)error.textContent=batchFormError;
+  }
+  function rememberBatch(){try{sessionStorage.setItem('marketmirror:selected-batch',batchWorkspace.selectedId);}catch(_) {}}
+  function scheduleBatchPoll(){
+    clearTimeout(batchPollTimer);
+    if(state.page==='batches'&&batchWorkspace.detail?.status==='running')
+      batchPollTimer=setTimeout(()=>loadBatch(batchWorkspace.selectedId,true),batchWorkspace.error?5000:2000);
+  }
+  async function loadBatch(id,quiet=false){
+    if(!id)return;
+    clearTimeout(batchPollTimer);
+    const ticket=batchWorkspace.begin(id);rememberBatch();if(!quiet)updateBatchPanels();
+    try{batchWorkspace.accept(ticket,await apiJson(`/api/platform/batches/${id}`));}
+    catch(error){batchWorkspace.fail(ticket,error.message);}
+    finally{updateBatchPanels();scheduleBatchPoll();}
+  }
+  async function hydrateBatches(){
+    const version=++batchListVersion;batchListLoading=true;batchWorkspace.listError='';updateBatchPanels();
+    try{
+      const rows=await apiJson('/api/platform/batches');if(version!==batchListVersion)return;
+      batchWorkspace.rows=rows;
+      const id=rows.some(r=>r.id===batchWorkspace.selectedId)?batchWorkspace.selectedId:rows[0]?.id;
+      if(id)await loadBatch(id);
+      else{batchWorkspace.selectedId=null;batchWorkspace.detail=null;batchWorkspace.generation++;}
+    }catch(error){if(version===batchListVersion)batchWorkspace.listError='批次列表读取失败：'+error.message;}
+    finally{if(version===batchListVersion){batchListLoading=false;updateBatchPanels();scheduleBatchPoll();}}
+  }
+  async function createAndRunBatch(){
+    if(batchWorkspace.busy)return;
+    let payload;
+    try{payload={title:batchForm.title,seeds:MarketBatchView.parseSeeds(batchForm.seeds),sessions:Number(batchForm.sessions),duration:Number(batchForm.duration),cash:Number(batchForm.cash)};}
+    catch(error){batchFormError=error.message;updateBatchPanels();return;}
+    batchWorkspace.busy=true;batchFormError='';updateBatchPanels();let created=null;
+    try{
+      created=await apiJson('/api/platform/batches',{method:'POST',body:JSON.stringify(payload)});
+      const ticket=batchWorkspace.begin(created.id);batchWorkspace.accept(ticket,created);rememberBatch();updateBatchPanels();
+      const started=await apiJson(`/api/platform/batches/${created.id}/run`,{method:'POST',body:'{}'});
+      batchWorkspace.accept(ticket,started);toast('批次已提交，在本机服务中继续运行。');
+    }catch(error){batchFormError=created?'批次已保存，请刷新确认状态后重试未完成项。'+error.message:error.message;}
+    finally{batchWorkspace.busy=false;await hydrateBatches();updateBatchPanels();}
+  }
+  async function runBatch(){
+    const id=batchWorkspace.selectedId;if(!id||batchWorkspace.busy)return;
+    batchWorkspace.busy=true;const ticket=batchWorkspace.begin(id);updateBatchPanels();
+    try{batchWorkspace.accept(ticket,await apiJson(`/api/platform/batches/${id}/run`,{method:'POST',body:'{}'}));}
+    catch(error){batchWorkspace.fail(ticket,error.message);toast(error.message);try{batchWorkspace.accept(ticket,await apiJson(`/api/platform/batches/${id}`));}catch(_) {}}
+    finally{batchWorkspace.busy=false;updateBatchPanels();scheduleBatchPoll();}
+  }
+  async function openBatchExperiment(batchId,experimentId){
+    const version=++batchOpenVersion;
+    try{
+      const [record,result]=await Promise.all([apiJson(`/api/platform/experiments/${experimentId}`),apiJson(`/api/platform/batches/${batchId}/results/${experimentId}`)]);
+      if(version!==batchOpenVersion||state.page!=='batches'||batchWorkspace.selectedId!==batchId)return;
+      let index=experiments.findIndex(e=>e.id===experimentId);
+      if(index<0){index=experiments.length;experiments.push({...record,custom:true,backendResult:result});}
+      batchArchivedExperiment={...record,result_id:result.provenance.result_id,last_run_at:result.generated_at,
+        run_status:'completed',run_error:null,run_attempts:result.provenance.run_attempts??null,run_finished_at:null,
+        batch_archive:{batch_id:batchId,result_id:result.provenance.result_id},custom:true,backendResult:result};
+      state.selected=index;state.step=8;navigate('analysis');
+    }catch(error){toast('无法读取归档结果：'+error.message);}
+  }
   const activeRuns=new Set();
   function runStatusPanel(e){
     const status=e.run_status||'not_started';
@@ -199,36 +369,142 @@
     return `<section class="callout" role="status"><div><strong>${label}</strong><p>${e.backendResult?'下方保留的是上一次成功结果。':'完成运行后可查看撮合结果。'} 已尝试 ${Number(e.run_attempts)||0} 次。</p>${e.run_error?`<p>${esc(e.run_error.message||'请重试或检查本机服务。')}</p>`:''}<button class="btn primary" data-action="retry-run" ${busy?'disabled':''}>${status==='unknown'?'等待状态确认':busy?'运行中…':'运行此实验'}</button><button class="btn" data-action="refresh-runs">刷新状态</button></div></section>`;
   }
   async function retryRun(){
-    const e=current();if(!e.custom||activeRuns.has(e.id)||['running','unknown'].includes(e.run_status))return;
-    activeRuns.add(e.id);e.run_status='running';e.run_error=null;render();
-    try{e.backendResult=await apiJson(`/api/platform/experiments/${e.id}/run`,{method:'POST',body:'{}'});e.run_status='completed';toast('实验完成，结果已保存。');}
-    catch(error){e.run_status='unknown';e.run_error={message:'请求未完成：'+error.message+'。请刷新确认服务端状态后重试。'};toast('请刷新确认运行状态。');}
-    finally{activeRuns.delete(e.id);await hydrateExperiments();render();}
+    const e=current();if(e.corrupt||!e.custom||activeRuns.has(e.id)||['running','unknown'].includes(e.run_status))return;
+    activeRuns.add(e.id);upsertExperiment({...e,run_status:'running',run_error:null});
+    try{const result=await apiJson(`/api/platform/experiments/${e.id}/run`,{method:'POST',body:'{}'});completeExperiment(e,result);toast('实验完成，结果已保存。');}
+    catch(error){upsertExperiment({...e,run_status:'unknown',run_error:{message:'请求未完成：'+error.message+'。请刷新确认服务端状态后重试。'}});toast('请刷新确认运行状态。');}
+    finally{activeRuns.delete(e.id);await hydrateExperiments();}
   }
-  async function persistAndRun() { const payload={title:state.draft.title,source:state.draft.source,type:state.draft.type,published_at:state.draft.published,signal:Number(state.draft.signal),uncertainty:Number(state.draft.uncertainty),duration:Number(state.draft.duration),sessions:Number(state.draft.sessions||18),seed:Number(state.draft.seed),cash:Number(state.draft.cash),analysis_id:analysisBinding.analysisId,strategy_parameters:copyParameters(state.draft.strategy_parameters)}; const record=await apiJson('/api/platform/experiments',{method:'POST',body:JSON.stringify(payload)}); experiments.unshift({...record,custom:true,time:'刚刚',kind:record.signal<0?'negative':'positive',backendResult:null}); const result=await apiJson(`/api/platform/experiments/${record.id}/run`,{method:'POST',body:'{}'}); return {record,result}; }
-  async function hydrateExperiments(){try{const rows=await apiJson('/api/platform/experiments');const loaded=await Promise.all(rows.map(async row=>{const detail=await apiJson(`/api/platform/experiments/${row.id}`);let result=null;try{result=await apiJson(`/api/platform/experiments/${row.id}/result`);}catch(error){if(error.status!==404)throw error;}const created=detail.created_at?new Date(detail.created_at):null;return {...detail,id:row.id,kind:Number(detail.signal)<0?'negative':Number(detail.uncertainty)>.65?'uncertain':'positive',time:created&&!Number.isNaN(created.getTime())?created.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'本机记录',sessions:Number(detail.sessions)||18,custom:true,backendResult:result,customResultMissing:detail.run_status==='completed'&&!result};}));const selectedId=rememberedExperimentId||current().id;const ids=new Set(loaded.map(e=>e.id));for(let i=experiments.length-1;i>=0;i--)if(ids.has(experiments[i].id))experiments.splice(i,1);experiments.push(...loaded);experimentLoadError='';state.selected=Math.max(0,experiments.findIndex(e=>e.id===selectedId));if(['experiments','analysis','sources'].includes(state.page))render();}catch(error){experimentLoadError=error.message||'服务连接失败';if(['experiments','analysis','sources'].includes(state.page))render();}}
+  function draftPayload(d=state.draft){
+    return {title:d.title,source:d.source,type:d.type,published_at:d.published,signal:Number(d.signal),uncertainty:Number(d.uncertainty),duration:Number(d.duration),sessions:Number(d.sessions||18),seed:Number(d.seed),cash:Number(d.cash),analysis_id:analysisBinding.analysisId,strategy_parameters:copyParameters(d.strategy_parameters)};
+  }
+  function submissionMatches(ticket){return Boolean(ticket)&&ticket.draft===state.draft&&ticket.signature===JSON.stringify(draftPayload());}
+  function draftSubmitControl(){
+    if(state.wizard!==3)return `<button class="btn primary" type="button" data-action="next">下一步 ${icon('arrow')}</button>`;
+    const ticket=draftSubmissions.get(state.draft),saved=submissionMatches(ticket)&&ticket.record;
+    return `<button class="btn primary" type="button" data-action="${saved&&!ticket.busy?'draft-result':'preview-run'}" ${ticket?.busy?'disabled':''}>${ticket?.busy?(ticket.status==='saving'?'正在保存…':'正在运行…'):saved?(ticket.status==='completed'&&ticket.record.backendResult?'查看已保存结果':ticket.status==='running'?'查看运行进度':'查看实验并恢复'):submissionMatches(ticket)&&ticket.status==='save_failed'?'重试保存并运行':'运行市场实验'} ${icon('arrow')}</button>`;
+  }
+  function draftSubmissionPanel(){
+    const ticket=draftSubmissions.get(state.draft);if(!ticket)return '';
+    const labels={saving:'正在保存实验',running:'实验正在运行',completed:'实验已完成',unknown:'运行状态待确认',failed:'运行失败',interrupted:'运行已中断',not_started:'配置已保存',save_failed:'保存请求未确认'};
+    return `<div class="callout" role="status"><div><strong>${labels[ticket.status]||'实验配置已保存'} · ${esc(ticket.payload.title)}</strong><p>提交时的消息、参数及模型关联已固定。可以切换页面或新建另一份实验，当前编辑不会改动已提交记录。</p>${ticket.record?'<button class="btn compact" type="button" data-action="draft-result">打开已保存实验</button>':''}${ticket.error?`<p>${esc(ticket.error)}</p>`:''}</div></div>`;
+  }
+  function updateDraftSubmission(){
+    persistDraft();
+    if(state.page!=='new')return;
+    const panel=document.getElementById('draft-submission-panel'),control=document.getElementById('draft-submit-control');
+    if(panel)panel.innerHTML=draftSubmissionPanel();if(control)control.innerHTML=draftSubmitControl();
+    const error=document.getElementById('form-error'),ticket=draftSubmissions.get(state.draft);
+    if(error)error.textContent=submissionMatches(ticket)?ticket.error||'':'';
+  }
+  function upsertExperiment(record,result){
+    const selectedId=experiments[state.selected]?.id,index=experiments.findIndex(e=>e.id===record.id),previous=index>=0?experiments[index]:null;
+    const value={...previous,...record,custom:true,kind:Number(record.signal)<0?'negative':Number(record.signal)>0?'positive':'neutral',time:previous?.time||'刚刚',backendResult:result===undefined?previous?.backendResult||record.backendResult||null:result};
+    if(index>=0)experiments[index]=value;else experiments.unshift(value);
+    const selected=experiments.findIndex(e=>e.id===selectedId);state.selected=selected>=0?selected:0;
+    experimentLoadVersion++;experimentLoading=false;experimentsLoaded=true;
+    if(['experiments','analysis','sources'].includes(state.page))render();
+    return value;
+  }
+  function completeExperiment(record,result){
+    if(!result||result.mode!=='synthetic_market'||result.provenance?.experiment_id!==record.id||!result.provenance.result_id)throw new Error('运行结果与实验记录不一致，请刷新确认');
+    for(const key of ['source_sha256','strategy_parameters_sha256','analysis_sha256'])if(record[key]!=null&&result.provenance[key]!==record[key])throw new Error('运行结果依据与提交配置不一致，请刷新确认');
+    return upsertExperiment({...record,run_status:'completed',run_error:null,result_id:result.provenance.result_id,run_attempts:result.provenance.run_attempts,last_run_at:result.generated_at},result);
+  }
+  async function openSubmittedExperiment(){
+    const ticket=draftSubmissions.get(state.draft);if(!ticket?.record)return;
+    const version=navigationVersion;
+    let index=experiments.findIndex(e=>e.id===ticket.record.id);
+    if(index<0){await hydrateExperiments();index=experiments.findIndex(e=>e.id===ticket.record.id);}
+    if(state.page!=='new'||navigationVersion!==version||draftSubmissions.get(state.draft)!==ticket)return;
+    if(index<0){toast('尚未读取到已保存实验，请在实验空间刷新确认。');return;}
+    state.selected=index;batchArchivedExperiment=null;navigate('analysis');
+  }
+  async function persistAndRun(ticket){
+    const record=await apiJson('/api/platform/experiments',{method:'POST',headers:{'Idempotency-Key':ticket.id},body:ticket.signature});
+    if(record.id!==ticket.id)throw new Error('保存响应与提交编号不一致，请刷新确认本机服务版本');
+    ticket.record=upsertExperiment(record);ticket.status=record.run_status;updateDraftSubmission();
+    if(record.run_status==='completed'){
+      const snapshot=await apiJson(`/api/platform/experiments/${record.id}/export`);
+      if(snapshot.experiment?.id!==record.id)throw new Error('实验快照身份不一致');
+      if(snapshot.experiment.result_id!==snapshot.experiment.backendResult?.provenance?.result_id)throw new Error('归档结果版本与记录不一致');
+      ticket.record=completeExperiment(snapshot.experiment,snapshot.experiment.backendResult);return;
+    }
+    if(record.run_status==='running')return;
+    activeRuns.add(record.id);ticket.status='running';ticket.record=upsertExperiment({...record,run_status:'running',run_error:null});updateDraftSubmission();
+    try{
+      const result=await apiJson(`/api/platform/experiments/${record.id}/run`,{method:'POST',body:'{}'});
+      ticket.record=completeExperiment(record,result);ticket.status='completed';
+    }catch(error){ticket.record=upsertExperiment({...record,run_status:'unknown',run_error:{message:'请求未完成，请刷新确认服务端状态。'}});throw error;}
+    finally{activeRuns.delete(record.id);}
+  }
+  async function hydrateExperiments(){
+    const version=++experimentLoadVersion;experimentLoading=true;
+    if(!experimentsLoaded&&['experiments','analysis','sources'].includes(state.page))render();
+    try{
+      const rows=await apiJson('/api/platform/experiments');if(version!==experimentLoadVersion)return;
+      const settled=[];
+      for(let offset=0;offset<rows.length;offset+=4){
+        if(version!==experimentLoadVersion)return;
+        settled.push(...await Promise.allSettled(rows.slice(offset,offset+4).map(async row=>{
+          if(row.run_status==='corrupt')return {...row,custom:true,kind:'neutral',time:'记录损坏',sessions:0,backendResult:null,corrupt:true};
+          const snapshot=await apiJson(`/api/platform/experiments/${row.id}/export`),detail=snapshot.experiment;
+          if(!detail||detail.id!==row.id)throw new Error('实验快照身份不一致');
+          const result=detail.backendResult,provenance=result?.provenance;
+          if(result!=null&&(typeof result!=='object'||Array.isArray(result)||!['synthetic_market','platform_preview'].includes(result.mode)))throw new Error('结果结构或版本不受支持');
+          if(provenance?.experiment_id&&provenance.experiment_id!==row.id)throw new Error('结果不属于所选实验');
+          if(detail.result_id&&provenance?.result_id&&detail.result_id!==provenance.result_id)throw new Error('结果版本与记录不一致');
+          for(const key of ['source_sha256','strategy_parameters_sha256','analysis_sha256'])if(provenance?.[key]!=null&&detail[key]!=null&&provenance[key]!==detail[key])throw new Error('结果依据与记录不一致');
+          const created=detail.created_at?new Date(detail.created_at):null;
+          return {...detail,kind:Number(detail.signal)<0?'negative':Number(detail.signal)>0?'positive':'neutral',time:created&&!Number.isNaN(created.getTime())?created.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'本机记录',sessions:Number(detail.sessions)||18,custom:true,backendResult:result||null,customResultMissing:detail.run_status==='completed'&&!result};
+        })));
+      }
+      if(version!==experimentLoadVersion)return;
+      const loaded=settled.filter(item=>item.status==='fulfilled').map(item=>item.value),failed=settled.flatMap((item,index)=>item.status==='rejected'?[rows[index].id]:[]);
+      const selectedId=rememberedExperimentId||current().id,previous=new Map(experiments.filter(e=>e.custom).map(e=>[e.id,e]));
+      const retained=rows.flatMap((row,index)=>settled[index].status==='fulfilled'?[settled[index].value]:previous.has(row.id)?[previous.get(row.id)]:[]),templates=experiments.filter(e=>!e.custom);
+      const previousSelected=experiments.find(e=>e.id===selectedId),prefer=previousSelected?.custom||retained.some(e=>e.id===selectedId);
+      experiments.splice(0,experiments.length,...templates,...retained);
+      const fallback=retained.find(e=>!e.corrupt&&e.backendResult?.mode==='synthetic_market')||retained.find(e=>!e.corrupt)||retained[0]||templates[0];
+      const index=prefer?experiments.findIndex(e=>e.id===selectedId):-1;state.selected=index>=0?index:Math.max(0,experiments.indexOf(fallback));
+      experimentLoadError=failed.length?`${loaded.length} 条记录已加载，${failed.length} 条读取失败（${failed.join('、')}），请重试`:'';experimentsLoaded=true;
+      syncRestoredDraftSubmission();
+    }catch(error){if(version===experimentLoadVersion)experimentLoadError=error.message||'服务连接失败';}
+    finally{if(version===experimentLoadVersion){experimentLoading=false;if(['experiments','analysis','sources'].includes(state.page))render();}}
+  }
   async function previewRun(){
+    if(state.page!=='new'||state.wizard!==3)return;
     saveDraft();
+    const previous=draftSubmissions.get(state.draft);if(previous?.busy)return;
+    if(submissionMatches(previous)&&previous.record){await openSubmittedExperiment();return;}
     if(!state.draft.strategy_parameters){toast('请先加载策略参数再运行。');return;}
     if(analysisBinding.pending){toast('文本分析仍在进行，可等待完成或取消关联后运行。');return;}
-    if(!document.getElementById('confirm-demo').checked){document.getElementById('form-error').textContent='请先确认预览说明。';return;}
-    const button=document.querySelector('[data-action="preview-run"]');button.disabled=true;
+    if(analysisBinding.restoreError){toast('请先重新读取上次分析，或取消关联后继续手动实验。');return;}
+    if(!document.getElementById('confirm-demo')?.checked){const error=document.getElementById('form-error');if(error)error.textContent='请先确认实验说明。';return;}
+    const payload=draftPayload(),signature=JSON.stringify(payload),ticket={draft:state.draft,payload,signature,id:submissionMatches(previous)?previous.id:crypto.randomUUID().replace(/-/g,''),navigationVersion,busy:true,status:'saving',record:null,error:''};
+    draftSubmissions.set(state.draft,ticket);updateDraftSubmission();
     try{
-      const {record,result}=await persistAndRun();
-      const index=experiments.findIndex(e=>e.id===record.id);experiments[index]={...experiments[index],...record,run_status:'completed',backendResult:result};state.selected=index;
-      navigate('analysis');toast('实验完成，撮合账本已审计并保存。');
-    }catch(error){document.getElementById('form-error').textContent='保存或运行失败：'+error.message+'。已保存的实验可在实验空间中打开并重试。';await hydrateExperiments();}
-    finally{button.disabled=false;}
+      await persistAndRun(ticket);
+      if(ticket.status==='completed'&&state.page==='new'&&state.wizard===3&&navigationVersion===ticket.navigationVersion&&submissionMatches(ticket))await openSubmittedExperiment();
+      toast(ticket.status==='completed'?`实验「${ticket.payload.title}」已完成，撮合账本已审计并保存。`:'实验已保存，正在运行；可打开记录查看状态。');
+    }catch(error){
+      ticket.status=ticket.record?'unknown':'save_failed';ticket.error='请求未完成：'+error.message;
+      await hydrateExperiments();
+      const saved=experiments.find(e=>e.id===ticket.id&&e.custom&&!e.corrupt);
+      if(saved){ticket.record=saved;ticket.status=saved.run_status||'unknown';}
+      if(ticket.status==='completed'&&ticket.record.backendResult){ticket.error='';toast(`实验「${ticket.payload.title}」的结果已在本机确认保存。`);}
+      else{ticket.error+=ticket.record?'。请打开已保存实验，确认状态后恢复运行。':'。重试将使用同一提交编号，不会重复建立相同实验。';toast(ticket.record?'已保存的配置仍保留，请打开实验确认状态。':'保存状态待确认，可重试同一提交。');}
+    }finally{ticket.busy=false;updateDraftSubmission();}
   }
   function savedPriceChart(rows,title='情景价格路径',bounds=null){
     if(!rows.length)return '';
     const prices=rows.map(r=>Number(r.price)),low=bounds?.low??Math.min(...prices)-.2,high=bounds?.high??Math.max(...prices)+.2;
     const x=i=>50+i*700/Math.max(1,rows.length-1),y=p=>210-(p-low)/(high-low)*180;
     const path=prices.map((p,i)=>`${i?'L':'M'}${x(i)},${y(p)}`).join(' ');
-    return `<section class="panel"><div class="panel-header"><h2>${esc(title)}</h2><span class="badge neutral">已保存数据</span></div><svg viewBox="0 0 800 250" style="width:100%;max-height:320px" role="img" aria-label="${esc(title)}：已保存实验的逐步价格曲线"><path d="M50 30V210H750" fill="none" stroke="#aab7c4"/><path d="${path}" fill="none" stroke="var(--teal)" stroke-width="3"/>${prices.map((p,i)=>`<circle cx="${x(i)}" cy="${y(p)}" r="3" fill="var(--teal)"><title>第 ${i+1} 步：${p}</title></circle>`).join('')}<text x="50" y="237" fill="currentColor">第 1 步</text><text x="680" y="237" fill="currentColor">第 ${rows.length} 步</text><text x="6" y="35" fill="currentColor">${high.toFixed(1)}</text><text x="6" y="210" fill="currentColor">${low.toFixed(1)}</text></svg></section>`;
+    return `<section class="panel"><div class="panel-header"><h2>${esc(title)}</h2><span class="badge neutral">已保存数据</span></div><svg viewBox="0 0 800 250" style="width:100%;max-height:320px" role="img" aria-label="${esc(title)}：已保存实验的逐步价格曲线"><path d="M50 30V210H750" fill="none" stroke="#aab7c4"/><path d="${path}" fill="none" stroke="var(--teal)" stroke-width="3"/>${prices.map((p,i)=>`<circle cx="${x(i)}" cy="${y(p)}" r="3" fill="var(--teal)"><title>${rows[i].date?esc(rows[i].date)+' · ':''}第 ${i+1} 步：${p}</title></circle>`).join('')}<text x="50" y="237" fill="currentColor">第 1 步</text><text x="680" y="237" fill="currentColor">第 ${rows.length} 步</text><text x="6" y="35" fill="currentColor">${high.toFixed(1)}</text><text x="6" y="210" fill="currentColor">${low.toFixed(1)}</text></svg></section>`;
   }
-  function marketStepCards(){
-    const view=MarketDecisionView.buildStep(current().backendResult,state.decisionGroup,state.asset,state.step);
+  function marketStepCards(result=current().backendResult,viewState=state){
+    const view=MarketDecisionView.buildStep(result,viewState.decisionGroup,viewState.asset,viewState.step);
     const value=(n,d=2)=>typeof n==='number'&&Number.isFinite(n)?n.toFixed(d):'未存档';
     const pct=n=>n==null?'未存档':value(n*100)+'%';
     const qty=n=>n==null?'未存档':format(n);
@@ -256,14 +532,15 @@
     const label={aggressive:'激进型',conservative:'保守型',institutional:'机构型'};
     const allPrices=[...priceRows(active),...priceRows(base)].map(row=>row.price);
     const bounds={low:Math.min(...allPrices)-.2,high:Math.max(...allPrices)+.2};
-    return heading('MARKET EXPERIMENT',esc(e.title),'<span class="badge">合成市场 · 撮合计算</span>',`<a class="btn" href="/api/platform/experiments/${e.id}/export" download>${icon('download')}导出账本</a><button class="btn" data-action="duplicate">复制为新实验</button>${newButton()}`)
+    return heading('MARKET EXPERIMENT',esc(e.title),'<span class="badge">合成市场 · 撮合计算</span>',`${batchArchivedExperiment?`<button class="btn" data-action="export">${icon('download')}导出归档账本</button>`:`<a class="btn" href="/api/platform/experiments/${e.id}/export" download>${icon('download')}导出账本</a>`}<button class="btn" data-action="duplicate">复制为新实验</button>${newButton()}`)
       +`<div class="callout">账本审计通过：${r.audit.days_checked} 个市场日。消息从第 5 步作用于资产 A；信号与暴露为人工情景假设，${e.text_analysis?'已关联模型事实作为参考':'未关联模型分析'}。</div>`
+      +`<nav class="result-shortcuts" aria-label="结果页快捷入口"><button class="btn" type="button" data-action="compare-decisions">查看同一步决策对照 ${icon('arrow')}</button><span>三类策略 · 有消息与无消息</span></nav>`
       +`<section class="panel"><div class="panel-header"><h2>实验条件</h2></div><div class="summary-content"><p>${esc(e.source)}</p><p>信号 ${e.signal} · 不确定性 ${e.uncertainty} · 持续 ${e.duration} 步 · 种子 ${e.seed}</p><p>每类 4 个账户，每类初始现金合计 ${format(r.assumptions.effective_initial_cash_per_role)} 元，另有每账户每资产 500 股初始库存。</p></div></section>`
       +experimentStrategyPanel(e)+experimentEvidence(e.text_analysis)
       +`<div class="section-title"><h2>市场价格对照 <small>两组使用相同坐标刻度</small></h2><div class="segmented">${['A','B','C'].map(a=>`<button data-asset="${a}" class="${state.asset===a?'active':''}">资产 ${a}</button>`).join('')}</div></div>`
       +'<div class="market-chart-grid">'+savedPriceChart(priceRows(active),'有消息',bounds)+savedPriceChart(priceRows(base),'无消息对照',bounds)+'</div>'
-      +`<section class="panel timeline-control"><div class="timeline-label"><label for="market-step">逐步查看策略与成交 · 资产 ${state.asset}</label><strong id="market-step-label">第 ${state.step} / ${active.trace.length} 步</strong></div><input id="market-step" type="range" min="1" max="${active.trace.length}" value="${state.step}"><div class="segmented" role="group" aria-label="决策信息条件">${[['with_message','有消息组'],['baseline','无消息组']].map(([key,label])=>`<button type="button" data-decision-group="${key}" class="${state.decisionGroup===key?'active':''}" aria-pressed="${state.decisionGroup===key}">${label}</button>`).join('')}</div><p>第 5 步消息可见。当前查看${state.decisionGroup==='baseline'?'无消息对照组':'有消息组'}的真实实验账本；切换时保留资产与决策步。</p></section><div class="role-editor-grid" id="market-step-cards">${marketStepCards()}</div>`
-      +`<section class="panel"><div class="panel-header"><h2>三类策略 · 账户收益对照</h2></div><div class="table-wrap"><table><thead><tr><th>策略</th><th>有消息收益</th><th>无消息收益</th><th>差值</th></tr></thead><tbody>${Object.keys(label).map(k=>{const a=(active.summary.role_wealth_multiple[k]-1)*100,b=(base.summary.role_wealth_multiple[k]-1)*100;return `<tr><td>${label[k]}</td><td>${signed(a)}%</td><td>${signed(b)}%</td><td>${signed(a-b)} pp</td></tr>`;}).join('')}</tbody></table></div></section>`
+      +`<section class="panel timeline-control" id="market-decision-controls" tabindex="-1" aria-label="决策步与信息条件"><div class="timeline-label"><label for="market-step">逐步查看策略与成交 · 资产 ${state.asset}</label><strong id="market-step-label">第 ${state.step} / ${active.trace.length} 步</strong></div><input id="market-step" type="range" min="1" max="${active.trace.length}" value="${state.step}"><div class="segmented" role="group" aria-label="决策信息条件">${[['with_message','有消息组'],['baseline','无消息组']].map(([key,label])=>`<button type="button" data-decision-group="${key}" class="${state.decisionGroup===key?'active':''}" aria-pressed="${state.decisionGroup===key}">${label}</button>`).join('')}</div><p>${active.trace.length<5?'本实验在消息公开前结束，两组均未收到文本输入。':'第 5 步消息可见。'}当前查看${state.decisionGroup==='baseline'?'无消息对照组':'有消息组'}的真实实验账本；切换时保留资产与决策步。</p></section><div id="market-comparison">${MarketDecisionView.renderComparison(r,{asset:state.asset,step:state.step})}</div><div class="role-editor-grid" id="market-step-cards">${marketStepCards()}</div>`
+      +`<section class="panel"><div class="panel-header"><h2>三类策略 · 账户收益对照</h2></div><div class="table-wrap"><table><thead><tr><th>策略</th><th>有消息收益</th><th>无消息收益</th><th>差值</th></tr></thead><tbody>${Object.keys(label).map(k=>{const a=(active.summary.role_wealth_multiple[k]-1)*100,b=(base.summary.role_wealth_multiple[k]-1)*100;return `<tr><td>${label[k]}</td><td>${signed(a)}%</td><td>${signed(b)}%</td><td>${signed((active.summary.role_wealth_multiple[k]-base.summary.role_wealth_multiple[k])*100)} pp</td></tr>`;}).join('')}</tbody></table></div></section>`
       +`<section class="panel"><div class="panel-header"><h2>策略订单 · 全程合计</h2></div><div class="table-wrap"><table><thead><tr><th>信息条件</th><th>请求股数</th><th>接受股数</th><th>成交股数</th></tr></thead><tbody>${[['有消息',active],['无消息',base]].map(([name,path])=>`<tr><td>${name}</td><td>${format(path.summary.strategy_requested)}</td><td>${format(path.summary.strategy_accepted)}</td><td>${format(path.summary.strategy_filled)}</td></tr>`).join('')}</tbody></table></div></section>`;
   }
   function savedAnalysis(){
@@ -278,16 +555,33 @@
   }
   document.addEventListener('click',async e=>{
     const nav=e.target.closest('[data-nav]');if(nav){e.preventDefault();navigate(nav.dataset.nav);return;}
-    const open=e.target.closest('[data-open]');if(open){state.selected=Number(open.dataset.open);state.step=8;navigate('analysis');return;}
+    const caseSelect=e.target.closest('[data-case-select]');if(caseSelect){await loadSourceCase(caseSelect.dataset.caseSelect);return;}
+    const caseAsset=e.target.closest('[data-case-asset]');if(caseAsset){caseWorkspace.asset=caseAsset.dataset.caseAsset;updateCasePanels();return;}
+    const caseGroup=e.target.closest('[data-case-group]');if(caseGroup){caseWorkspace.group=caseGroup.dataset.caseGroup;updateCasePanels();return;}
+    const caseFacts=e.target.closest('[data-case-facts]');if(caseFacts){caseWorkspace.factView=caseFacts.dataset.caseFacts;if(caseWorkspace.detail)document.getElementById('case-facts').innerHTML=MarketCaseView.renderFacts(caseWorkspace.detail,caseWorkspace);return;}
+    const caseQuote=e.target.closest('[data-case-quote]');if(caseQuote&&caseWorkspace.detail){const bundle=caseWorkspace.detail,facts=caseQuote.dataset.caseQuoteVersion==='raw'?bundle.review.raw_facts:bundle.review.reviewed_record.facts,quote=facts[Number(caseQuote.dataset.caseQuote)]?.evidence[Number(caseQuote.dataset.caseQuotePart)];if(quote){caseWorkspace.evidenceFocus=quote;document.getElementById('case-source-panel').innerHTML=MarketCaseView.renderSource(bundle.case,quote);document.getElementById('case-evidence-mark')?.scrollIntoView({block:'center',behavior:'smooth'});}return;}
+    const batchSelect=e.target.closest('[data-batch-select]');if(batchSelect){await loadBatch(batchSelect.dataset.batchSelect);return;}
+    const batchExperiment=e.target.closest('[data-batch-experiment]');if(batchExperiment){await openBatchExperiment(batchExperiment.dataset.batchId,batchExperiment.dataset.batchExperiment);return;}
+    const experimentView=e.target.closest('[data-experiment-view]');if(experimentView){state.experimentView=experimentView.dataset.experimentView;state.search='';render();return;}
+    const open=e.target.closest('[data-open]');if(open){batchArchivedExperiment=null;state.selected=Number(open.dataset.open);state.step=8;navigate('analysis');return;}
     const sample=e.target.closest('[data-sample],[data-use]');if(sample){saveDraft();useSample(Number(sample.dataset.sample??sample.dataset.use));return;}
     const group=e.target.closest('[data-decision-group]');if(group){state.decisionGroup=group.dataset.decisionGroup;render();return;}
     const asset=e.target.closest('[data-asset]');if(asset){state.asset=asset.dataset.asset;render();return;}
-    const series=e.target.closest('[data-series]');if(series){const key=series.dataset.series+'Visible';if(state[key]&&!state[series.dataset.series==='signal'?'baselineVisible':'signalVisible']){toast('至少保留一条价格曲线。');return;}state[key]=!state[key];series.setAttribute('aria-pressed',state[key]);drawChart();return;}
-    const table=e.target.closest('[data-table]');if(table){state.table=table.dataset.table;document.querySelectorAll('[data-table]').forEach(b=>b.classList.toggle('active',b===table));document.getElementById('execution-table').innerHTML=executionTable();return;}
-    const role=e.target.closest('[data-role]');if(role){const i=Number(role.dataset.role),r=roles[i],d=roleDecision(i);modal(`${r.name} · 第 ${state.step} 步决策`, `<div class="eyebrow">DECISION TRACE · 展示数据</div><p>${r.desc}</p><div class="review-field"><span>决策动作</span><strong>${d.action}</strong></div><div class="review-field"><span>目标股票仓位</span><strong>${d.weight}%</strong></div><div class="flow-line"><span>请求 ${d.quantity} 股</span>${icon('arrow')}<span>成交 ${d.filled} 股</span></div><div class="review-box"><strong>决策解释</strong><p>${d.reason}</p><p>${d.quantity>d.filled?'示例中订单只获得部分匹配，因此请求量大于成交量。':'本步示例没有未成交的新增数量。'}</p></div><p>这是决策详情的设计示例，尚未读取真实实验账本。</p>`);return;}
     const b=e.target.closest('[data-action]');if(!b)return;const action=b.dataset.action;
+    if(action==='compare-decisions'){const controls=document.getElementById('market-decision-controls');controls?.scrollIntoView({block:'start',behavior:'smooth'});controls?.focus({preventScroll:true});return;}
+    if(action==='refresh-cases'){await hydrateSourceCases();return;}
+    if(action==='refresh-case'){if(caseWorkspace.selectedId)await loadSourceCase(caseWorkspace.selectedId);return;}
+    if(action==='new-from-case'){newFromCase();return;}
+    if(action==='refresh-batches'){await hydrateBatches();return;}
+    if(action==='run-batch'){await runBatch();return;}
+    if(action==='back-to-batch'){batchArchivedExperiment=null;navigate('batches');return;}
     if(action==='retry-run'){await retryRun();return;}
+    if(action==='draft-result'){await openSubmittedExperiment();return;}
     if(action==='refresh-runs'){await hydrateExperiments();return;}
+    if(action==='refresh-model'){await loadModelConfiguration();return;}
+    if(action==='check-model'){await checkModelConnection();return;}
+    if(action==='resume-draft'){navigate('new');return;}
+    if(action==='retry-restore-analysis'){if(draftAnalysisRecovery?.draft===state.draft)await restoreDraftAnalysis(draftAnalysisRecovery.id);return;}
     if(action==='analyze-source'){
       saveDraft();const source=state.draft.source;
       if(source.trim().length<20){toast('请先填写至少20字的消息原文。');return;}
@@ -300,27 +594,42 @@
     }
     if(action==='detach-analysis'){analysisBinding.reset(state.draft.source);updateDraftAnalysisPanel();return;}
 
-    if(action==='new'){analysisBinding.reset('');state.draft={title:'',source:'',type:'政策消息',published:state.draft.published,signal:.6,uncertainty:.2,duration:6,sessions:18,seed:7,cash:1000000,strategy_parameters:strategyWorkspace.parameters?strategyWorkspace.snapshot():null};state.wizard=1;navigate('new');}
+    if(action==='new'){draftCache.clear();draftAnalysisRecovery=null;analysisBinding.reset('');state.draft={title:'',source:'',type:'政策消息',published:state.draft.published,signal:0,uncertainty:.2,duration:6,sessions:18,seed:7,cash:1000000,strategy_parameters:strategyWorkspace.parameters?strategyWorkspace.snapshot():null};state.wizard=1;navigate('new');}
     if(action==='close')dialog.close();
     if(action==='menu')document.querySelector('.sidebar').classList.toggle('open');
-    if(action==='theme'){document.body.dataset.theme=document.body.dataset.theme==='dark'?'light':'dark';drawChart();}
+    if(action==='theme'){document.body.dataset.theme=document.body.dataset.theme==='dark'?'light':'dark';}
     if(action==='cancel-new')navigate('experiments');
-    if(action==='duplicate')useSample(state.selected);
+    if(action==='duplicate')useSample(state.selected,current());
     if(action==='source')modal('消息原文',`<span class="badge neutral">${esc(current().type)} · 虚构展示文本</span><p class="quote">${esc(current().source)}</p><p>正式版在此保留来源链接、发布时间、文本版本及提取证据。当前未绑定真实来源。</p>`, `<button class="btn" type="button" data-action="close">关闭</button><button class="btn primary" type="button" data-action="source-new">用此消息新建</button>`);
-    if(action==='source-new'){dialog.close();useSample(state.selected);}
-    if(action==='help')modal('关于这个设计预览',`<div class="eyebrow">MARKETMIRROR · PRODUCT CONCEPT</div><p>这是金融仿真实验平台的高保真交互原型。你可以浏览实验、拖动决策时间轴、查看三类策略、调整配置，并走完新建实验流程。</p><div class="review-box"><strong>当前可体验</strong><p>实验搜索、消息选择、分步表单、曲线切换、决策详情、主题切换与预览配置导出。</p></div><p>新建实验可提取 DeepSeek 事实并运行合成市场撮合，配置与账本保存在本机。内置示例仍用于界面展示。事实引文可核对，情景强度由用户设定。</p>`);
-    if(action==='settings')modal('模型设置',`<div class="eyebrow">MODEL CONNECTION · 界面示意</div><div class="form-field"><label for="model-name">模型</label><input id="model-name" value="DeepSeek-V4-Flash-0731-W8A8" readonly></div><div class="form-field"><label for="model-endpoint">接口地址</label><input id="model-endpoint" value="http://aigw.dlut.edu.cn/v1" readonly></div><div class="review-box"><strong>后端读取本地保存的密钥</strong><p>新建实验中点击“使用 DeepSeek 提取事实”即可调用，无需每次输入。浏览器不读取密钥。</p></div><span class="badge neutral">连接状态：尚未在此页检测</span>`);
-    if(action==='export'){const record=current();const data={artifact:record.custom?'MarketMirror experiment':'MarketMirror UI prototype',schema_version:'platform-export-v2',mode:record.backendResult?.mode||'design_fixture',experiment:record,selected_asset:state.asset,selected_step:state.step,fixture:record.custom?null:values()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`marketmirror-${record.id}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('已导出当前记录及其数据类型标识。');}
+    if(action==='source-new'){dialog.close();useSample(state.selected,current());}
+    if(action==='help')modal('MarketMirror 使用说明',`<div class="eyebrow">MARKETMIRROR · RESEARCH STUDIO</div><p>这是本机运行的金融仿真实验平台。输入消息、设置情景变量，比较激进型、保守型和机构型三类预设规则的仓位、订单与成交。</p><div class="review-box"><strong>实验与对照</strong><p>实验空间显示本机记录；示例模板复用后才会生成结果。批量对照比较四种人工情景与多个种子；真实原文案例读取六个已归档的开发实验。</p></div><p>新建实验可提取 DeepSeek 事实并运行合成市场撮合，配置与账本保存在本机。运行时可以切换页面或新建另一份草稿，结果会继续保存。原文事实可以核对；情景强度为明确假设，结果不代表真实市场预测。</p>`);
+    if(action==='settings'){openModelSettings();return;}
+    if(action==='export'){const record=current();if(!record.custom)return;const data={artifact:'MarketMirror experiment',schema_version:'platform-export-v2',mode:record.backendResult?.mode||'not_run',experiment:record,selected_asset:state.asset,selected_step:state.step,selected_information_condition:state.decisionGroup,fixture:null};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`marketmirror-${record.id}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('已导出当前记录及其数据类型标识。');}
     if(action==='save-roles')saveStrategies();
     if(action==='retry-strategies'){hydrateStrategies();render();}
     if(action==='reset-roles'){strategyWorkspace.restoreDefaults();render();toast('已载入平台默认值，保存后生效。');}
-    if(action==='next'){saveDraft();const d=state.draft,error=document.getElementById('form-error');if(state.wizard===1&&(!d.title.trim()||d.source.trim().length<20||!d.published)){error.textContent='请填写实验名称、发布时间，以及至少 20 个字的消息原文。';return;}if(state.wizard===2&&(!Number.isInteger(d.seed)||d.seed<0||d.seed>999999||!Number.isFinite(d.cash)||d.cash<10000||d.cash>100000000)){error.textContent='种子须为 0–999999 的整数；初始资金须在 1万–1亿 模型元之间。';return;}state.wizard++;render();}
+    if(action==='next'){saveDraft();const d=state.draft,error=document.getElementById('form-error');if(state.wizard===1&&(!d.title.trim()||d.source.trim().length<20||!d.published)){error.textContent='请填写实验名称、发布时间，以及至少 20 个字的消息原文。';return;}if(state.wizard===2&&(!Number.isInteger(d.sessions)||d.sessions<1||d.sessions>60)){error.textContent='实验总步数须为 1–60 的整数。';return;}if(state.wizard===2&&(!Number.isInteger(d.seed)||d.seed<0||d.seed>999999||!Number.isFinite(d.cash)||d.cash<10000||d.cash>100000000)){error.textContent='种子须为 0–999999 的整数；初始资金须在 1万–1亿 模型元之间。';return;}state.wizard++;render();}
     if(action==='previous'){saveDraft();state.wizard--;render();}
     if(action==='preview-run')previewRun();
   });
-  document.addEventListener('input',e=>{if(e.target.id==='draft-source'){state.draft.source=e.target.value;analysisBinding.setSource(e.target.value);updateDraftAnalysisPanel();}if(e.target.id==='market-step'){state.step=Number(e.target.value);document.getElementById('market-step-label').textContent=`第 ${state.step} / ${current().backendResult.paths.with_message.trace.length} 步`;document.getElementById('market-step-cards').innerHTML=marketStepCards();}if(e.target.id==='time-slider')setStep(Number(e.target.value));if(e.target.id==='experiment-search'){state.search=e.target.value;document.getElementById('experiment-rows').innerHTML=experimentRows();}if(e.target.dataset.strategyScope){const scope=e.target.dataset.strategyScope,role=e.target.dataset.strategyRole,key=e.target.dataset.strategyKey,field=strategyFields.find(f=>f.key===key),value=Number((Number(e.target.value)/field.scale).toFixed(6));try{if(scope==='workspace'){strategyWorkspace.edit(role,key,value);document.getElementById('strategy-save-state').textContent=strategyWorkspace.dirty?'有未保存的修改':'当前参数与保存值一致';}else{state.draft.strategy_parameters[role][key]=strategyWorkspace.validate(role,key,value);}document.getElementById(e.target.id+'-value').textContent=strategyValue(key,value);}catch(error){toast(error.message);}}if(e.target.id==='draft-signal')document.getElementById('signal-value').textContent=Number(e.target.value).toFixed(2);if(e.target.id==='draft-uncertainty')document.getElementById('uncertainty-value').textContent=Number(e.target.value).toFixed(2);});
+  document.addEventListener('submit',e=>{if(e.target.id==='batch-create-form'){e.preventDefault();createAndRunBatch();}});
+  function updateDraftField(e){
+    if(state.page!=='new')return;
+    const el=e.target;
+    if(el.dataset.draft){state.draft[el.dataset.draft]=['signal','uncertainty','duration','sessions','seed','cash'].includes(el.dataset.draft)?Number(el.value):el.value;if(el.dataset.draft==='source')analysisBinding.setSource(el.value);updateDraftSubmission();}
+    if(el.id==='confirm-demo')draftConfirmations.set(state.draft,el.checked);
+  }
+  document.addEventListener('input',updateDraftField);
+  document.addEventListener('change',updateDraftField);
+  document.addEventListener('input',e=>{if(e.target.dataset.batchField)batchForm[e.target.dataset.batchField]=e.target.value;});
+  document.addEventListener('change',e=>{if(e.target.dataset.batchField)batchForm[e.target.dataset.batchField]=e.target.value;});
+  document.addEventListener('change',e=>{if(e.target.id==='case-seed'||e.target.id==='case-mode')loadSourceCase(caseWorkspace.selectedId,e.target.id==='case-seed'?Number(e.target.value):caseWorkspace.seed,e.target.id==='case-mode'?e.target.value:caseWorkspace.mode);});
+  document.addEventListener('input',e=>{if(e.target.id==='case-step'&&caseWorkspace.detail){caseWorkspace.step=Number(e.target.value);document.getElementById('case-step-label').textContent=`第 ${caseWorkspace.step} / 18 步`;document.getElementById('case-observation').innerHTML=MarketCaseView.renderClock(caseWorkspace.detail,caseWorkspace);document.getElementById('case-decisions').innerHTML=marketStepCards(caseWorkspace.detail.result,{decisionGroup:caseWorkspace.group,asset:caseWorkspace.asset,step:caseWorkspace.step});document.getElementById('case-comparison').innerHTML=MarketDecisionView.renderComparison(caseWorkspace.detail.result,{asset:caseWorkspace.asset,step:caseWorkspace.step,activeLabel:'所选条件',baselineLabel:'无文本参考'});}});
+  document.addEventListener('input',e=>{if(e.target.id==='draft-source'){state.draft.source=e.target.value;analysisBinding.setSource(e.target.value);updateDraftAnalysisPanel();}if(e.target.id==='market-step'){state.step=Number(e.target.value);document.getElementById('market-step-label').textContent=`第 ${state.step} / ${current().backendResult.paths.with_message.trace.length} 步`;document.getElementById('market-step-cards').innerHTML=marketStepCards();document.getElementById('market-comparison').innerHTML=MarketDecisionView.renderComparison(current().backendResult,{asset:state.asset,step:state.step});}if(e.target.id==='experiment-search'){state.search=e.target.value;document.getElementById('experiment-rows').innerHTML=experimentRows();}if(e.target.dataset.strategyScope){const scope=e.target.dataset.strategyScope,role=e.target.dataset.strategyRole,key=e.target.dataset.strategyKey,field=strategyFields.find(f=>f.key===key),value=Number((Number(e.target.value)/field.scale).toFixed(6));try{if(scope==='workspace'){strategyWorkspace.edit(role,key,value);document.getElementById('strategy-save-state').textContent=strategyWorkspace.dirty?'有未保存的修改':'当前参数与保存值一致';}else{state.draft.strategy_parameters[role][key]=strategyWorkspace.validate(role,key,value);persistDraft();}document.getElementById(e.target.id+'-value').textContent=strategyValue(key,value);}catch(error){toast(error.message);}}if(e.target.id==='draft-signal')document.getElementById('signal-value').textContent=Number(e.target.value).toFixed(2);if(e.target.id==='draft-uncertainty')document.getElementById('uncertainty-value').textContent=Number(e.target.value).toFixed(2);});
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
-  window.addEventListener('hashchange',()=>{const p=location.hash.slice(1);if(labels[p]&&p!==state.page){state.page=p;render();}});
+  window.addEventListener('hashchange',()=>{const p=location.hash.slice(1);if(labels[p]&&p!==state.page){if(state.page==='new')saveDraft();navigationVersion++;state.page=p;render();}});
   const initial=location.hash.slice(1);if(labels[initial])state.page=initial;
+  restoreDraftFromCache();
+  window.addEventListener('pagehide',()=>{if(state.page==='new')saveDraft();persistDraft();});
   icons();render();hydrateExperiments();hydrateStrategies();
 })();

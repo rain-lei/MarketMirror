@@ -1,0 +1,15 @@
+{
+  "schema": "platform-real-source-case-registry-v1",
+  "study_config": "research/configs/source_case_decision_study_2026_v1.json",
+  "study_config_sha256": "6ff633d4d48148c1f53e02cde91905779168ae4e9bb79de5acc35684cf6d6c93",
+  "archive_directory": "research_outputs/source_case_decisions_20261004_v1",
+  "archive_manifest_sha256": "2cc4d987d8e578572576d3ac9c0b1de9a043eba4935384e7eee8dde0e55a9cc0",
+  "labels": {
+    "asset_management_guidance_2018": "2018 资管政策：监管不确定性",
+    "wuhan_transport_restrictions_2020": "武汉交通通告：运营中断情景",
+    "sse_spring_festival_closure_extension_2020": "春节休市公告：日历与交易方向",
+    "qa_00b5be747b822d0b0df194d5d81b60aee1599392c6b2157ce4ecda22a1a3c5ea": "300294：特殊审批与收购陈述",
+    "qa_052fcc69fc3548192c3fbc18a85a4e383b85b46e2379c80716f76c92ca4b7d93": "002126：已有间接持股",
+    "qa_070599d1485aa25d5a3f3126620a238352e4bc01a40260a4725c9228b35dcda5": "300278：仅提示关注公告"
+  }
+}
