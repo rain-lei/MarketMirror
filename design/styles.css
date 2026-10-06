@@ -94,3 +94,23 @@ body[data-theme=dark]{--canvas:#101b25;--surface:#172530;--surface-alt:#1b2c39;-
 @media(max-width:560px){.case-library-grid{grid-template-columns:1fr}.case-library-card{padding:16px}.case-controls{padding:16px;gap:14px}.case-controls .case-help{margin:0}.case-clock-grid{grid-template-columns:1fr 1fr}.case-order-totals{grid-template-columns:1fr;gap:14px}.case-detail-heading h2{font-size:17px}.case-fact{padding:16px}.case-source-segment{padding:14px}}
 .case-input-basis{font-size:12px;line-height:1.9;color:var(--muted);margin:12px 0}.case-input-basis>summary{cursor:pointer;color:var(--teal)}.case-input-basis p{margin:8px 0;overflow-wrap:anywhere}.case-input-basis button{text-align:left;white-space:normal}
 .experiment-tools{gap:12px;flex-wrap:wrap}.experiment-tools>.segmented{flex:0 0 auto}
+
+/* Paired decisions from the two archived market paths. */
+.decision-comparison{margin:20px 0}.decision-comparison .panel-subtitle{margin-top:8px;line-height:1.8}
+.comparison-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;padding:20px 22px}
+.comparison-role{min-width:0;border:1px solid var(--line);border-radius:8px;padding:18px 16px;background:var(--surface)}
+.comparison-role-heading{display:flex;align-items:center;gap:8px}.comparison-role-heading h3{font-size:13px;font-weight:600}
+.comparison-role-dot{width:7px;height:7px;border-radius:50%;background:var(--role);flex-shrink:0}
+.comparison-delta-label{font-size:10px;color:var(--muted);margin-top:17px}.comparison-delta{display:block;font-size:23px;font-weight:550;letter-spacing:-.5px;margin:8px 0 18px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.comparison-weight{display:grid;grid-template-columns:62px minmax(0,1fr) 82px;align-items:center;gap:8px;margin-top:10px;font-size:10px}
+.comparison-weight>span{color:var(--muted);overflow-wrap:anywhere}.comparison-weight>strong{font-size:10px;text-align:right;font-weight:500;font-variant-numeric:tabular-nums}
+.comparison-track{height:6px;background:var(--surface-alt);border-radius:4px;overflow:hidden;border:1px solid var(--line)}
+.comparison-track i{display:block;height:100%;background:var(--role);border-radius:4px}.comparison-track .reference{opacity:.4}
+.comparison-axis{display:flex;justify-content:space-between;font-size:9px;color:var(--faint);margin:10px 0 0 70px;padding-right:90px;gap:5px}.comparison-axis>span:nth-child(2){white-space:nowrap}
+.comparison-table{margin-top:18px;border-top:1px solid var(--line);overflow-x:auto}.comparison-table table{width:100%;min-width:0;table-layout:fixed;border-collapse:collapse}
+.comparison-table th,.comparison-table td{padding:9px 3px;font-size:9px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.comparison-table th:first-child{width:26%;text-align:left;color:var(--muted);font-weight:400}.comparison-table thead th{font-weight:400;color:var(--muted);background:var(--surface)}
+.comparison-table tbody th,.comparison-table td{border-top:1px solid var(--line)}.comparison-table tr:last-child th,.comparison-table tr:last-child td{border-bottom:0}
+.comparison-footnote{padding:0 22px 20px;font-size:11px;color:var(--muted);line-height:1.9}.comparison-missing{font-size:11px;line-height:1.8;margin-top:14px;color:var(--muted)}
+@media(max-width:1100px){.comparison-grid{grid-template-columns:1fr}.comparison-role{padding:18px 20px}.comparison-weight{grid-template-columns:70px minmax(0,1fr) 100px}.comparison-axis{margin-left:78px;padding-right:108px}.comparison-table th,.comparison-table td{font-size:11px;padding:10px 6px}.comparison-table th:first-child{width:30%}}
+@media(max-width:560px){.comparison-grid{padding:17px;gap:14px}.comparison-role{padding:16px 12px}.comparison-footnote{padding:0 17px 17px}.comparison-table th,.comparison-table td{font-size:9px;padding:9px 2px}.comparison-table th:first-child{width:26%}.comparison-weight{grid-template-columns:62px minmax(0,1fr) 82px}.comparison-axis{margin-left:70px;padding-right:90px}}

@@ -126,6 +126,8 @@ test('unavailable catalogs expose no substitute cases and exports identify the s
   assert.match(html,/\+0.000000%/);
   assert.match(html,/真实的是来源文本及归档日历/);
   assert.doesNotMatch(html,/NaN|undefined/);
+  const paired=renderDetail(state.detail,state,{comparison:'<section>已核对的步骤对照</section>'});
+  assert.match(paired,/id="case-comparison"><section>已核对的步骤对照/);
   const selfReference=bundle('case',7,'no_text');
   const selfHTML=renderDetail(selfReference,state);
   assert.match(selfHTML,/18 个市场日账本核验通过/);

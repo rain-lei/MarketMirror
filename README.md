@@ -18,7 +18,7 @@ MarketMirror 是一个本地运行的可视化金融仿真实验平台。输入�
 | 对照仿真 | 使用相同初始条件与种子运行有消息 / 无消息两组市场 |
 | 批量对照 | 页面创建四情景 × 多种子批次，查看进度、策略范围图、失败原因与报告 |
 | 真实原文案例 | 查看六个归档案例的来源、模型原始提取、复核修订及四条件 × 五种子决策路径 |
-| 决策回放 | 查看信息输入、评分、目标仓位，以及订单请求、接受与实际成交 |
+| 决策回放 | 查看信息输入、评分、目标仓位、订单与成交，并同时比较两组同一步的三类策略 |
 | 结果归档 | 导出实验配置、文本依据、参数标识和撮合账本 |
 
 ## 三类 Agent
@@ -76,6 +76,8 @@ MARKETMIRROR_LLM_API_KEY=your_api_key
 
 要查看已实施的真实文本实验，打开**真实原文案例**。本机归档涵盖资管政策答记者问、武汉交通通告、春节休市公告和三条公司回复；可切换无文本、关键词、复核后 LLM 与资产暴露置换条件，再查看各步骤的仓位、订单和成交。引文可以定位到完整原文，原始模型判断与助手修订分别展示，并可导出所选路径。读取旧归档不重新调用模型，也不重跑市场。
 
+普通结果与真实原文案例均提供**同一步决策对照**：切换资产和步骤，同时查看两组的目标权重、判断分值与订单执行差异。收益及权重差保留微小非零值，缺失账本字段不补零。两条路径的账户状态可能已不同，对照包含先前交易与价格反馈。
+
 这些案例需要原有本地研究归档，新克隆仓库不会附带原文和完整实验结果；缺少归档时页面明确提示。研究产物的恢复与复现见[复现说明](research/PROTOTYPE_REPRODUCTION_2026.md)。本机完整核验命令为 `python -B -X utf8 -m design.source_cases --verify-all`。
 
 ## 当前边界
@@ -102,7 +104,7 @@ research_outputs/ 本地生成数据与运行产物（Git 忽略）
 
 ```powershell
 python -B -X utf8 -m unittest tests.test_platform_strategies tests.test_platform_analysis_binding tests.test_platform_text tests.test_platform_engine tests.test_platform_server tests.test_platform_scenario_batch tests.test_platform_batches tests.test_platform_source_cases tests.test_platform_submission -q
-node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_submission.cjs
+node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_state.cjs tests/test_platform_decision_view.cjs tests/test_platform_copy.cjs tests/test_platform_record_loading.cjs tests/test_platform_batch_view.cjs tests/test_platform_case_view.cjs tests/test_platform_submission.cjs tests/test_platform_comparison.cjs
 ```
 
 具体实验结论、运行条件和限制见[研究总结](research/RESEARCH_SUMMARY_2026.md)、[平台验证记录](design/PLATFORM_VALIDATION_20261005.md)、[批量对照核验](design/BATCH_PLATFORM_VALIDATION_20261006.md)与[真实原文案例核验](design/SOURCE_CASE_PLATFORM_VALIDATION_20261006.md)。
@@ -110,3 +112,5 @@ node --test tests/test_platform_strategy_state.cjs tests/test_platform_analysis_
 首页、模板分组及记录加载的实际核验见[实验读取核验](design/EXPERIMENT_LOADING_VALIDATION_20261006.md)。
 
 后台提交、页面切换及丢失响应恢复见[实验提交核验](design/SUBMISSION_VALIDATION_20261006.md)。
+
+两组同一步的三类策略及微小差异展示见[决策对照核验](design/DECISION_COMPARISON_VALIDATION_20261006.md)。
