@@ -211,9 +211,24 @@ class PlatformStore:
             raise ValueError('文本分析 ID 与存档不一致')
         return {**record, 'analysis_id': analysis_id}
 
-    def create(self, payload: dict) -> dict:
+    def create(self, payload: dict, submission_id: str | None = None) -> dict:
         config = validate_experiment(payload)
-        experiment_id = uuid4().hex
+        if submission_id is not None:
+            validate_analysis_id(submission_id)
+        payload_sha256 = analysis_digest(config)
+        experiment_id = submission_id or uuid4().hex
+
+        def existing_submission():
+            existing = self.get(experiment_id) if submission_id is not None else None
+            if existing is not None and (not isinstance(existing, dict) or existing.get('id') != experiment_id
+                                        or existing.get('submission_payload_sha256') != payload_sha256):
+                raise ValueError('提交编号已用于另一份配置，请新建实验')
+            return existing
+
+        with self.lock:
+            existing = existing_submission()
+            if existing is not None:
+                return existing
         analysis = self.bound_analysis(config['analysis_id'], config['source']) if config['analysis_id'] else None
         parameter_origin = 'explicit' if config['strategy_parameters'] is not None else 'workspace_profile'
         config['strategy_parameters'] = config['strategy_parameters'] or self.strategies()['parameters']
@@ -223,7 +238,14 @@ class PlatformStore:
                   'scenario_variables_origin': 'manual', 'strategy_parameters_origin': parameter_origin,
                   'strategy_parameters_sha256': parameters_digest(config['strategy_parameters']),
                   'mechanism_config_sha256': load_model()[1]}
+        if submission_id is not None:
+            record['submission_payload_sha256'] = payload_sha256
         with self.lock:
+            # Simultaneous retries must return the first saved configuration,
+            # including its strategy snapshot and any later run status.
+            existing = existing_submission()
+            if existing is not None:
+                return existing
             atomic_json(self.data_dir / experiment_id / "experiment.json", record)
         return record
 
@@ -387,7 +409,8 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                         raise ValueError('仅接受消息原文')
                     record = store.save_analysis(payload['source'], analyze(payload['source']))
                     self.json(200, record); return
-                if path == "/api/platform/experiments": self.json(201, store.create(payload)); return
+                if path == "/api/platform/experiments":
+                    self.json(201, store.create(payload, self.headers.get('Idempotency-Key'))); return
                 prefix = "/api/platform/experiments/"
                 if path.startswith(prefix) and path.endswith("/run"):
                     result = store.run(path[len(prefix):-4]); self.json(202, result); return

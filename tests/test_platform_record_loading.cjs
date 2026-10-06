@@ -70,13 +70,14 @@ test('creating a new experiment invalidates an older list load and preserves the
   let resolveList;
   const c=context({state:{page:'new',selected:0,draft:{source:'新的消息原文'}},
     analysisBinding:{analysisId:null},copyParameters:()=>null,
+    draftSubmissions:new WeakMap(),activeRuns:new Set(),document:{getElementById:()=>null},
     apiJson(url,options){
-      if(url==='/api/platform/experiments')return options?Promise.resolve({...snapshot('created').experiment,backendResult:undefined}):new Promise(resolve=>resolveList=resolve);
+      if(url==='/api/platform/experiments')return options?Promise.resolve({...snapshot('created').experiment,run_status:'not_started',backendResult:undefined}):new Promise(resolve=>resolveList=resolve);
       return Promise.resolve(snapshot('created').experiment.backendResult);
     }});
-  const persist=source.split('\n').find(line=>line.startsWith('  async function persistAndRun()'));
+  const persist=source.slice(source.indexOf('  function draftPayload('),source.indexOf('  async function hydrateExperiments(){'));
   vm.runInContext(persist,c);
-  const old=c.hydrateExperiments();await c.persistAndRun();resolveList([]);await old;
+  const old=c.hydrateExperiments();await c.persistAndRun({id:'created',signature:'{}'});resolveList([]);await old;
   assert.equal(c.experiments[0].id,'created');assert.equal(c.experimentsLoaded,true);assert.equal(c.experimentLoading,false);
 });
 
