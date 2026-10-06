@@ -51,12 +51,23 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 if ($SkipSourceCases) {
     Write-Host "[4/4] Source-case archive verification skipped by request"
-} elseif (Test-Path "research_outputs/platform_workspace") {
-    Write-Host "[4/4] Source-case archive verification"
-    & $python -B -X utf8 -m design.source_cases --verify-all
-    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 } else {
-    Write-Host "[4/4] Source-case archive verification skipped: local archive is not present"
+    $registryPath = Join-Path $repoRoot "design/source-case-registry.json"
+    $archiveAvailable = $false
+    if (Test-Path $registryPath) {
+        $registry = Get-Content -Raw -Encoding UTF8 $registryPath | ConvertFrom-Json
+        if ($registry.archive_directory) {
+            $archivePath = Join-Path $repoRoot ([string]$registry.archive_directory)
+            $archiveAvailable = Test-Path $archivePath
+        }
+    }
+    if ($archiveAvailable) {
+        Write-Host "[4/4] Source-case archive verification"
+        & $python -B -X utf8 -m design.source_cases --verify-all
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    } else {
+        Write-Host "[4/4] Source-case archive verification skipped: local archive is not present"
+    }
 }
 
 Write-Host "Platform verification passed."
