@@ -56,6 +56,12 @@ python -m pip install -r requirements-research.txt
 .\scripts\start-platform.ps1
 ```
 
+如果所在网络无法连接 `github.com:443`，GitHub 也支持通过 SSH 的 443 端口获取同一分支：
+
+```powershell
+git clone --branch codex/research-rebuild ssh://git@ssh.github.com:443/rain-lei/MarketMirror.git
+```
+
 打开 **http://127.0.0.1:8770/**。已有仓库时，在项目根目录执行启动脚本即可。脚本会检查端口并在当前终端前台运行服务；更新代码后重启服务，再刷新页面。也可以直接执行 `python -B -X utf8 -m design.server --port 8770`。
 
 当前本地平台使用 Python 标准库 HTTP 服务和原生 HTML/CSS/JavaScript，无需前端构建。共享研究模块依赖 `openpyxl`，由上述安装命令提供。跳过文本分析即可运行合成市场实验；不需要原始 Excel 或历史研究产物。
