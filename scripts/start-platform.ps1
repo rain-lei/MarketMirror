@@ -1,6 +1,7 @@
 ﻿param(
     [int]$Port = 8770,
-    [string]$DataDir = ""
+    [string]$DataDir = "",
+    [string]$Python = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,7 +18,9 @@ if ($listener.Count -gt 0) {
     throw "端口 $Port 已被占用（进程 $owners）。请关闭现有服务或改用 -Port。"
 }
 
-$python = (Get-Command python -ErrorAction Stop).Source
+. (Join-Path $PSScriptRoot "platform-python.ps1")
+$runtime = Resolve-PlatformPython -RepoRoot $repoRoot -RequestedPython $Python
+$pythonExecutable = $runtime.Path
 $arguments = @("-B", "-X", "utf8", "-m", "design.server", "--port", "$Port")
 if ($DataDir) {
     $arguments += @("--data-dir", $DataDir)
@@ -25,5 +28,5 @@ if ($DataDir) {
 
 Write-Host "MarketMirror platform: http://127.0.0.1:$Port/"
 Write-Host "服务在当前终端前台运行；按 Ctrl+C 停止。"
-& $python @arguments
+& $pythonExecutable @arguments
 exit $LASTEXITCODE

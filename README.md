@@ -66,6 +66,15 @@ git clone --branch codex/research-rebuild ssh://git@ssh.github.com:443/rain-lei/
 
 打开 **http://127.0.0.1:8770/**。已有仓库时，在项目根目录执行启动脚本即可。脚本会检查端口并在当前终端前台运行服务；更新代码后重启服务，再刷新页面。也可以直接执行 `python -B -X utf8 -m design.server --port 8770`。
 
+启动与校验脚本共用 Python 环境检查：依次检查项目 `.venv`、已激活环境、PATH 中的 Python 和已安装的 Conda 基础环境，使用第一个满足 Python 版本及 `openpyxl` 依赖的解释器，并显示实际路径。可以显式指定环境；指定环境不满足依赖时会停止并给出原因：
+
+```powershell
+.\scripts\start-platform.ps1 -Python "C:\path\to\python.exe"
+.\scripts\verify-platform.ps1 -Python "C:\path\to\python.exe"
+```
+
+没有合适环境时，先用目标解释器执行 `-m pip install -r requirements-research.txt`。脚本不自动安装依赖，也不修改系统环境设置。
+
 当前本地平台使用 Python 标准库 HTTP 服务和原生 HTML/CSS/JavaScript，无需前端构建。共享研究模块依赖 `openpyxl`，由上述安装命令提供。跳过文本分析即可运行合成市场实验；不需要原始 Excel 或历史研究产物。
 
 ### 可选：启用文本分析

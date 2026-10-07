@@ -1,12 +1,15 @@
-param(
-    [switch]$SkipSourceCases
+﻿param(
+    [switch]$SkipSourceCases,
+    [string]$Python = ""
 )
 
 $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $repoRoot
 
-$python = (Get-Command python -ErrorAction Stop).Source
+. (Join-Path $PSScriptRoot "platform-python.ps1")
+$runtime = Resolve-PlatformPython -RepoRoot $repoRoot -RequestedPython $Python
+$pythonExecutable = $runtime.Path
 $node = (Get-Command node -ErrorAction Stop).Source
 
 $pythonTests = @(
@@ -47,12 +50,20 @@ $nodeTests = @(
 )
 
 Write-Host "[1/5] Python platform tests"
-& $python -B -X utf8 -m unittest @pythonTests -q
+& $pythonExecutable -B -X utf8 -m unittest @pythonTests -q
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 Write-Host "[2/5] Node state and view tests"
-& $node --test @nodeTests
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+# Node tests also launch Python. Keep child processes on the selected interpreter,
+# and restore the caller's PATH even when a check fails.
+$originalPath = $env:PATH
+try {
+    $env:PATH = (Split-Path -Parent $pythonExecutable) + [IO.Path]::PathSeparator + $originalPath
+    & $node --test @nodeTests
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+} finally {
+    $env:PATH = $originalPath
+}
 
 Write-Host "[3/5] JavaScript syntax"
 & $node --check design/app.js
@@ -82,7 +93,7 @@ if ($SkipSourceCases) {
     }
     if ($archiveAvailable) {
         Write-Host "[4/5] Source-case archive verification"
-        & $python -B -X utf8 -m design.source_cases --verify-all
+        & $pythonExecutable -B -X utf8 -m design.source_cases --verify-all
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     } else {
         Write-Host "[4/5] Source-case archive verification skipped: local archive is not present"
@@ -100,7 +111,7 @@ if (Test-Path $observedRegistryPath) {
 }
 if ($observedArchiveAvailable) {
     Write-Host "[5/5] Observed-return archive and source receipt verification"
-    & $python -B -X utf8 -m design.observed_experiments --verify-all
+    & $pythonExecutable -B -X utf8 -m design.observed_experiments --verify-all
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 } else {
     Write-Host "[5/5] Observed-return archive verification skipped: local archive is not present"
