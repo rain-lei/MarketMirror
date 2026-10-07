@@ -6,7 +6,7 @@ const source=fs.readFileSync('design/app.js','utf8');
 const helpers=source.slice(source.indexOf('  function draftPayload('),source.indexOf('  async function hydrateExperiments(){'));
 const preview=source.slice(source.indexOf('  async function previewRun(){'),source.indexOf('  function savedPriceChart('));
 const retry=source.slice(source.indexOf('  async function retryRun(){'),source.indexOf('  function draftPayload('));
-const navigate=source.split('\n').find(line=>line.startsWith('  function navigate('));
+const navigate=source.slice(source.indexOf('  function closeModalForNavigation('),source.indexOf('  function analysis('));
 const input=source.slice(source.indexOf('  function updateDraftField('),source.indexOf("  document.addEventListener('input',updateDraftField)"));
 function deferred(){let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};}
 function draft(title='原实验'){
@@ -26,6 +26,7 @@ function context(options={}){
     experimentLoadVersion:0,experimentLoading:false,experimentsLoaded:true,batchArchivedExperiment:null,
     crypto:{randomUUID:()=>String(++serial).padStart(32,'0')},copyParameters:x=>JSON.parse(JSON.stringify(x)),
     icon:()=>'',esc:String,saveDraft(){},rememberExperiment(){},location:{hash:''},window:{scrollTo(){}},
+    dialog:{open:false,close(){this.open=false;}},
     document:{getElementById:id=>c.state.page==='new'?elements.get(id)||null:null,
       querySelector:()=>({classList:{remove(){}}})},
     render(){renders.push(c.state.page);},persistDraft(){},toast(message){notices.push(message);},async hydrateExperiments(){},
@@ -42,6 +43,12 @@ test('the original visible confirmation opens its completed result with consiste
   assert.equal(c.current().result_id,c.current().backendResult.provenance.result_id);
   assert.equal(c.current().run_attempts,1);assert.equal(c.activeRuns.size,0);
   assert.equal(calls.filter(x=>x.url==='/api/platform/experiments').length,1);
+});
+
+test('navigating away closes a modal left by the previous page',()=>{
+  const dialog={open:true,closed:0,close(){this.open=false;this.closed++;}},{c}=context({dialog});
+  c.navigate('agents');
+  assert.equal(dialog.closed,1);assert.equal(dialog.open,false);assert.equal(c.state.page,'agents');
 });
 
 test('double clicks and rerendered controls cannot submit the same pending draft twice',async()=>{

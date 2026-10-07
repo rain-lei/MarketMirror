@@ -102,7 +102,8 @@
       modalDownloadUrls.push(...prepared.filter(f=>!f.server).map(f=>f.url));
     }catch(error){for(const f of prepared)URL.revokeObjectURL(f.url);throw error;}
   }
-  function navigate(page) { if(state.page==='new'&&page!=='new')saveDraft();navigationVersion++;if(page==='analysis')rememberExperiment();state.page=page;location.hash=page;render();document.querySelector('.sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'instant'}); }
+  function closeModalForNavigation(){if(dialog.open)dialog.close();}
+  function navigate(page) { closeModalForNavigation();if(state.page==='new'&&page!=='new')saveDraft();navigationVersion++;if(page==='analysis')rememberExperiment();state.page=page;location.hash=page;render();document.querySelector('.sidebar').classList.remove('open');window.scrollTo({top:0,behavior:'instant'}); }
   function analysis() {
     if(!experimentsLoaded)return `<section class="panel"><div class="summary-content"><h1>${experimentLoading?'正在读取本机实验…':'本机实验尚未加载'}</h1><p>读取完成后显示已有撮合记录与结果。</p>${experimentLoading?'':'<button class="btn" data-action="refresh-runs">重新加载记录</button>'}</div></section>`;
     if(!current().custom)return heading('EXPERIMENT ANALYSIS','选择一个已保存实验','先运行实验，再查看三类策略的决策与成交。',newButton())+'<section class="panel"><div class="summary-content"><p>尚未选择可读取的本机实验。可以新建实验，也可以在实验空间复用示例模板。</p><button class="btn" data-nav="experiments">打开实验空间</button></div></section>';
@@ -842,7 +843,7 @@
   document.addEventListener('input',e=>{if(e.target.id==='draft-source'){state.draft.source=e.target.value;analysisBinding.setSource(e.target.value);updateDraftAnalysisPanel();}if(e.target.id==='market-step'){state.step=Number(e.target.value);document.getElementById('market-step-label').textContent=`第 ${state.step} / ${current().backendResult.paths.with_message.trace.length} 步`;document.getElementById('market-step-cards').innerHTML=marketStepCards();document.getElementById('market-comparison').innerHTML=MarketDecisionView.renderComparison(current().backendResult,{asset:state.asset,step:state.step});}if(e.target.id==='experiment-search'){state.search=e.target.value;document.getElementById('experiment-rows').innerHTML=experimentRows();}if(e.target.dataset.strategyScope)handleStrategyInput(e.target);});
   dialog.addEventListener('close',()=>{modalGeneration++;releaseModalDownloads();});
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
-  window.addEventListener('hashchange',()=>{const p=location.hash.slice(1);if(labels[p]&&p!==state.page){if(state.page==='new')saveDraft();navigationVersion++;state.page=p;render();}});
+  window.addEventListener('hashchange',()=>{const p=location.hash.slice(1);if(labels[p]&&p!==state.page){closeModalForNavigation();if(state.page==='new')saveDraft();navigationVersion++;state.page=p;render();}});
   const initial=location.hash.slice(1);if(labels[initial])state.page=initial;
   restoreDraftFromCache();
   window.addEventListener('pagehide',()=>{if(state.page==='new')saveDraft();persistDraft();});
