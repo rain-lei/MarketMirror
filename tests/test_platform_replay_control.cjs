@@ -105,3 +105,20 @@ test('strategy page distinguishes shared LLM facts from three untrained rule pro
   assert.match(html,/激进型/);assert.match(html,/保守型/);assert.match(html,/机构型/);
   assert.match(html,/参数未加载/);
 });
+
+test('result model boundary reports the archived association instead of the configured default model',()=>{
+  const source=fs.readFileSync('design/app.js','utf8');
+  const method=source.slice(source.indexOf('  function experimentModelBoundary(e){'),source.indexOf('  function agentsPage(){'));
+  const context=vm.createContext({esc:v=>String(v).replace(/</g,'&lt;').replace(/>/g,'&gt;')});
+  vm.runInContext(method,context);
+  const manual=context.experimentModelBoundary({});
+  assert.match(manual,/未关联模型分析/);assert.doesNotMatch(manual,/DeepSeek/);
+  assert.match(manual,/方向与不确定性由你设定/);
+  assert.match(manual,/本地参数化决策引擎/);
+  const empty=context.experimentModelBoundary({text_analysis:{model:'archived-model',facts:[]}});
+  assert.match(empty,/archived-model/);assert.doesNotMatch(empty,/未关联模型分析/);
+  assert.match(empty,/模型不直接下单/);
+  const unnamed=context.experimentModelBoundary({text_analysis:{facts:[]}});
+  assert.match(unnamed,/模型名称未存档/);assert.doesNotMatch(unnamed,/DeepSeek/);
+  assert.doesNotMatch(context.experimentModelBoundary({text_analysis:{model:'<img src=x>'}}),/<img/);
+});

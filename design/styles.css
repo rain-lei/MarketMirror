@@ -49,6 +49,9 @@ body[data-theme=dark]{--canvas:#101b25;--surface:#172530;--surface-alt:#1b2c39;-
 .replay-control .replay-step-cell.current{box-shadow:0 2px 9px #148b7d55}
 @media(max-width:560px){.replay-track-labels{margin-left:0;margin-right:0}.replay-control .replay-rail{left:5px;right:5px}.replay-control input.replay-range{height:72px}}
 
+/* Show model provenance in the experiment list without implying three separate LLMs. */
+.experiment-model-line{display:flex;align-items:center;gap:5px;color:var(--teal);font-size:10px}.experiment-model-line i{width:5px;height:5px;border-radius:50%;background:var(--teal);display:inline-block;flex:0 0 5px}.experiment-model-line.manual{color:var(--muted)}.experiment-model-line.manual i{background:var(--faint)}
+
 .experiment-model-boundary{margin-bottom:24px}
 .experiment-model-lanes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:20px 22px 22px}
 .experiment-model-lanes>div{min-width:0;padding:0 20px;border-right:1px solid var(--line)}

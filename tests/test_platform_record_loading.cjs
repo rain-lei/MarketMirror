@@ -47,6 +47,19 @@ test('first visit selects a completed market run and keeps templates out of the 
   assert.doesNotMatch(templates,/data-open=|已完成/);
 });
 
+test('experiment rows distinguish associated extraction, manual inputs and legacy previews',()=>{
+  const c=context({experiments:[
+    {id:'model-run',title:'模型实验',type:'公司问答',custom:true,signal:0,uncertainty:.2,sessions:18,seed:1,time:'今天',text_analysis:{model:'DeepSeek-V4-Flash-0731-W8A8'}},
+    {id:'manual-run',title:'手动实验',type:'政策消息',custom:true,signal:0,uncertainty:0,sessions:18,seed:2,time:'昨天'},
+    {id:'legacy-run',title:'旧版预览',type:'政策消息',custom:true,signal:0,uncertainty:0,sessions:18,seed:3,time:'昨天',backendResult:{mode:'platform_preview'}},
+  ]});
+  const html=c.experimentRows();
+  assert.match(html,/事实提取：DeepSeek-V4-Flash-0731-W8A8 · 本地规则决策/);
+  assert.match(html,/未关联模型分析 · 本地规则决策/);
+  assert.match(html,/未关联模型分析 · 旧版公式预览/);
+  assert.match(html,/experiment-model-line/);
+});
+
 test('record hydration updates the sidebar on the historical replay page without replacing its content',async()=>{
   const count={textContent:'0'};let renders=0;
   const c=context({state:{page:'observed',selected:0},document:{querySelector:()=>count},render(){renders++;},
