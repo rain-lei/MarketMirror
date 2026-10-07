@@ -52,6 +52,8 @@ test('incomplete results are blank while genuine zero effects remain numeric', (
   const neutralRow=html.match(/<tr><td><strong>中性<\/strong>[\s\S]*?<\/tr>/)[0];
   assert.match(neutralRow,/\+0\.000000/);
   assert.match(neutralRow,/data-batch-id="batch"/);
+  assert.match(html,/已处理 4 \/ 4 · 100%/);
+  assert.match(html,/aria-valuetext="已处理 4 \/ 4，100%"/);
   assert.match(html,/重试未完成项/);
   assert.equal((html.match(/class="batch-range-chart"/g)||[]).length,3);
   assert.doesNotMatch(html,/NaN|undefined/);
