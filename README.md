@@ -158,6 +158,6 @@ python -B -X utf8 -m design.observed_experiments --verify-all
 
 参数单位换算、精确编辑、无效输入保护及实际引擎快照见[策略参数编辑核验](design/PARAMETER_EDITOR_VALIDATION_20261006.md)。
 
-后端配置、连接检测与真实模型请求见[模型连接核验](design/MODEL_CONNECTION_VALIDATION_20261006.md)。
+后端配置、连接检测与历史真实模型请求见[模型连接核验（2026-10-06）](design/MODEL_CONNECTION_VALIDATION_20261006.md)；当前主服务的最新请求见[模型连接核验（2026-10-07）](design/MODEL_CONNECTION_VALIDATION_20261007.md)。
 
 草稿刷新恢复、实际浏览器流程与结果对照直达入口见[草稿与浏览器核验](design/DRAFT_RECOVERY_VALIDATION_20261006.md)。同状态决策预览、实际引擎计算与交互验收见[决策预览核验](design/STRATEGY_PREVIEW_VALIDATION_20261007.md)。预览带入完整实验见[预览衔接核验](design/PREVIEW_HANDOFF_VALIDATION_20261007.md)；已保存实验的条件核对、参数调整和比较见[实验比较核验](design/EXPERIMENT_COMPARISON_VALIDATION_20261007.md)。当前平台回归为 Python **100** 项、Node **133** 项通过；报告原始包提供服务器直链下载。
