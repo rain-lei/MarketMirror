@@ -1,6 +1,8 @@
 import json
 import tempfile
 import unittest
+from threading import Thread
+from urllib.request import urlopen
 from unittest.mock import patch
 from pathlib import Path
 
@@ -174,6 +176,34 @@ class PlatformStoreTest(unittest.TestCase):
             self.assertEqual(reopened.get(record["id"])["seed"], 7)
             self.assertEqual(reopened.result(record["id"]), result)
             self.assertEqual(reopened.list()[0]["run_status"], "completed")
+
+    def test_comparison_export_is_a_read_only_download_of_both_result_versions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            store = PlatformStore(directory)
+            left = store.create(self.payload(), "a" * 32)
+            right_payload = {**self.payload(), "title": "比较实验"}
+            right = store.create(right_payload, "b" * 32)
+            store.run(left["id"])
+            store.run(right["id"])
+            server = create_server(directory, 0)
+            thread = Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                url = f"http://127.0.0.1:{server.server_port}/api/platform/comparisons/{left['id']}/{right['id']}/export"
+                with urlopen(url) as response:
+                    payload = json.loads(response.read().decode("utf-8"))
+                    self.assertEqual(response.status, 200)
+                    self.assertIn("marketmirror-compare-aaaaaaaa-bbbbbbbb-raw.json", response.headers["Content-Disposition"])
+                self.assertEqual(payload["schema_version"], "platform-comparison-raw-v1")
+                self.assertEqual(payload["left"]["id"], left["id"])
+                self.assertEqual(payload["right"]["id"], right["id"])
+                self.assertEqual(payload["left"]["result_id"], store.get(left["id"])["result_id"])
+                self.assertEqual(payload["right"]["result_id"], store.get(right["id"])["result_id"])
+            finally:
+                server.shutdown()
+                thread.join(timeout=5)
+                server.server_close()
 
 
 if __name__ == "__main__": unittest.main()

@@ -116,6 +116,20 @@ test('captured snapshots and comparison exports cannot be altered through the or
   assert.equal(out.interpretation,'descriptive_simulation_comparison');assert.equal(out.schema_version,'platform-comparison-v1');
 });
 
+test('comparison reports rebuild metrics, expose a step excerpt and reject altered summaries',()=>{
+  const {left,right}=fixtures(),s=new api.ComparisonState();s.select('left',left.id);s.select('right',right.id);assert.equal(s.accept(s.begin(),left,right),true);
+  s.step=5;s.asset='A';s.group='with_message';
+  const snapshot=api.exportSnapshot(s),report=api.buildReport(snapshot);
+  assert.equal(report.schema_version,'platform-comparison-report-v1');assert.equal(report.conditions_match,true);
+  assert.equal(report.parameters.length,1);assert.equal(report.steps.length,3);
+  assert.equal(report.steps.find(r=>r.role==='aggressive').left.filled,600);
+  assert.match(api.markdownReport(report),/三类 Agent 实验比较报告/);
+  assert.match(api.htmlReport(report),/comparison-report/);
+  for(const mutate of [r=>r.metrics.left.with_message.aggressive.final+=1,r=>r.parameter_changes[0].left=999]){
+    const altered=structuredClone(snapshot);mutate(altered);assert.throws(()=>api.buildReport(altered),/比较(指标|快照)|完整账本/);
+  }
+});
+
 test('role cards, input differences and version details are escaped and retain actual zero or small nonzero metrics',()=>{
   const {left,right}=fixtures();right.title='<img src=x onerror=alert(1)>';
   const s=new api.ComparisonState();s.select('left',left.id);s.select('right',right.id);s.accept(s.begin(),left,right);s.group='baseline';

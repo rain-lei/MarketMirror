@@ -30,6 +30,34 @@ body[data-theme=dark]{--canvas:#101b25;--surface:#172530;--surface-alt:#1b2c39;-
 @media(max-width:560px){.replay-current>span{font-size:11px;padding:3px 7px}.replay-progress-caption{align-items:flex-start;flex-direction:column;gap:7px;margin-left:0;margin-right:0}.replay-progress-caption>span:first-child{width:100%;justify-content:space-between}.replay-progress-help{flex-basis:100%}.replay-progress-note{text-align:left}.replay-step-cell{min-height:36px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 
+/* Make the replay position readable even when the page is scrolled to the slider. */
+.replay-track-labels{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin:0 15px 7px;color:var(--faint);font-size:10px;font-variant-numeric:tabular-nums}
+.replay-track-labels strong{padding:3px 9px;border-radius:999px;background:var(--teal-soft);color:var(--teal);font-size:11px;font-weight:650}
+.replay-track-labels span:last-child{text-align:right}
+.replay-control .replay-rail{top:30px;height:18px;background:color-mix(in srgb,var(--ink) 16%,var(--surface));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 18%,var(--line)),0 2px 5px #19334512}
+.replay-control .replay-fill{height:18px;background:linear-gradient(90deg,color-mix(in srgb,var(--teal) 78%,var(--ink)),var(--teal));}
+.replay-control .replay-window{top:-7px;height:32px}
+.replay-control .replay-entry{height:38px;top:-10px}
+.replay-control input.replay-range{height:72px}
+.replay-control .replay-range::-webkit-slider-runnable-track{height:18px}
+.replay-control .replay-range::-webkit-slider-thumb{width:34px;height:34px;margin-top:-8px;border-width:7px;box-shadow:0 3px 12px #148b7d55}
+.replay-control .replay-range::-moz-range-track{height:18px}
+.replay-control .replay-range::-moz-range-thumb{width:20px;height:20px;border-width:7px;box-shadow:0 3px 12px #148b7d55}
+.replay-control .replay-current{top:-44px}
+.replay-control .replay-step-grid-wrap{margin-top:7px}
+.replay-control .replay-step-cell{min-height:36px;font-weight:550}
+.replay-control .replay-step-cell.current{box-shadow:0 2px 9px #148b7d55}
+@media(max-width:560px){.replay-track-labels{margin-left:0;margin-right:0}.replay-control .replay-rail{left:5px;right:5px}.replay-control input.replay-range{height:72px}}
+
+.experiment-model-boundary{margin-bottom:24px}
+.experiment-model-lanes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:20px 22px 22px}
+.experiment-model-lanes>div{min-width:0;padding:0 20px;border-right:1px solid var(--line)}
+.experiment-model-lanes>div:first-child{padding-left:0}.experiment-model-lanes>div:last-child{padding-right:0;border-right:0}
+.experiment-model-lanes small{font-size:10px;color:var(--teal);letter-spacing:.3px;margin-bottom:6px}
+.experiment-model-lanes strong{display:block;font-size:13px;font-weight:600;overflow-wrap:anywhere}
+.experiment-model-lanes p{font-size:11px;line-height:1.8;color:var(--muted);margin-top:8px}
+@media(max-width:800px){.experiment-model-lanes{grid-template-columns:1fr;gap:16px}.experiment-model-lanes>div,.experiment-model-lanes>div:first-child,.experiment-model-lanes>div:last-child{padding:0 0 16px;border-right:0;border-bottom:1px solid var(--line)}.experiment-model-lanes>div:last-child{padding-bottom:0;border-bottom:0}}
+
 /* Source-bound evidence is shared by the wizard and saved experiment. */
 .analysis-status{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 14px;margin:12px 0 18px;border-radius:8px;background:var(--surface-alt);color:var(--muted);font-size:12px;line-height:1.8;border:1px solid var(--line)}
 .analysis-status.error{color:#b15343}.analysis-status .subtle-link{white-space:nowrap}
@@ -319,3 +347,10 @@ body[data-theme=dark]{--canvas:#101b25;--surface:#172530;--surface-alt:#1b2c39;-
 .comparison-step-panel .experiment-comparison-role-grid{padding:22px 0 0}.experiment-comparison-step{font-variant-numeric:tabular-nums;padding:17px 14px;border:1px solid var(--line);border-radius:8px}.comparison-target-row{display:grid;grid-template-columns:25px 1fr 62px;gap:8px;align-items:center;margin-top:12px;font-size:10px}.comparison-target-row strong{font-weight:500;text-align:right}.comparison-weight-track{height:7px;background:var(--line);border-radius:4px;overflow:hidden}.comparison-weight-track i{height:100%;display:block;background:color-mix(in srgb,var(--comparison-color) 40%,var(--surface))}.comparison-weight-track.candidate i{background:var(--comparison-color)}.experiment-comparison-step>p{font-size:11px;margin-top:15px;color:var(--comparison-color)}.comparison-step-values{margin-top:12px;font-size:10px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
 @media(max-width:1050px){.experiment-comparison-role-grid{grid-template-columns:1fr}.comparison-return-values{flex-direction:row;gap:20px}.comparison-primary-metric{font-size:26px}.experiment-comparison-role th,.experiment-comparison-role td{font-size:12px;padding:11px 5px}}
 @media(max-width:650px){.comparison-run-cards{grid-template-columns:1fr;gap:12px}.comparison-picker-actions{flex-direction:column;align-items:flex-start}.comparison-picker-actions>div{width:100%}.experiment-compare-picker select{font-size:16px}.experiment-comparison-role-grid{padding:18px}.comparison-step-input{flex-wrap:wrap}.comparison-step-input input{font-size:16px}.comparison-step-input span{width:100%}.comparison-return-values{flex-wrap:wrap}.comparison-config-diff{max-width:100%}}
+/* Reports retain the captured comparison while the user saves its files. */
+dialog[data-section=comparison-export]{width:min(980px,calc(100vw - 32px));max-height:90vh}
+dialog[data-section=comparison-export] .dialog-head{position:sticky;top:0;background:var(--surface);z-index:2}
+dialog[data-section=comparison-export] .dialog-footer{position:sticky;bottom:0;background:var(--surface);z-index:2;flex-wrap:wrap}
+.download-package-note{margin-top:24px!important;padding-top:15px;border-top:1px solid var(--line);font-size:11px!important}
+.dialog-footer a small{display:inline;color:inherit;opacity:.7;margin-left:4px;font-size:10px}
+@media(max-width:650px){dialog[data-section=comparison-export] .dialog-footer{gap:8px;padding:14px}.dialog-footer a{flex:1;min-width:120px}dialog[data-section=comparison-export] .dialog-body{padding:18px}}

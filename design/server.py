@@ -356,6 +356,25 @@ class PlatformStore:
                     'mode': result['mode'] if result else 'not_run',
                     'experiment': {**record, 'backendResult': result}, 'fixture': None}
 
+    def comparison_export(self, left_id: str, right_id: str) -> dict | None:
+        """Return two immutable experiment exports for a reliable HTTP download.
+
+        The browser derives the comparison report from these exact snapshots.  Keeping
+        this package server-side avoids relying on a large browser Blob URL for the
+        raw audit artifact and never reruns either experiment.
+        """
+        if left_id == right_id:
+            raise ValueError('比较需要两份不同的实验')
+        left = self.export(left_id)
+        right = self.export(right_id)
+        if left is None or right is None:
+            return None
+        return {'artifact': 'MarketMirror experiment comparison raw package',
+                'schema_version': 'platform-comparison-raw-v1',
+                'read_at': utc_now(),
+                'interpretation': 'descriptive_simulation_comparison',
+                'left': left['experiment'], 'right': right['experiment']}
+
 
 def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingHTTPServer:
     from .batches import BatchManager, BatchInProgress
@@ -426,6 +445,17 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                         self.json(200, batches.result(batch_id, experiment_id)); return
                     payload = batches.get(tail)
                     self.json(200 if payload is not None else 404, payload or {'error': '批次不存在'}); return
+                if path.startswith('/api/platform/comparisons/'):
+                    tail = path.removeprefix('/api/platform/comparisons/')
+                    parts = tail.split('/')
+                    if len(parts) != 3 or parts[2] != 'export':
+                        raise ValueError('比较导出路径无效')
+                    left_id, right_id = parts[0], parts[1]
+                    payload = store.comparison_export(left_id, right_id)
+                    filename = f'marketmirror-compare-{left_id[:8]}-{right_id[:8]}-raw.json'
+                    self.json(200 if payload is not None else 404,
+                              payload or {'error': '实验不存在'}, filename if payload is not None else None)
+                    return
                 if path == "/api/platform/experiments": self.json(200, store.list()); return
                 if path.startswith("/api/platform/experiments/"):
                     tail = path.removeprefix("/api/platform/experiments/")
