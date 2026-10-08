@@ -21,6 +21,7 @@ test('out of bounds steps, one-day windows and separated information intervals r
   assert.equal(replay.viewModel(rows,NaN).step,1);
   const one=replay.viewModel([{visible:true,active:true}],1);
   assert.equal(one.progress,0);assert.equal(one.previousDisabled,true);assert.equal(one.nextDisabled,true);
+  assert.equal(one.edge,'start');assert.equal(replay.viewModel(rows,12).edge,'end');assert.equal(replay.viewModel(rows,6).edge,'middle');
   const split=rows.map((r,i)=>({...r,active:[1,2,6].includes(i)}));
   assert.deepEqual(replay.viewModel(split,3).intervals,[{start:2,end:3},{start:7,end:7}]);
   const empty=replay.viewModel([],3);assert.equal(empty.status,'信息时点未存档');assert.equal(empty.entry,null);
@@ -31,13 +32,16 @@ test('native slider semantics, date ticks and the real source window are exposed
   assert.match(html,/type="range" min="1" max="12" step="1" value="6"/);
   assert.match(html,/aria-valuetext="第 6 步 · 2020-07-25 · 消息作用中"/);
   assert.match(html,/消息进入 · 第 6 步/);assert.match(html,/第 6 — 8 步/);assert.match(html,/&lt;img/);
-  assert.match(html,/data-replay-progress>当前进度 6 \/ 12 步/);
-  assert.match(html,/data-replay-completion>已定位 50%/);
+  assert.match(html,/data-replay-progress>当前回放 6 \/ 12 步/);
+  assert.match(html,/当前回放位置/);assert.doesNotMatch(html,/已定位 \d+%/);
   assert.match(html,/data-replay-current>第 6 步/);
   assert.match(html,/replay-step-grid/);
   assert.match(html,/data-replay-cell aria-label="第 6 步 · 消息作用中" title="第 6 步 · 2020-07-25 · 消息作用中" aria-current="step"/);
   assert.match(html,/class="replay-step-cell [^"]*active[^"]*entry/);
-  assert.match(html,/拖动滑块或点击步骤/);
+  assert.match(html,/拖动滑块、点击步骤或输入步数/);
+  assert.match(html,/id="case-step-number" type="number" inputmode="numeric" min="1" max="12" step="1" value="6"/);
+  assert.match(html,/aria-describedby="case-step-number-error" aria-invalid="false" data-replay-number/);
+  assert.match(html,/id="case-step-number-error" role="alert"/);
   assert.doesNotMatch(html,/<img|NaN|undefined/);
   const untrusted=replay.render({id:'test-step',rows:[{date:'</script><img src=x onerror=bad()>',visible:true,active:true}]});
   assert.equal((untrusted.match(/<\/script>/g)||[]).length,1);assert.doesNotMatch(untrusted,/<img/);
@@ -47,16 +51,21 @@ test('native slider semantics, date ticks and the real source window are exposed
 });
 
 function fakeControl(){
-  const handlers={input:[],click:[]},elements=new Map(),calls=[];
+  const handlers={input:[],click:[],keydown:[]},elements=new Map(),calls=[];
   const cells=rows.map((row,index)=>({dataset:{replayTo:String(index+1)},attributes:{},current:false,
     classList:{toggle(key,current){cells[index].current=current;}},setAttribute(key,value){this.attributes[key]=value;},removeAttribute(key){delete this.attributes[key];}}));
   const root={addEventListener(type,handler){handlers[type].push(handler);}};
   const control={dataset:{unit:'日'},style:{setProperty(key,value){calls.push({key,value});}},querySelector(selector){return elements.get(selector);},querySelectorAll(selector){return selector==='[data-replay-cell]'?cells:[];}};
-  const input={value:'1',max:'12',setAttribute(key,value){this[key]=value;},matches:()=>true,closest:()=>control,
+  const input={value:'1',max:'12',setAttribute(key,value){this[key]=value;},matches:selector=>selector==='[data-replay-input]',closest:()=>control,
     dispatchEvent(event){assert.equal(event.type,'input');assert.equal(event.bubbles,true);handlers.input.forEach(handler=>handler({target:this}));}};
+  const number={value:'1',focused:false,setAttribute(key,value){this[key]=value;},matches:selector=>selector==='[data-replay-number]',closest:()=>control,focus(){this.focused=true;}};
   elements.set('[data-replay-input]',input);elements.set('[data-replay-rows]',{textContent:JSON.stringify(rows)});
-  for(const selector of ['[data-replay-position]','[data-replay-date]','[data-replay-status]','[data-replay-current]','[data-replay-progress]','[data-replay-completion]','[data-replay-progress-note]','[data-replay-delta="-1"]','[data-replay-delta="1"]'])elements.set(selector,{});
-  return {root,control,input,elements,handlers,calls,cells,click(dataset,disabled=false){const button={dataset,disabled,closest:()=>control};handlers.click.forEach(handler=>handler({target:{closest:()=>button}}));}};
+  elements.set('[data-replay-number]',number);
+  for(const selector of ['[data-replay-position]','[data-replay-date]','[data-replay-status]','[data-replay-current]','[data-replay-progress]','[data-replay-number-error]','[data-replay-progress-note]','[data-replay-delta="-1"]','[data-replay-delta="1"]'])elements.set(selector,{});
+  return {root,control,input,number,elements,handlers,calls,cells,
+    type(value){number.value=value;handlers.input.forEach(handler=>handler({target:number}));},
+    key(key){let prevented=false;handlers.keydown.forEach(handler=>handler({target:number,key,preventDefault(){prevented=true;}}));return prevented;},
+    click(dataset,disabled=false){const button={dataset,disabled,closest:()=>control};handlers.click.forEach(handler=>handler({target:{closest:()=>button}}));}};
 }
 
 test('buttons dispatch the same input update as dragging, and duplicate binding cannot double-step',()=>{
@@ -72,17 +81,46 @@ test('buttons dispatch the same input update as dragging, and duplicate binding 
   assert.equal(f.elements.get('[data-replay-date]').textContent,'2020-07-25');
   assert.equal(f.elements.get('[data-replay-status]').textContent,'消息作用中');
   assert.equal(f.elements.get('[data-replay-current]').textContent,'第 6 日');
-  assert.equal(f.elements.get('[data-replay-progress]').textContent,'当前进度 6 / 12 日');
-  assert.equal(f.elements.get('[data-replay-completion]').textContent,'已定位 50%');
+  assert.equal(f.elements.get('[data-replay-progress]').textContent,'当前回放 6 / 12 日');
+  assert.equal(f.number.value,'6');assert.equal(f.control.dataset.replayEdge,'middle');
   assert.match(f.elements.get('[data-replay-progress-note]').textContent,/消息进入第 6 日/);
   assert.match(f.input['aria-valuetext'],/第 6 日/);
   assert.ok(f.calls.some(c=>c.key==='--replay-progress'&&c.value.startsWith('45.45')));
   f.click({replayTo:'999'});assert.equal(decisionStep,12);
+  assert.equal(f.control.dataset.replayEdge,'end');assert.equal(f.number.value,'12');
   assert.deepEqual(f.cells.filter(c=>c.current).map(c=>c.dataset.replayTo),['12']);
   assert.equal(f.elements.get('[data-replay-delta="1"]').disabled,true);
   f.click({replayTo:'1'});assert.equal(decisionStep,1);
+  assert.equal(f.control.dataset.replayEdge,'start');
   assert.equal(f.elements.get('[data-replay-delta="-1"]').disabled,true);
   f.click({replayDelta:'1'},true);assert.equal(decisionStep,1);
+});
+
+test('direct step entry rejects invalid values without changing the archived decision and shares the range update',()=>{
+  const f=fakeControl();replay.bind(f.root);f.click({replayTo:'6'});
+  let updates=0,decisionStep=6;f.root.addEventListener('input',event=>{if(event.target===f.input){updates++;decisionStep=Number(event.target.value);}});
+  for(const value of ['', ' ', '0', '-1', '13', '6.5', 'Infinity', 'abc']){
+    f.type(value);assert.equal(decisionStep,6);f.click({replaySubmit:''});
+    assert.equal(f.number['aria-invalid'],'true');assert.equal(f.number.focused,true);
+    assert.match(f.elements.get('[data-replay-number-error]').textContent,/1–12 的整数；仍停留在第 6 日/);
+    assert.equal(f.input.value,'6');assert.equal(updates,0);
+    assert.deepEqual(f.cells.filter(c=>c.current).map(c=>c.dataset.replayTo),['6']);
+  }
+  f.type('9');assert.equal(decisionStep,6);assert.equal(f.elements.get('[data-replay-number-error]').textContent,'');
+  f.click({replaySubmit:''});assert.equal(decisionStep,9);assert.equal(updates,1);
+  assert.equal(f.number['aria-invalid'],'false');assert.equal(f.elements.get('[data-replay-date]').textContent,'2020-07-28');
+  assert.equal(f.elements.get('[data-replay-status]').textContent,'消息作用已结束');
+});
+
+test('Enter commits once, Escape restores the current step, and separate timelines do not interfere',()=>{
+  const f=fakeControl(),other=fakeControl();replay.bind(f.root);replay.bind(f.root);replay.bind(other.root);
+  let updates=0;f.root.addEventListener('input',event=>{if(event.target===f.input)updates++;});
+  f.type('12');assert.equal(f.key('Enter'),true);assert.equal(updates,1);assert.equal(f.input.value,'12');
+  assert.equal(f.control.dataset.replayEdge,'end');assert.equal(other.input.value,'1');
+  f.type('');assert.equal(f.key('Enter'),true);assert.equal(updates,1);assert.equal(f.number['aria-invalid'],'true');
+  assert.equal(f.key('Escape'),true);assert.equal(f.number.value,'12');assert.equal(f.number['aria-invalid'],'false');
+  assert.equal(f.elements.get('[data-replay-number-error]').textContent,'');assert.equal(updates,1);
+  assert.equal(f.key('Tab'),false);assert.equal(other.number.value,'1');
 });
 
 test('a native keyboard or drag input updates the timeline date and status without a click',()=>{

@@ -130,7 +130,7 @@
     const futureActive=rows.slice(current).some(r=>r.active===true),pastActive=rows.slice(0,current).some(r=>r.active===true);
     return {total,step:current,date:row.date||'',entry:entry<0?null:entry+1,intervals,
       progress:position(current,total),completion:total?current/total*100:100,status:row.active===true?'消息作用中':row.visible===true?(futureActive?'消息已可见 · 待作用':pastActive?'消息作用已结束':'消息已可见 · 无作用输入'):row.visible===false?'消息尚未进入':'信息时点未存档',
-      tone:row.active===true?'active':row.visible===true?'ended':'pending',previousDisabled:current===1,nextDisabled:current===total};
+      tone:row.active===true?'active':row.visible===true?'ended':'pending',edge:current===1?'start':current===total?'end':'middle',previousDisabled:current===1,nextDisabled:current===total};
   }
   function render({id,step=1,rows=[],title='决策回放',label='选择决策步',unit='步',context=''}){
     if(!/^[a-z][a-z0-9-]*$/.test(id))throw new Error('Invalid replay control ID');
@@ -142,23 +142,24 @@
       return `<button type="button" class="replay-step-cell ${classes}" data-replay-to="${n}" data-replay-cell aria-label="第 ${n} ${esc(unit)} · ${status}" title="第 ${n} ${esc(unit)}${row.date?' · '+esc(row.date):''} · ${status}" ${n===m.step?'aria-current="step"':''}><span>${n}</span></button>`;
     }).join('');
     const intervalText=m.intervals.length?m.intervals.map(r=>r.start===r.end?`第 ${r.start} ${unit}`:`第 ${r.start} — ${r.end} ${unit}`).join('、'):'本窗口无消息作用';
-    return `<div class="replay-control" data-replay="${id}" data-unit="${esc(unit)}" style="--replay-progress:${m.progress}%;--replay-current:${m.progress}%;--replay-total:${m.total}"><div class="replay-heading"><div><span class="replay-eyebrow">DECISION REPLAY</span><h3>${esc(title)}</h3>${context?`<p>${esc(context)}</p>`:''}</div><div class="replay-position"><strong id="${id}-label" data-replay-position>第 ${m.step} / ${m.total} ${esc(unit)}</strong><span data-replay-date>${esc(m.date||'逐步查看决策与执行')}</span></div></div>
-      <div class="replay-track"><div class="replay-track-labels" aria-hidden="true"><span>第 1 ${esc(unit)}</span><strong data-replay-percent>${Math.round(m.completion)}%</strong><span>第 ${m.total} ${esc(unit)}</span></div><div class="replay-rail" aria-hidden="true">${bands}<span class="replay-fill"></span>${m.entry?`<span class="replay-entry" style="left:${position(m.entry,m.total)}%"></span>`:''}<span class="replay-current"><span data-replay-current>第 ${m.step} ${esc(unit)}</span></span></div><label class="sr-only" for="${id}">${esc(label)}</label><input class="replay-range" id="${id}" type="range" min="1" max="${m.total}" step="1" value="${m.step}" aria-valuetext="第 ${m.step} ${esc(unit)}${m.date?' · '+esc(m.date):''} · ${m.status}" data-replay-input>
+    return `<div class="replay-control" data-replay="${id}" data-unit="${esc(unit)}" data-replay-edge="${m.edge}" style="--replay-progress:${m.progress}%;--replay-current:${m.progress}%;--replay-total:${m.total}"><div class="replay-heading"><div><span class="replay-eyebrow">DECISION REPLAY</span><h3>${esc(title)}</h3>${context?`<p>${esc(context)}</p>`:''}</div><div class="replay-position"><small>当前回放位置</small><strong id="${id}-label" data-replay-position>第 ${m.step} / ${m.total} ${esc(unit)}</strong><span data-replay-date>${esc(m.date||'逐步查看决策与执行')}</span></div></div>
+      <div class="replay-track"><div class="replay-track-labels" aria-hidden="true"><span>第 1 ${esc(unit)}</span><span>拖动定位</span><span>第 ${m.total} ${esc(unit)}</span></div><div class="replay-scrubber"><div class="replay-rail" aria-hidden="true">${bands}<span class="replay-fill"></span>${m.entry?`<span class="replay-entry" style="left:${position(m.entry,m.total)}%"></span>`:''}<span class="replay-current"><span data-replay-current>第 ${m.step} ${esc(unit)}</span></span></div><label class="sr-only" for="${id}">${esc(label)}</label><input class="replay-range" id="${id}" type="range" min="1" max="${m.total}" step="1" value="${m.step}" aria-valuetext="第 ${m.step} ${esc(unit)}${m.date?' · '+esc(m.date):''} · ${m.status}" data-replay-input></div>
        <div class="replay-ticks">${ticks.map((n,i)=>`<button type="button" class="replay-tick ${i===0?'first':i===ticks.length-1?'last':''}" data-replay-to="${n}" style="left:${position(n,m.total)}%" aria-label="跳到第 ${n} ${esc(unit)}"><i></i><span>${n}</span>${rows[n-1]?.date?`<small>${esc(rows[n-1].date.slice(5))}</small>`:''}</button>`).join('')}</div><div class="replay-step-grid-wrap" aria-label="逐步刻度，可直接跳转"><div class="replay-step-grid">${cells}</div></div></div>
-       <div class="replay-progress-caption" aria-live="polite"><span><strong data-replay-progress>当前进度 ${m.step} / ${m.total} ${esc(unit)}</strong><small data-replay-completion>已定位 ${Math.round(m.completion)}%</small><small class="replay-progress-help">拖动滑块或点击步骤</small></span><span class="replay-progress-note" data-replay-progress-note>${m.entry?`消息进入第 ${m.entry} ${esc(unit)} · 作用区间 ${esc(intervalText)}`:'本窗口没有已存档的消息作用区间'}</span></div>
-      <div class="replay-footer"><div class="replay-legend"><span class="replay-status ${m.tone}" data-replay-status>${m.status}</span><span class="replay-window-key"><i></i>消息作用区间 · ${esc(intervalText)}</span></div><div class="replay-actions"><button class="replay-jump" type="button" data-replay-to="${m.entry||1}" ${m.entry?'':'disabled'}>${m.entry?`消息进入 · 第 ${m.entry} ${esc(unit)}`:'本窗口消息未进入'}</button><div class="replay-step-buttons"><button type="button" data-replay-delta="-1" aria-label="上一步" ${m.previousDisabled?'disabled':''}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg><span>上一步</span></button><button type="button" data-replay-delta="1" aria-label="下一步" ${m.nextDisabled?'disabled':''}><span>下一步</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button></div></div></div>
+       <div class="replay-progress-caption" aria-live="polite"><span><strong data-replay-progress>当前回放 ${m.step} / ${m.total} ${esc(unit)}</strong><small class="replay-progress-help">拖动滑块、点击步骤或输入步数</small></span><span class="replay-progress-note" data-replay-progress-note>${m.entry?`消息进入第 ${m.entry} ${esc(unit)} · 作用区间 ${esc(intervalText)}`:'本窗口没有已存档的消息作用区间'}</span></div>
+      <div class="replay-footer"><div class="replay-legend"><span class="replay-status ${m.tone}" data-replay-status>${m.status}</span><span class="replay-window-key"><i></i>消息作用区间 · ${esc(intervalText)}</span></div><div class="replay-actions"><button class="replay-jump" type="button" data-replay-to="${m.entry||1}" ${m.entry?'':'disabled'}>${m.entry?`消息进入 · 第 ${m.entry} ${esc(unit)}`:'本窗口消息未进入'}</button><div class="replay-step-buttons"><button type="button" data-replay-delta="-1" aria-label="上一步" ${m.previousDisabled?'disabled':''}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg><span>上一步</span></button><button type="button" data-replay-delta="1" aria-label="下一步" ${m.nextDisabled?'disabled':''}><span>下一步</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button></div><div class="replay-number-control"><label for="${id}-number">跳到</label><input id="${id}-number" type="number" inputmode="numeric" min="1" max="${m.total}" step="1" value="${m.step}" aria-describedby="${id}-number-error" aria-invalid="false" data-replay-number><span>${esc(unit)}</span><button type="button" data-replay-submit>跳转</button></div></div></div><p class="replay-number-error" id="${id}-number-error" role="alert" data-replay-number-error></p>
       <script type="application/json" data-replay-rows>${JSON.stringify(rows).replace(/</g,'\\u003c')}</script></div>`;
   }
   function sync(control,step){
     const rows=JSON.parse(control.querySelector('[data-replay-rows]').textContent),m=viewModel(rows,step),unit=control.dataset.unit,input=control.querySelector('[data-replay-input]');
     input.value=String(m.step);input.setAttribute('aria-valuetext',`第 ${m.step} ${unit}${m.date?' · '+m.date:''} · ${m.status}`);
+    control.dataset.replayEdge=m.edge;
+    const direct=control.querySelector('[data-replay-number]');if(direct){direct.value=String(m.step);direct.setAttribute('aria-invalid','false');}
+    const error=control.querySelector('[data-replay-number-error]');if(error)error.textContent='';
     control.style.setProperty('--replay-progress',`${m.progress}%`);control.style.setProperty('--replay-current',`${m.progress}%`);
     control.querySelector('[data-replay-position]').textContent=`第 ${m.step} / ${m.total} ${unit}`;
     control.querySelector('[data-replay-date]').textContent=m.date||'逐步查看决策与执行';
     const current=control.querySelector('[data-replay-current]');if(current)current.textContent=`第 ${m.step} ${unit}`;
-    const percent=control.querySelector('[data-replay-percent]');if(percent)percent.textContent=`${Math.round(m.completion)}%`;
-    const progress=control.querySelector('[data-replay-progress]');if(progress)progress.textContent=`当前进度 ${m.step} / ${m.total} ${unit}`;
-    const completion=control.querySelector('[data-replay-completion]');if(completion)completion.textContent=`已定位 ${Math.round(m.completion)}%`;
+    const progress=control.querySelector('[data-replay-progress]');if(progress)progress.textContent=`当前回放 ${m.step} / ${m.total} ${unit}`;
     const note=control.querySelector('[data-replay-progress-note]');if(note)note.textContent=m.entry?`消息进入第 ${m.entry} ${unit} · 作用区间 ${m.intervals.length?m.intervals.map(r=>r.start===r.end?`第 ${r.start} ${unit}`:`第 ${r.start} — ${r.end} ${unit}`).join('、'):'本窗口无消息作用'}`:'本窗口没有已存档的消息作用区间';
     control.querySelectorAll('[data-replay-cell]').forEach(cell=>{
       const current=Number(cell.dataset.replayTo)===m.step;
@@ -176,15 +177,42 @@
     control.querySelector('[data-replay-delta="1"]').disabled=m.nextDisabled;
     return m;
   }
+  function goTo(control,target){
+    const input=control.querySelector('[data-replay-input]');
+    input.value=String(clamp(target,Number(input.max)));input.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+  function submitNumber(control){
+    const field=control.querySelector('[data-replay-number]'),input=control.querySelector('[data-replay-input]');
+    const value=field.value.trim()?Number(field.value):NaN,max=Number(input.max);
+    if(!Number.isInteger(value)||value<1||value>max){
+      field.setAttribute('aria-invalid','true');
+      control.querySelector('[data-replay-number-error]').textContent=`请输入 1–${max} 的整数；仍停留在第 ${input.value} ${control.dataset.unit}。`;
+      field.focus();return;
+    }
+    goTo(control,value);
+  }
   const boundRoots=new WeakSet();
   function bind(root){
     if(boundRoots.has(root))return;boundRoots.add(root);
-    root.addEventListener('input',event=>{if(!event.target.matches?.('[data-replay-input]'))return;sync(event.target.closest('[data-replay]'),event.target.value);});
+    root.addEventListener('input',event=>{
+      if(event.target.matches?.('[data-replay-input]'))sync(event.target.closest('[data-replay]'),event.target.value);
+      else if(event.target.matches?.('[data-replay-number]')){
+        event.target.setAttribute('aria-invalid','false');
+        event.target.closest('[data-replay]').querySelector('[data-replay-number-error]').textContent='';
+      }
+    });
+    root.addEventListener('keydown',event=>{
+      if(!event.target.matches?.('[data-replay-number]'))return;
+      const control=event.target.closest('[data-replay]');
+      if(event.key==='Enter'){event.preventDefault();submitNumber(control);}
+      else if(event.key==='Escape'){event.preventDefault();sync(control,control.querySelector('[data-replay-input]').value);}
+    });
     root.addEventListener('click',event=>{
-      const button=event.target.closest?.('[data-replay-to],[data-replay-delta]');if(!button||button.disabled)return;
+      const button=event.target.closest?.('[data-replay-to],[data-replay-delta],[data-replay-submit]');if(!button||button.disabled)return;
       const control=button.closest('[data-replay]');if(!control)return;
+      if(button.dataset.replaySubmit!==undefined){submitNumber(control);return;}
       const input=control.querySelector('[data-replay-input]'),target=button.dataset.replayTo===undefined?Number(input.value)+Number(button.dataset.replayDelta):Number(button.dataset.replayTo);
-      input.value=String(clamp(target,Number(input.max)));input.dispatchEvent(new Event('input',{bubbles:true}));
+      goTo(control,target);
     });
   }
   return {render,viewModel,sync,bind};

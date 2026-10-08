@@ -22,7 +22,7 @@ MarketMirror 是一个本地运行的可视化金融仿真实验平台。输入�
 | 批量对照 | 页面创建四情景 × 多种子批次，查看进度、策略范围图、失败原因与报告 |
 | 真实原文案例 | 查看六个归档案例的来源、模型原始提取、复核修订及四条件 × 五种子决策路径 |
 | 历史行情实验 | 查看 300294 的真实收益回放，比较无文本、关键词和复核后 LLM，追溯当日决策使用的原文 |
-| 决策回放 | 带步骤刻度、消息作用区间和前后步按钮的时间轴，同时比较两组同一步的三类策略 |
+| 决策回放 | 显示当前步数与日期、数字刻度和消息作用区间，支持拖动、点选、前后步及输入步数跳转，同时比较两组同一步的三类策略 |
 | 收益与风险 | 三类组合净值、最大回撤、账户费用、请求成交比例和收盘超限，可定位首个超限步骤并导出指标 |
 | 结果归档 | 导出实验配置、文本依据、参数标识和撮合账本 |
 
@@ -174,4 +174,4 @@ python -B -X utf8 -m design.observed_experiments --verify-all
 
 后端配置、连接检测与历史真实模型请求见[模型连接核验（2026-10-06）](design/MODEL_CONNECTION_VALIDATION_20261006.md)；当前主服务的最新请求见[模型连接核验（2026-10-07）](design/MODEL_CONNECTION_VALIDATION_20261007.md)。
 
-草稿刷新恢复、实际浏览器流程与结果对照直达入口见[草稿与浏览器核验](design/DRAFT_RECOVERY_VALIDATION_20261006.md)。同状态决策预览、实际引擎计算与交互验收见[决策预览核验](design/STRATEGY_PREVIEW_VALIDATION_20261007.md)。预览带入完整实验见[预览衔接核验](design/PREVIEW_HANDOFF_VALIDATION_20261007.md)；已保存实验的条件核对、参数调整和比较见[实验比较核验](design/EXPERIMENT_COMPARISON_VALIDATION_20261007.md)。当前平台回归为 Python **100** 项、Node **145** 项通过；报告原始包提供服务器直链下载。
+草稿刷新恢复、实际浏览器流程与结果对照直达入口见[草稿与浏览器核验](design/DRAFT_RECOVERY_VALIDATION_20261006.md)。同状态决策预览、实际引擎计算与交互验收见[决策预览核验](design/STRATEGY_PREVIEW_VALIDATION_20261007.md)。预览带入完整实验见[预览衔接核验](design/PREVIEW_HANDOFF_VALIDATION_20261007.md)；已保存实验的条件核对、参数调整和比较见[实验比较核验](design/EXPERIMENT_COMPARISON_VALIDATION_20261007.md)。当前平台回归为 Python **100** 项、Node **148** 项通过；报告原始包提供服务器直链下载。时间轴样式合并、精确跳转和当前验收限制见[回放控件核验](design/REPLAY_CONTROL_VALIDATION_20261008.md)。
