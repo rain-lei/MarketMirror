@@ -31,7 +31,7 @@
   }
 
   function riskExceeded(state,covariance,parameters,assets){
-    if(!state||!object(covariance)||!finite(parameters?.risk_budget)||parameters.risk_budget<=0
+    if(!state||!validCovariance(covariance,assets)||!finite(parameters?.risk_budget)||parameters.risk_budget<=0
       ||!finite(parameters?.max_weight)||parameters.max_weight<0)return null;
     let variance=0;
     for(const a of assets)for(const b of assets){
@@ -41,6 +41,26 @@
     if(!finite(variance))return null;
     const risk=Math.sqrt(Math.max(0,variance));
     return risk>parameters.risk_budget+1e-9||Object.values(state.weights).reduce((sum,v)=>sum+v,0)>parameters.max_weight+1e-9;
+  }
+
+  function validCovariance(covariance,assets){
+    if(!object(covariance)||!assets.every(a=>assets.every(b=>finite(covariance[a]?.[b]))))return false;
+    const scale=Math.max(...assets.map(a=>covariance[a][a]));
+    if(!finite(scale)||scale<0||assets.some(a=>covariance[a][a]<0))return false;
+    if(scale===0)return assets.every(a=>assets.every(b=>covariance[a][b]===0));
+    const tolerance=scale*1e-12,lower=assets.map(()=>Array(assets.length).fill(0));
+    for(let i=0;i<assets.length;i++)for(let j=0;j<=i;j++){
+      const a=assets[i],b=assets[j];
+      if(Math.abs(covariance[a][b]-covariance[b][a])>tolerance)return false;
+      let residual=(covariance[a][b]+covariance[b][a])/2;
+      for(let k=0;k<j;k++)residual-=lower[i][k]*lower[j][k];
+      if(i===j){
+        if(residual< -tolerance)return false;
+        lower[i][j]=residual>tolerance?Math.sqrt(residual):0;
+      }else if(lower[j][j]>0)lower[i][j]=residual/lower[j][j];
+      else if(Math.abs(residual)>tolerance)return false;
+    }
+    return true;
   }
 
   function buildPath(path){

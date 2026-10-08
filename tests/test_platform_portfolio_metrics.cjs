@@ -98,6 +98,26 @@ test('truncated traces, incomplete role rosters and inconsistent final wealth do
   assert.equal(b.requested,null);assert.equal(b.requestedFillFraction,null);
 });
 
+test('invalid covariance is unavailable rather than zero risk, while singular negative correlation remains valid',()=>{
+  const invalidMatrices=[
+    [[-.0001,0,0],[0,.0001,0],[0,0,.0001]],
+    [[.0001,.00005,0],[0,.0001,0],[0,0,.0001]],
+    [[.0001,-.0002,0],[-.0002,.0001,0],[0,0,.0001]]
+  ];
+  const covariance=values=>Object.fromEntries(['A','B','C'].map((a,i)=>[a,Object.fromEntries(['A','B','C'].map((b,j)=>[b,values[i][j]]))]));
+  for(const values of invalidMatrices){
+    const r=fixture();r.paths.with_message.trace[0].covariance=covariance(values);
+    for(const row of metrics.buildOverview(r).paths.with_message){
+      assert.equal(row.riskExceedance,null);assert.ok(row.wealthSeries);assert.notEqual(row.concentrationExceedance,null);
+      assert.match(row.issues.join(''),/风险/);
+    }
+  }
+  const r=fixture();for(const day of r.paths.with_message.trace)day.covariance=covariance([[.0001,-.0001,0],[-.0001,.0001,0],[0,0,.0001]]);
+  const a=metrics.buildOverview(r).paths.with_message[0];
+  assert.equal(a.riskExceedance.accountSteps,1);assert.equal(a.riskExceedance.totalAccountSteps,6);
+  assert.deepEqual(a.issues,[]);
+});
+
 test('presentation escapes labels and preserves tiny nonzero changes and source identifiers',()=>{
   const r=fixture();r.paths.with_message.summary.trace_sha256='b'.repeat(64);
   const html=metrics.renderOverview(r,{activeLabel:'<img onerror="bad">'});
