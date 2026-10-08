@@ -182,6 +182,27 @@
     const snapshot={artifact:'MarketMirror experiment',schema_version:'platform-export-v2',mode:record.backendResult?.mode||'not_run',experiment:record,selected_asset:state.asset,selected_step:state.step,selected_information_condition:state.decisionGroup,fixture:null};
     showDownloadFiles('导出当前实验快照',`<p>${esc(record.title)}</p><p class="form-hint">保存当前配置、文本依据和账本${record.result_id?' · 结果版本 '+esc(record.result_id.slice(0,10)):''}。不会重新运行实验。</p>`,[{label:'下载实验 JSON',filename:`marketmirror-${record.id}.json`,type:'application/json',content:JSON.stringify(snapshot,null,2),primary:true}],'experiment-export');
   }
+  function openRiskOverviewDownloads(){
+    const bundle=state.page==='cases'?caseWorkspace.detail:null,record=bundle?null:current();
+    const result=bundle?.result||record?.backendResult;if(!result?.paths)return;
+    const snapshot={artifact:'MarketMirror portfolio risk overview',
+      source:bundle?{case_id:bundle.case.case_id,seed:bundle.seed,mode:bundle.mode}:{experiment_id:record.id,title:record.title},
+      metrics:MarketPortfolioMetrics.buildOverview(result)};
+    showDownloadFiles('导出收益、风险与执行指标','<p>指标按当前读取的完整账本计算，JSON 保留各步组合净值、超限账户与来源标识。不会重跑实验或调用模型。</p>',
+      [{label:'下载指标 JSON',filename:`marketmirror-risk-${bundle?bundle.case.case_id.slice(0,24)+'-'+bundle.seed+'-'+bundle.mode:record.id}.json`,type:'application/json',content:JSON.stringify(snapshot,null,2),primary:true}],'risk-export');
+  }
+  function jumpToRiskStep(step,group){
+    if(!Number.isSafeInteger(step)||step<1||!['with_message','baseline'].includes(group))return;
+    let id;
+    if(state.page==='cases'&&caseWorkspace.detail){
+      if(step>caseWorkspace.detail.result.paths[group].trace.length)return;
+      caseWorkspace.step=step;caseWorkspace.group=group;updateCasePanels();id='case-step';
+    }else if(state.page==='analysis'&&current().backendResult?.paths){
+      if(step>current().backendResult.paths[group].trace.length)return;
+      state.step=step;state.decisionGroup=group;render();id='market-step';
+    }else return;
+    const input=document.getElementById(id);input?.closest('.timeline-control')?.scrollIntoView({block:'start',behavior:'smooth'});input?.focus({preventScroll:true});
+  }
   function sourcesPage(){
     const saved=experiments.filter(e=>e.custom),examples=experiments.filter(e=>!e.custom);
     const cards=rows=>rows.filter(e=>!e.corrupt&&typeof e.source==='string').map(e=>`<article class="panel source-card"><div class="source-label">${icon('document')}<span class="badge neutral">${esc(e.type)}</span><span class="badge neutral">${e.custom?'已保存原文':'虚构示例'}</span></div><h2>${esc(e.title)}</h2><details><summary>展开消息原文 · ${e.source.length} 字符</summary><p style="white-space:pre-wrap">${esc(e.source)}</p></details><p class="form-hint">${e.custom?(e.text_analysis?'已关联事实提取与引文；不代表事实真实性已验证。':'未关联模型分析。'):'仅用于体验操作流程。'}</p><div class="source-card-bottom"><span class="form-hint">实验 ${esc(e.id)}</span><button class="subtle-link" type="button" data-use="${experiments.indexOf(e)}">复制消息与配置 ${icon('arrow')}</button></div><button class="subtle-link" type="button" data-open="${experiments.indexOf(e)}">查看关联实验</button></article>`).join('');
@@ -378,7 +399,7 @@
     if(!bundle)return MarketCaseView.renderDetail(null,caseWorkspace);
     const result=bundle.result,rows=group=>result.paths[group].trace.map((day,i)=>({step:i+1,price:day.portfolio_auction.asset_calls[caseWorkspace.asset].price_after_minor/100,date:day.trade_date}));
     const prices=[...rows('baseline'),...rows('with_message')].map(row=>row.price),bounds={low:Math.min(...prices)-.2,high:Math.max(...prices)+.2};
-    return MarketCaseView.renderDetail(bundle,caseWorkspace,{charts:savedPriceChart(rows('with_message'),'所选条件 · 合成市场价格',bounds)+savedPriceChart(rows('baseline'),'无文本 · 合成市场价格',bounds),comparison:MarketDecisionView.renderComparison(result,{asset:caseWorkspace.asset,step:caseWorkspace.step,activeLabel:'所选条件',baselineLabel:'无文本参考'}),decisionCards:marketStepCards(result,{decisionGroup:caseWorkspace.group,asset:caseWorkspace.asset,step:caseWorkspace.step})});
+    return MarketCaseView.renderDetail(bundle,caseWorkspace,{risk:MarketPortfolioMetrics.renderOverview(result,{activeLabel:'所选条件',baselineLabel:'无文本'}),charts:savedPriceChart(rows('with_message'),'所选条件 · 合成市场价格',bounds)+savedPriceChart(rows('baseline'),'无文本 · 合成市场价格',bounds),comparison:MarketDecisionView.renderComparison(result,{asset:caseWorkspace.asset,step:caseWorkspace.step,activeLabel:'所选条件',baselineLabel:'无文本参考'}),decisionCards:marketStepCards(result,{decisionGroup:caseWorkspace.group,asset:caseWorkspace.asset,step:caseWorkspace.step})});
   }
   function casesPage(){
     return heading('REAL SOURCE CASES','真实原文案例','从归档文本、复核事实到三类决策与真实撮合账本',`<button class="btn" data-action="refresh-cases">重新加载案例</button>`)
@@ -698,18 +719,17 @@
     const e=current(),r=e.backendResult,active=r.paths.with_message,base=r.paths.baseline;
     state.step=Math.max(1,Math.min(state.step,active.trace.length));
     const priceRows=path=>path.trace.map((d,i)=>({step:i+1,price:d.portfolio_auction.asset_calls[state.asset].price_after_minor/100}));
-    const label={aggressive:'激进型',conservative:'保守型',institutional:'机构型'};
     const allPrices=[...priceRows(active),...priceRows(base)].map(row=>row.price);
     const bounds={low:Math.min(...allPrices)-.2,high:Math.max(...allPrices)+.2};
     return heading('MARKET EXPERIMENT',esc(e.title),'<span class="badge">合成市场 · 撮合计算</span>',`${batchArchivedExperiment?`<button class="btn" data-action="export">${icon('download')}导出当前快照</button>`:`<a class="btn" href="/api/platform/experiments/${e.id}/export" download>${icon('download')}导出账本</a>`}<button class="btn" data-action="compare-current">加入实验比较</button><button class="btn" data-action="strategy-variant">调整策略再跑</button><button class="btn" data-action="duplicate">复制为新实验</button>${newButton()}`)
       +`<div class="callout">账本审计通过：${r.audit.days_checked} 个市场日。消息从第 5 步作用于${r.market_assumptions?.scope==='public'?'全部三资产':'资产 A'}；信号与暴露为人工情景假设，${e.text_analysis?'已关联模型事实作为参考':'未关联模型分析'}。</div>`
       +`<nav class="result-shortcuts" aria-label="结果页快捷入口"><button class="btn" type="button" data-action="compare-decisions">查看同一步决策对照 ${icon('arrow')}</button><span>三类策略 · 有消息与无消息</span></nav>`
+      +MarketPortfolioMetrics.renderOverview(r)
       +`<section class="panel"><div class="panel-header"><h2>实验条件</h2></div><div class="summary-content"><p>${esc(e.source)}</p><p>信号 ${e.signal} · 不确定性 ${e.uncertainty} · 持续 ${e.duration} 步 · 种子 ${e.seed}</p>${MarketExperimentScenario.renderSummary(e)}${MarketExperimentScenario.renderReference(e)}<p>每类 4 个账户，每类初始现金合计 ${format(r.assumptions.effective_initial_cash_per_role)} 元，另有每账户每资产 500 股初始库存。</p></div></section>`
       +experimentStrategyPanel(e)+(typeof experimentModelBoundary==='function'?experimentModelBoundary(e):'')+experimentEvidence(e.text_analysis)
       +`<div class="section-title"><h2>市场价格对照 <small>两组使用相同坐标刻度</small></h2><div class="segmented">${['A','B','C'].map(a=>`<button data-asset="${a}" class="${state.asset===a?'active':''}">资产 ${a}</button>`).join('')}</div></div>`
       +'<div class="market-chart-grid">'+savedPriceChart(priceRows(active),'有消息',bounds)+savedPriceChart(priceRows(base),'无消息对照',bounds)+'</div>'
       +`<section class="panel timeline-control" id="market-decision-controls" tabindex="-1" aria-label="决策步与信息条件">${MarketReplayControl.render({id:'market-step',step:state.step,title:`逐步查看策略与成交 · 资产 ${state.asset}`,label:'选择市场决策步',context:'合成情景 · 消息作用区间为实验假设',rows:active.trace.map((d,i)=>({visible:i>=4,active:i>=4&&i<4+e.duration}))})}<div class="segmented" role="group" aria-label="决策信息条件">${[['with_message','有消息组'],['baseline','无消息组']].map(([key,label])=>`<button type="button" data-decision-group="${key}" class="${state.decisionGroup===key?'active':''}" aria-pressed="${state.decisionGroup===key}">${label}</button>`).join('')}</div><p class="replay-context">${active.trace.length<5?'本实验在消息进入前结束，两组均未收到文本输入。':'假设第 5 步消息进入。'}当前查看${state.decisionGroup==='baseline'?'无消息对照组':'有消息组'}的实验账本；切换时保留资产与决策步。</p></section><div id="market-comparison">${MarketDecisionView.renderComparison(r,{asset:state.asset,step:state.step})}</div><div class="role-editor-grid" id="market-step-cards">${marketStepCards()}</div>`
-      +`<section class="panel"><div class="panel-header"><h2>三类策略 · 账户收益对照</h2></div><div class="table-wrap"><table><thead><tr><th>策略</th><th>有消息收益</th><th>无消息收益</th><th>差值</th></tr></thead><tbody>${Object.keys(label).map(k=>{const a=(active.summary.role_wealth_multiple[k]-1)*100,b=(base.summary.role_wealth_multiple[k]-1)*100;return `<tr><td>${label[k]}</td><td>${signed(a)}%</td><td>${signed(b)}%</td><td>${signed((active.summary.role_wealth_multiple[k]-base.summary.role_wealth_multiple[k])*100)} pp</td></tr>`;}).join('')}</tbody></table></div></section>`
       +`<section class="panel"><div class="panel-header"><h2>策略订单 · 全程合计</h2></div><div class="table-wrap"><table><thead><tr><th>信息条件</th><th>请求股数</th><th>接受股数</th><th>成交股数</th></tr></thead><tbody>${[['有消息',active],['无消息',base]].map(([name,path])=>`<tr><td>${name}</td><td>${format(path.summary.strategy_requested)}</td><td>${format(path.summary.strategy_accepted)}</td><td>${format(path.summary.strategy_filled)}</td></tr>`).join('')}</tbody></table></div></section>`;
   }
   function savedAnalysis(){
@@ -723,6 +743,7 @@
       +(result?`<section class="panel"><div class="panel-header"><h2>三类策略 · 期末预览</h2></div><div class="table-wrap"><table><thead><tr><th>策略</th><th>方向</th><th>目标仓位</th><th>请求股数</th><th>演示成交股数</th></tr></thead><tbody>${result.roles.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.action)}</td><td>${esc(r.target_weight)}%</td><td>${esc(r.requested_shares)}</td><td>${esc(r.filled_shares)}</td></tr>`).join('')}</tbody></table></div></section><section class="panel"><div class="panel-header"><h2>逐步价格记录</h2></div><div class="table-wrap"><table><thead><tr><th>决策步</th><th>情景价格</th><th>消息可见</th><th>作用期内</th></tr></thead><tbody>${result.sessions.map(r=>`<tr><td>${esc(r.step)}</td><td>${esc(r.price)}</td><td>${r.message_visible?'是':'否'}</td><td>${r.message_active?'是':'否'}</td></tr>`).join('')}</tbody></table></div></section>`:'<div class="callout">配置已保存，尚无可读取的运行结果。</div>');
   }
   document.addEventListener('click',async e=>{
+    const riskStep=e.target.closest('[data-risk-step]');if(riskStep){jumpToRiskStep(Number(riskStep.dataset.riskStep),riskStep.dataset.riskGroup);return;}
     const comparisonAction=e.target.closest('[data-comparison-action]');if(comparisonAction){
       const action=comparisonAction.dataset.comparisonAction;
       if(action==='swap'){comparisonWorkspace.swap();rememberComparison();render();}
@@ -761,6 +782,7 @@
     const group=e.target.closest('[data-decision-group]');if(group){state.decisionGroup=group.dataset.decisionGroup;render();return;}
     const asset=e.target.closest('[data-asset]');if(asset){state.asset=asset.dataset.asset;render();return;}
     const b=e.target.closest('[data-action]');if(!b)return;const action=b.dataset.action;
+    if(action==='export-risk-overview'){openRiskOverviewDownloads();return;}
     if(action==='compare-decisions'){const controls=document.getElementById('market-decision-controls');controls?.scrollIntoView({block:'start',behavior:'smooth'});controls?.focus({preventScroll:true});return;}
     if(action==='compare-current'){includeInComparison(current());return;}
     if(action==='strategy-variant'){createStrategyVariant(current());return;}

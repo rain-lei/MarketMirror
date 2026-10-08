@@ -36,6 +36,7 @@ $nodeTests = @(
     "tests/test_platform_parameter_controls.cjs",
     "tests/test_platform_analysis_state.cjs",
     "tests/test_platform_decision_view.cjs",
+    "tests/test_platform_portfolio_metrics.cjs",
     "tests/test_platform_copy.cjs",
     "tests/test_platform_record_loading.cjs",
     "tests/test_platform_batch_view.cjs",
@@ -71,6 +72,8 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & $node --check design/observed-view.js
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & $node --check design/decision-view.js
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+& $node --check design/portfolio-metrics.js
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & $node --check design/strategy-state.js
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

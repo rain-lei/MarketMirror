@@ -200,6 +200,11 @@ class PlatformStoreTest(unittest.TestCase):
                 self.assertEqual(payload["right"]["id"], right["id"])
                 self.assertEqual(payload["left"]["result_id"], store.get(left["id"])["result_id"])
                 self.assertEqual(payload["right"]["result_id"], store.get(right["id"])["result_id"])
+                with urlopen(f"http://127.0.0.1:{server.server_port}/") as response:
+                    self.assertIn('src="portfolio-metrics.js"', response.read().decode("utf-8"))
+                with urlopen(f"http://127.0.0.1:{server.server_port}/portfolio-metrics.js") as response:
+                    self.assertIn("text/javascript", response.headers["Content-Type"])
+                    self.assertIn("buildOverview", response.read().decode("utf-8"))
             finally:
                 server.shutdown()
                 thread.join(timeout=5)

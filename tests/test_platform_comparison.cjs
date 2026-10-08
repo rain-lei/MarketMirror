@@ -77,12 +77,13 @@ const source=fs.readFileSync('design/app.js','utf8');
 test('market results include the paired view and preserve the archived return difference precision',()=>{
   const r=result(),record={title:'对照实验',id:'example',source:'明确的合成消息',signal:.6,uncertainty:.2,duration:3,seed:7,backendResult:r};
   const c=vm.createContext({state:{asset:'A',step:5,decisionGroup:'with_message'},current:()=>record,
-    MarketDecisionView:view,MarketReplayControl:view.ReplayControl,MarketExperimentScenario:require('../design/experiment-scenario.js'),batchArchivedExperiment:null,esc:String,icon:()=>'',newButton:()=>'',
+    MarketDecisionView:view,MarketPortfolioMetrics:require('../design/portfolio-metrics.js'),MarketReplayControl:view.ReplayControl,MarketExperimentScenario:require('../design/experiment-scenario.js'),batchArchivedExperiment:null,esc:String,icon:()=>'',newButton:()=>'',
     format:n=>n.toLocaleString('zh-CN'),signed:n=>view.formatNumber(n,6,true),heading:()=>'',
     experimentStrategyPanel:()=>'',experimentEvidence:()=>'',savedPriceChart:()=>'',marketStepCards:()=>''});
   const method=source.slice(source.indexOf('  function marketAnalysis(){'),source.indexOf('  function savedAnalysis(){'));
   vm.runInContext(method,c);const html=c.marketAnalysis();
   assert.match(html,/id="market-comparison"/);assert.equal((html.match(/data-comparison-role=/g)||[]).length,3);
+  assert.equal((html.match(/data-risk-role=/g)||[]).length,3);assert.match(html,/组合最大回撤/);
   assert.match(html,/data-replay="market-step"/);assert.match(html,/消息进入 · 第 5 步/);
   assert.match(html,/消息作用区间 · 第 5 — 7 步/);
   assert.match(html,/合成情景 · 消息作用区间为实验假设/);
@@ -110,8 +111,9 @@ test('market and source-case sliders update the comparison to the newly selected
 
 test('a source-case wrapper supplies the real paired paths and archive labels',()=>{
   const r=result(),c=vm.createContext({caseWorkspace:{detail:{result:r},asset:'C',step:5,group:'baseline'},
-    MarketDecisionView:view,MarketCaseView:{renderDetail:(bundle,state,parts)=>parts},savedPriceChart:()=>'',marketStepCards:()=>''});
+    MarketDecisionView:view,MarketPortfolioMetrics:require('../design/portfolio-metrics.js'),MarketCaseView:{renderDetail:(bundle,state,parts)=>parts},savedPriceChart:()=>'',marketStepCards:()=>''});
   const method=source.slice(source.indexOf('  function caseDetail(){'),source.indexOf('  function casesPage(){'));
   vm.runInContext(method,c);const parts=c.caseDetail();
   assert.match(parts.comparison,/资产 C · 第 5 步/);assert.match(parts.comparison,/所选条件与无文本参考/);
+  assert.equal((parts.risk.match(/data-risk-role=/g)||[]).length,3);assert.match(parts.risk,/所选条件收益/);
 });
