@@ -155,10 +155,12 @@
   function createStrategyVariant(record){
     batchArchivedExperiment=null;useSample(-1,record);state.draft.title=record.title.slice(0,110)+' · 策略调整';state.wizard=2;persistDraft();render();toast('已复制消息与市场条件，调整本次策略参数后可运行。');
   }
-  function openComparisonSnapshot(id){
-    const record=[comparisonWorkspace.left,comparisonWorkspace.right].find(r=>r?.id===id);if(!record)return;
+  function openComparisonSnapshot(id,step=comparisonWorkspace.step,group=comparisonWorkspace.group){
+    if(comparisonWorkspace.status!=='ready'||!['with_message','baseline'].includes(group))return;
+    const record=[comparisonWorkspace.left,comparisonWorkspace.right].find(r=>r?.id===id);
+    if(!record||!Number.isSafeInteger(step)||step<1||step>record.backendResult.paths[group].trace.length)return;
     batchArchivedExperiment={...record,custom:true,comparison_archive:{result_id:record.result_id}};
-    state.step=comparisonWorkspace.step;state.asset=comparisonWorkspace.asset;state.decisionGroup=comparisonWorkspace.group;
+    state.step=step;state.asset=comparisonWorkspace.asset;state.decisionGroup=group;
     navigate('analysis');
   }
   async function openComparisonDownloads(){
@@ -173,7 +175,8 @@
       showDownloadFiles('实验报告与导出',`<style>${MarketExperimentComparison.reportStyles}</style>${MarketExperimentComparison.renderReport(report)}`,[
         {label:'中文报告',filename:filename+'.md',type:'text/markdown',content:MarketExperimentComparison.markdownReport(report),primary:true},
         {label:'离线报告',filename:filename+'.html',type:'text/html',content:MarketExperimentComparison.htmlReport(report)},
-        {label:'原始双实验 JSON',filename:filename+'-raw.json',type:'application/json',href:`/api/platform/comparisons/${encodeURIComponent(snapshot.left.id)}/${encodeURIComponent(snapshot.right.id)}/export`}
+        {label:'比较指标与快照 JSON',filename:filename+'-snapshot.json',type:'application/json',content:JSON.stringify(snapshot,null,2)},
+        {label:'原始双实验 JSON',filename:filename+'-raw.json',type:'application/json',href:`/api/platform/comparisons/${encodeURIComponent(snapshot.left.id)}/${encodeURIComponent(snapshot.right.id)}/export?left_result_id=${encodeURIComponent(snapshot.left.result_id)}&right_result_id=${encodeURIComponent(snapshot.right.result_id)}`}
       ],'comparison-export');
     }catch(error){if(active())modal('报告准备失败',`<p>${esc(error.message)}</p>`,'<button class="btn" type="button" data-action="close">关闭</button>','comparison-export');}
   }
@@ -751,7 +754,11 @@
       if(action==='variant'&&comparisonWorkspace.status==='ready')createStrategyVariant(comparisonWorkspace.left);
       if(action==='export')await openComparisonDownloads();return;
     }
-    const comparisonOpen=e.target.closest('[data-comparison-open]');if(comparisonOpen){openComparisonSnapshot(comparisonOpen.dataset.comparisonOpen);return;}
+    const comparisonOpen=e.target.closest('[data-comparison-open]');if(comparisonOpen){
+      openComparisonSnapshot(comparisonOpen.dataset.comparisonOpen,
+        comparisonOpen.dataset.comparisonArchiveStep===undefined?undefined:Number(comparisonOpen.dataset.comparisonArchiveStep),
+        comparisonOpen.dataset.comparisonArchiveGroup);return;
+    }
     const comparisonGroup=e.target.closest('[data-comparison-group]');if(comparisonGroup){comparisonWorkspace.group=comparisonGroup.dataset.comparisonGroup;document.getElementById('experiment-comparison-body').innerHTML=MarketExperimentComparison.renderBody(comparisonWorkspace);return;}
     const comparisonAsset=e.target.closest('[data-comparison-asset]');if(comparisonAsset){comparisonWorkspace.asset=comparisonAsset.dataset.comparisonAsset;document.getElementById('experiment-comparison-body').innerHTML=MarketExperimentComparison.renderBody(comparisonWorkspace);return;}
     const preset=e.target.closest('[data-preview-preset]');if(preset){strategyPreview.preset(preset.dataset.previewPreset);document.getElementById('strategy-preview-controls').innerHTML=MarketStrategyPreview.renderControls(strategyPreview);scheduleStrategyPreview();return;}

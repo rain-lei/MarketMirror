@@ -137,6 +137,10 @@ class RunInProgress(Exception):
     pass
 
 
+class ComparisonVersionConflict(ValueError):
+    """A comparison download would use another result or an unfinished run."""
+
+
 class PlatformStore:
     def __init__(self, data_dir: Path):
         self.data_dir = data_dir.resolve()
@@ -356,19 +360,34 @@ class PlatformStore:
                     'mode': result['mode'] if result else 'not_run',
                     'experiment': {**record, 'backendResult': result}, 'fixture': None}
 
-    def comparison_export(self, left_id: str, right_id: str) -> dict | None:
+    def comparison_export(self, left_id: str, right_id: str, *,
+                          left_result_id: str | None = None, right_result_id: str | None = None) -> dict | None:
         """Return two immutable experiment exports for a reliable HTTP download.
 
         The browser derives the comparison report from these exact snapshots.  Keeping
         this package server-side avoids relying on a large browser Blob URL for the
-        raw audit artifact and never reruns either experiment.
+        raw audit artifact and never reruns either experiment. Optional result IDs
+        bind a download to the versions already read by the comparison page.
         """
         if left_id == right_id:
             raise ValueError('比较需要两份不同的实验')
+        if (left_result_id is None) != (right_result_id is None):
+            raise ValueError('比较下载需要同时指定左右结果版本')
+        for expected in (left_result_id, right_result_id):
+            if expected is not None:
+                validate_analysis_id(expected)
         left = self.export(left_id)
         right = self.export(right_id)
         if left is None or right is None:
             return None
+        for payload, expected in ((left, left_result_id), (right, right_result_id)):
+            if expected is not None:
+                record = payload['experiment']
+                result = record.get('backendResult')
+                provenance = result.get('provenance') if isinstance(result, dict) else None
+                if record.get('run_status') != 'completed' or record.get('result_id') != expected \
+                        or not isinstance(provenance, dict) or provenance.get('result_id') != expected:
+                    raise ComparisonVersionConflict('所选结果版本已改变或正在重跑，请刷新实验比较后重新下载；当前比较快照仍保留原版本。')
         return {'artifact': 'MarketMirror experiment comparison raw package',
                 'schema_version': 'platform-comparison-raw-v1',
                 'read_at': utc_now(),
@@ -451,7 +470,11 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                     if len(parts) != 3 or parts[2] != 'export':
                         raise ValueError('比较导出路径无效')
                     left_id, right_id = parts[0], parts[1]
-                    payload = store.comparison_export(left_id, right_id)
+                    query = parse_qs(urlsplit(self.path).query, keep_blank_values=True)
+                    if query and (set(query) != {'left_result_id', 'right_result_id'} or any(len(v) != 1 for v in query.values())):
+                        raise ValueError('比较下载的结果版本条件无效')
+                    payload = store.comparison_export(left_id, right_id,
+                        left_result_id=query.get('left_result_id', [None])[0], right_result_id=query.get('right_result_id', [None])[0])
                     filename = f'marketmirror-compare-{left_id[:8]}-{right_id[:8]}-raw.json'
                     self.json(200 if payload is not None else 404,
                               payload or {'error': '实验不存在'}, filename if payload is not None else None)
@@ -473,6 +496,7 @@ def create_server(data_dir: Path = DEFAULT_DATA, port: int = 8770) -> ThreadingH
                 if name not in types: self.json(404, {"error": "资源不存在"}); return
                 raw = (SITE / name).read_bytes(); self.send_response(200); self.send_header("Content-Type", types[name] + '; charset=utf-8'); self.send_header("Cache-Control", "no-store"); self.send_header("Content-Length", str(len(raw))); self.end_headers(); self.wfile.write(raw)
             except FileNotFoundError: self.json(404, {'error': '记录或归档结果不存在'})
+            except ComparisonVersionConflict as error: self.json(409, {'error': str(error)})
             except CaseArchiveIntegrityError: self.json(503, {'error': '案例归档核验未通过，原文件保留；请检查来源与冻结版本。'})
             except ObservedArchiveIntegrityError: self.json(503, {'error': '历史实验归档核验未通过，请检查来源、冻结版本及完整产物。'})
             except (ValueError, OSError, json.JSONDecodeError): self.json(400, {"error": "请求无法处理"})

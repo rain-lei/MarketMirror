@@ -3,6 +3,7 @@ import tempfile
 import unittest
 from threading import Thread
 from urllib.request import urlopen
+from urllib.error import HTTPError
 from unittest.mock import patch
 from pathlib import Path
 
@@ -200,11 +201,72 @@ class PlatformStoreTest(unittest.TestCase):
                 self.assertEqual(payload["right"]["id"], right["id"])
                 self.assertEqual(payload["left"]["result_id"], store.get(left["id"])["result_id"])
                 self.assertEqual(payload["right"]["result_id"], store.get(right["id"])["result_id"])
+                versions = f"?left_result_id={payload['left']['result_id']}&right_result_id={payload['right']['result_id']}"
+                with urlopen(url + versions) as response:
+                    pinned = json.loads(response.read().decode('utf-8'))
+                self.assertEqual(pinned['left'], payload['left'])
+                self.assertEqual(pinned['right'], payload['right'])
                 with urlopen(f"http://127.0.0.1:{server.server_port}/") as response:
                     self.assertIn('src="portfolio-metrics.js"', response.read().decode("utf-8"))
                 with urlopen(f"http://127.0.0.1:{server.server_port}/portfolio-metrics.js") as response:
                     self.assertIn("text/javascript", response.headers["Content-Type"])
                     self.assertIn("buildOverview", response.read().decode("utf-8"))
+            finally:
+                server.shutdown()
+                thread.join(timeout=5)
+                server.server_close()
+
+    def test_comparison_download_rejects_rerun_versions_and_invalid_version_queries(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            store = PlatformStore(directory)
+            left = store.create({**self.payload(), 'sessions': 1}, 'c' * 32)
+            right = store.create({**self.payload(), 'sessions': 1}, 'd' * 32)
+            store.run(left['id'])
+            store.run(right['id'])
+            left_version = store.get(left['id'])['result_id']
+            right_version = store.get(right['id'])['result_id']
+            server = create_server(directory, 0)
+            thread = Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            url = f"http://127.0.0.1:{server.server_port}/api/platform/comparisons/{left['id']}/{right['id']}/export"
+            versions = f'?left_result_id={left_version}&right_result_id={right_version}'
+            try:
+                right_path = directory / right['id'] / 'experiment.json'
+                right_record = store.get(right['id'])
+                atomic_json(right_path, {**right_record, 'run_status': 'running'})
+                with self.assertRaises(HTTPError) as pending:
+                    urlopen(url + versions)
+                self.assertEqual(pending.exception.code, 409)
+                self.assertIn('正在重跑', json.loads(pending.exception.read())['error'])
+                atomic_json(right_path, right_record)
+                result_path = directory / right['id'] / 'runs' / (right_version + '.json')
+                saved_result = json.loads(result_path.read_text(encoding='utf-8'))
+                for provenance in (None, 'invalid', {'result_id': 'e' * 32}):
+                    atomic_json(result_path, {**saved_result, 'provenance': provenance})
+                    with self.subTest(provenance=provenance), self.assertRaises(HTTPError) as inconsistent:
+                        urlopen(url + versions)
+                    self.assertEqual(inconsistent.exception.code, 409)
+                atomic_json(result_path, saved_result)
+                store.run(right['id'])
+                with self.assertRaises(HTTPError) as changed:
+                    urlopen(url + versions)
+                self.assertEqual(changed.exception.code, 409)
+                self.assertIn('刷新实验比较', json.loads(changed.exception.read())['error'])
+                self.assertTrue((directory / right['id'] / 'runs' / (right_version + '.json')).is_file())
+                current_version = store.get(right['id'])['result_id']
+                with urlopen(url + f'?left_result_id={left_version}&right_result_id={current_version}') as response:
+                    downloaded = json.loads(response.read())
+                self.assertEqual(downloaded['right']['result_id'], current_version)
+                self.assertEqual(store.get(right['id'])['run_attempts'], 2)
+                invalid = [f'?left_result_id={left_version}', f'?right_result_id={current_version}',
+                    f'?left_result_id={left_version}&right_result_id={current_version}&left_result_id={left_version}',
+                    f'?left_result_id=&right_result_id={current_version}',
+                    f'?left_result_id=not-a-version&right_result_id={current_version}', '?unrelated=1']
+                for query in invalid:
+                    with self.subTest(query=query), self.assertRaises(HTTPError) as rejected:
+                        urlopen(url + query)
+                    self.assertEqual(rejected.exception.code, 400)
             finally:
                 server.shutdown()
                 thread.join(timeout=5)
