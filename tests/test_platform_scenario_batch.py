@@ -3,7 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-from design.scenario_batch import run_batch, summarize_scenarios
+from design.scenario_batch import run_batch
+from design.batch_metrics import summarize_scenarios
 from design.server import PlatformStore
 
 

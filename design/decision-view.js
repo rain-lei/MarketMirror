@@ -50,6 +50,34 @@
     if (Math.abs(market + text + uncertainty - archivedBelief) > 1e-9) return null;
     return {market, text, uncertainty};
   }
+  function targetBoundary(day, spec, decision) {
+    const assets = ['A','B','C'], p = spec?.parameters;
+    if (!Array.isArray(decision.reasons) || !decision.reasons.includes('portfolio_risk')
+        || ![p?.base_weight,p?.max_weight,p?.risk_budget,decision.portfolio_volatility,
+        decision.risk_weight_cap,decision.asset_weight_cap].every(numeric)
+        || p.base_weight < 0 || p.base_weight > p.max_weight || p.max_weight > 1
+        || p.risk_budget < 0 || decision.portfolio_volatility < 0
+        || decision.risk_weight_cap < 0 || decision.asset_weight_cap < 0 || decision.asset_weight_cap > 1
+        || !assets.every(a => beliefTerms(day.observations?.[a],spec,decision.beliefs?.[a])
+          && numeric(decision.desired_weights?.[a]) && decision.desired_weights[a] >= 0 && decision.desired_weights[a] <= 1)) return null;
+    const close = (a,b) => Math.abs(a-b) <= 1e-12 * Math.max(1,Math.abs(a),Math.abs(b));
+    const cap = Math.min(p.max_weight,p.risk_budget / Math.max(1e-6,decision.portfolio_volatility));
+    if (!close(cap,decision.risk_weight_cap)) return null;
+    const score = assets.reduce((sum,a) => sum+decision.beliefs[a],0)/assets.length;
+    const rawWeight = p.base_weight+.4*score;
+    const boundedWeight = Math.min(cap,Math.max(0,rawWeight));
+    if (![score,rawWeight,boundedWeight,cap].every(numeric)) return null;
+    const peak = Math.max(...assets.map(a => decision.beliefs[a]));
+    const exponent = assets.map(a => Math.exp(decision.beliefs[a]-peak));
+    const denominator = exponent.reduce((sum,v) => sum+v,0);
+    // Confirmation, liquidation or concentration can change the final target.
+    // Explain a boundary only when the archived target matches this rule stage.
+    if (!assets.every((a,i) => close(decision.desired_weights[a],
+        Math.min(decision.asset_weight_cap,boundedWeight*exponent[i]/denominator)))) return null;
+    const kind = rawWeight <= 0 ? (assets.every(a => decision.desired_weights[a] === 0) ? 'target_weight_floor' : null)
+      : rawWeight >= cap ? 'target_weight_cap' : null;
+    return kind ? {kind,rawWeight,boundedWeight,averageBelief:score,cap} : null;
+  }
   function buildStep(result, group, asset, step) {
     if (!['with_message', 'baseline'].includes(group) || !['A', 'B', 'C'].includes(asset)
         || !Number.isInteger(step) || step < 1) throw new Error('无效的决策查看条件');
@@ -71,6 +99,7 @@
           before: decision.current_weights?.[asset], target: decision.desired_weights?.[asset],
           orderChange: decision.order_weight_changes?.[asset], belief: decision.beliefs?.[asset],
           terms: beliefTerms(observation, spec, decision.beliefs?.[asset]),
+          targetBoundary: targetBoundary(day,spec,decision),
           reasons: decision.reasons || []};
       });
       const selected = coverageComplete && names.length && Array.isArray(orders) ? orders.filter(o => names.includes(o.owner)) : null;
@@ -84,6 +113,12 @@
       const constraints = reasons.filter(r => !(r in ruleLabels)).map(code => ({code,
         label: constraintLabels[code] || `未识别决策记录：${code}`,
         accounts: accounts.filter(a => a.reasons.includes(code)).length}));
+      if (coverageComplete) for (const [code,label] of [
+        ['target_weight_floor','股票目标已触及 0% 下限，分值变化未必改变仓位'],
+        ['target_weight_cap','股票目标计算已触及风险／仓位上限']]) {
+        const count = accounts.filter(a => a.targetBoundary?.kind === code).length;
+        if (count) constraints.push({code,label,accounts:count,derived:true});
+      }
       const terms = accounts.length && accounts.every(a => a.terms)
         ? Object.fromEntries(['market','text','uncertainty'].map(key => [key, mean(a => a.terms[key])])) : null;
       return {role, accounts, coverageComplete, before: mean(a => a.before), target: mean(a => a.target),
@@ -129,7 +164,7 @@
     rows.forEach((r,i)=>{if(r.active===true){const last=intervals.at(-1);if(last&&last.end===i)last.end=i+1;else intervals.push({start:i+1,end:i+1});}});
     const futureActive=rows.slice(current).some(r=>r.active===true),pastActive=rows.slice(0,current).some(r=>r.active===true);
     return {total,step:current,date:row.date||'',entry:entry<0?null:entry+1,intervals,
-      progress:position(current,total),completion:total?current/total*100:100,status:row.active===true?'消息作用中':row.visible===true?(futureActive?'消息已可见 · 待作用':pastActive?'消息作用已结束':'消息已可见 · 无作用输入'):row.visible===false?'消息尚未进入':'信息时点未存档',
+      progress:position(current,total),status:row.active===true?'消息作用中':row.visible===true?(futureActive?'消息已可见 · 待作用':pastActive?'消息作用已结束':'消息已可见 · 无作用输入'):row.visible===false?'消息尚未进入':'信息时点未存档',
       tone:row.active===true?'active':row.visible===true?'ended':'pending',edge:current===1?'start':current===total?'end':'middle',previousDisabled:current===1,nextDisabled:current===total};
   }
   function render({id,step=1,rows=[],title='决策回放',label='选择决策步',unit='步',context=''}){

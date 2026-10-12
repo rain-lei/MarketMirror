@@ -44,8 +44,6 @@ python -B -m research.simulation.run_agent_decision_probes --output-dir research
 python -B -m unittest discover -s tests -p test_agent_decision_trace.py
 ```
 
-## 下一步与未完成项
+## 适用边界
 
-三条已归档官方/转述事件来源再次核验，仍保留 context_only，不进入本批数值信号。下一项把真实政策与公司问答原文、可见时间和主体范围连接到本解释层，逐条区分文本事实、未知项与情景转换假设，再补关键词及经复核 LLM 信息对照。[v6 原分类未达标结果](WUHAN_INDEPENDENT_EVALUATION_V6.md)继续有效，不能借本合成检查改判。私有公司消息需要按实际接收者生成观察，本版本会拒绝把私有接收记录静默当成公共信息解释。
-
-既有 2022 资源批处理沿原冻结协议继续，未把其未完成结果当作本项效果。当前范围遵循[用户调整后的研究原型要求](MECHANISM_PROTOTYPE_SCOPE_2026.md)，没有采用新市场默认，也没有开始可视化工作台。
+本批为合成决策探针，三条归档历史事件仅作上下文，不进入数值信号。真实原文、来源可见时间及登记映射在[六来源开发链路](SOURCE_TEXT_TO_AGENT_DECISIONS_2026.md)中单独核验，同状态和时长对照见[敏感性报告](MECHANISM_SENSITIVITY_RESULTS_2026.md)。原 v6 分类门槛不因本批合成检查放行。私有公司消息须按实际接收者解释，本版本拒绝将私有接收记录当成公共信息。

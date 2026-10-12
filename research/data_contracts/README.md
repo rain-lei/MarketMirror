@@ -1,23 +1,6 @@
 # 数据合同
 
-<!-- public-factor-current -->
-最新[滞后沪深300暴露的公共估值通道实验](../PRE_WUHAN_PUBLIC_FACTOR_CHANNELS_2019.md)已完成80条件、3,280条完整路径、141,040个组合日及105,780条同状态提交诊断，**20/80通过原五项联合开发检查**。公共因素分别进入策略目标和所有主体报价，保持原私有消息和账户资源。全量原始来源/账本独立复核、生产五份产物及独立统计逐字节复现通过，868项测试通过；820条原样路径和35,260个完整日对象与旧归档一致。公共相加提高总估值扰动方差，结果仍来自已使用开发队列，尚未进行真实投资者校准或未使用时期验证，未采纳新默认参数；语义门槛保留。后续检验共同/行业/公司残差风险分配，继续补真实资金、库存、订单和政策预期证据；本阶段继续做研究与可复现实验。
-<!-- /public-factor-current -->
-
-此前[固定总资源的现金分配合同](cash_resource_controls_2019.md)约束初始化一次转移、逐股总现金/总股份、原资金完整对象桥接和未执行的固定订单资金诊断。60 条件、2,460 路与全部统计独立核验，五项产物逐字节复现，848 项测试通过；市场联合检查仍 0/60，见[报告](../PRE_WUHAN_CASH_RESOURCE_CONTROLS_2019.md)。旧来源 QC 和渲染器环境差异均保留。
-此前[订单到成交价格只读合同](order_price_diagnostics_2019.md)固定全量主体/资产/路径范围、所有最优价区间、实际请求/接受/成交与真实钱包；环境例外只用于明确绑定的非执行渲染器，不解除旧来源 QC。该阶段结果和 836 项测试见[报告](../PRE_WUHAN_ORDER_PRICE_DIAGNOSTICS_2019.md)。
-
-此前[目标与报价反馈分离合同](price_feedback_channels_2019.md)要求同状态分配/数量与物理报价分别隔离，完整二乘二网格、五种子和两个库存锚点保留；旧对角路径全部桥接，完整多日账户与假设提交分别验收。全量实际/同状态核验与五项逐字节重建已通过，40 条件仍无联合改善，见[报告](../PRE_WUHAN_PRICE_FEEDBACK_CHANNELS_2019.md)。
-
-这里保存进入研究管道的标准记录结构。原始 Excel 的列名和单位不能直接代表标准字段含义，财务字段必须在确认口径后写入 `financial_quarter`。
-
-此前[自身价格反馈完整路径合同](own_price_feedback_2019.md)固定五束种子、六条件及原核心兼容，目标/报价同状态与连续账户路径分别验收；预期数由维度导出，保留原计数失败，全部结果保存。全量独立核验和逐字节重建通过，但没有共同市场结构改善，见[结果](../PRE_WUHAN_OWN_PRICE_FEEDBACK_2019.md)。
-
-此前[完整账本分配与观点来源合同](allocation_attribution_2019.md)要求全部路径、逐位置身份、十阶段分量和实际提交/接受/成交分别一致，固定四来源顺序并保留裁剪；这是事实记账，不能解释为成交因果或新价格路径。实际覆盖和自身价格反馈发现见[报告](../PRE_WUHAN_ALLOCATION_ATTRIBUTION_2019.md)。
-
-此前[融资因素增量合同](issuer_financing_increment_2019.md)固定三组因素、同组八模型配对、原训练截点、缺项留空和独立当前金额/SVD 核验；本轮没有稳定公司日共同改善，见[结果](../ISSUER_FINANCING_INCREMENT_2019.md)。
-
-已完成的[同一半年报融资状态合同](issuer_financing_states_2019_half.md)限定六月末现金、资产和借款分项及受限资金单行比例：原 PDF、范围、单位和独立读取须一致，失败/未知留空，不推断自由现金或完整有息债务。实际覆盖与核验见[融资状态报告](../ISSUER_FINANCING_STATES_2019_HALF.md)。
+合同定义输入结构、来源时点、单位、质量状态与用途。数值读取、模型映射和研究效果分别验收，未知值不填零。实验结论见各研究报告。
 
 三份用户提供工作簿的文件身份和表头核对见[附件结构核验](../USER_WORKBOOK_SOURCE_AUDIT_2026.md)：`金融数据示例.xlsx` 实际是 32 条互动问答样例；66 个财务快照字段只见于 2020 年问答大表，仍缺少单位、变换、报告期间及公告时间的外部定义。
 
@@ -25,9 +8,9 @@
 
 [真实特征出口审计](../ASOF_FEATURE_ISOLATION_AUDIT_2026.md)核对统一库的两个已归档截止时点，确认 37 列文本特征与独立 SQL 的可见问答/回复计数一致，全新导出的 CSV 逐字节一致。此结论只覆盖这两个文本特征出口，不代替其他模型入口的时点审核。
 
-- `qa_record.schema.json`：早期 CSV 字段映射参考；正式实验使用统一数据库的来源行结构。
+- `qa_record.schema.json`：工作簿 CSV 的字段映射结构。
 - `qa_occurrence.schema.json`：统一数据库中一条问答来源记录的结构。
-- `qa_features.schema.json`：旧版公司季度描述统计，不能用于预测季度内事件。
+- `qa_features.schema.json`：公司季度描述统计，不能用于预测季度内事件。
 - `forecast_feature_policy.json`：按截止时刻导出的文本特征白名单、时间假设和排除字段。
 - `financial_quarter.schema.json`：一家公司一个报告期的一项财务指标。
 - `financial_fields.json`：66 个财务快照字段和 2 个行级行情上下文字段的核对清单。
@@ -42,7 +25,7 @@
 - [`issuer_financial_states_2019q3.md`](issuer_financial_states_2019q3.md)：123 家当前报表的字段、列日期/范围、3,422 个单元格交叉核对、598 个明确缺项、金融机构适用性及 as-of 出口合同；数字读取通过不放行经济系数，见[财务状态报告](../ISSUER_FINANCIAL_STATES_2019Q3.md)。
 - [`issuer_operating_states_2019q3.md`](issuer_operating_states_2019q3.md)：123 家累计盈利、现金流和四项额外资产的源符号/期间/范围、独立复核、带时区可见性及非金融比率合同；缺失不填零，数据一致不等于经济增量。
 - [`issuer_financial_increment_2019.md`](issuer_financial_increment_2019.md)：共同公司日期、财务/行业可见性、模型训练目标时点隔离、三个固定财务变量与市场/行业对照及独立 SVD 核验；增量未改善公司日误差，经济输入仍关闭，见[完整结果](../ISSUER_FINANCIAL_INCREMENT_2019.md)。
-- [`issuer_operating_increment_2019.md`](issuer_operating_increment_2019.md)：经营/收入/资产三组固定配对，原控制与全部参考在各组交集重新拟合，源缺项不填零，训练时钟和独立源金额/SVD 核验；未发现稳定公司日增量，见[最新结果](../ISSUER_OPERATING_INCREMENT_2019.md)。
+- [`issuer_operating_increment_2019.md`](issuer_operating_increment_2019.md)：经营/收入/资产三组固定配对，原控制与全部参考在各组交集重新拟合，源缺项不填零，训练时钟和独立源金额/SVD 核验；未发现稳定公司日增量，见[实验结果](../ISSUER_OPERATING_INCREMENT_2019.md)。
 - [`issuer_financing_increment_2019.md`](issuer_financing_increment_2019.md)：同源半年融资三组固定增量、原网格/时钟、同组参考重建与缺项留空；滞后交互不看当日目标，单行限制不作总额，独立原单元格/Decimal/SVD 检验。
 - [`issuer_business_evidence_2019_half.md`](issuer_business_evidence_2019_half.md)：122 份半年报全页证据、原文及可见性、地区/收入/子公司/担保关系的范围边界、独立读取诊断及缺源；字面一致不等于数值暴露通过，3 份读取 QC 保留，见[业务证据报告](../ISSUER_BUSINESS_EVIDENCE_2019_HALF.md)。
 - [`issuer_regional_revenue_2019_half.md`](issuer_regional_revenue_2019_half.md)：独立物理单元格、当前列/单位、完整/重大分部/主营业务、跨页及 QC，有限来源数值与真实地域定义分开；55 家 267 个数值，16 个收入构成表闭合，不自动成为冲击系数，见[收入状态报告](../ISSUER_REGIONAL_REVENUE_STATES_2019_HALF.md)。
@@ -75,3 +58,14 @@
 事件配置需要证据来源。`visible_at` 必须带时区；只有 `visible_date` 时保守使用次日作为可反应日期。执行器保存名义日期、可见信息与实际对齐日，不用较早的日期回填事件。真实数据的来源声明尚需独立核实；`synthetic` 清单只能作为实现验证。
 
 为引入问答之外的政策/市场日历信息，新增 [`policy_event.schema.json`](policy_event.schema.json)：独立保存公告来源类型及原文哈希、发布时间精度、交易日历可见性规则、措施生效区间和主体/行业映射状态。2018 资管新规、武汉交通管制和上交所休市延长的本机来源核对见[政策事件目录](../POLICY_EVENT_CONTEXT_CATALOG_2018_2020.md)。另有 [`issuer_event_exposure.schema.json`](issuer_event_exposure.schema.json)，用于保存逐发行人的政策直接范围匹配和证据。当前 2018 三家试点只有部分主体映射，所有记录仍为上下文，不启用 Agent 信号；政策发布时间不可替代生效时间，未映射的范围也不能假定影响所有公司。
+
+## 机制合同
+
+| 合同 | 定义范围 |
+| --- | --- |
+| [分配与观点来源](allocation_attribution_2019.md) | 固定顺序的决策分量和实际请求/接受/成交，不推断成交因果 |
+| [自身价格反馈](own_price_feedback_2019.md) | 同状态目标/报价与连续账户路径分别核对 |
+| [目标与报价通道](price_feedback_channels_2019.md) | 完整配对网格、种子和库存锚点 |
+| [现金资源](cash_resource_controls_2019.md) | 初始化资金转移、逐股总现金与股份守恒 |
+| [订单与价格](order_price_diagnostics_2019.md) | 最优价区间、请求/接受/成交及真实钱包 |
+| [公开因素通道](public_factor_channels_2019.md) | 公共信息、风险与报价作用的独立对照 |

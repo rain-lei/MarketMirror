@@ -15,18 +15,14 @@
     plus:'M12 5v14M5 12h14',
     download:'M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5',
     arrow:'M4 12h16m-6-6 6 6-6 6',
-    chevron:'m9 5 7 7-7 7',
     close:'m6 6 12 12M6 18 18 6',
     bolt:'m13 2-9 12h7l-1 8 10-12h-7z',
     shield:'m12 2 9 4v6c0 5-9 10-9 10S3 17 3 12V6zM8 12l3 3 5-6',
     building:'M4 22V3h13v19M17 9h4v13M8 7h1M12 7h1M8 11h1M12 11h1M8 15h1M12 15h1M9 22v-4h4v4',
     search:'M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14m5-2 6 6',
-    check:'m5 12 4 4L19 6',
     clock:'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20M12 6v6l4 2',
     sliders:'M4 3v7m0 5v6M12 3v12m0 5v1M20 3v2m0 5v11M1 10h6v5H1zM9 15h6v5H9zM17 5h6v5h-6z',
     replay:'M3 10a9 9 0 1 1 2 9M3 3v7h7',
-    spark:'m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3z',
-    folder:'M2 6h8l2 3h10v12H2zM2 6V3h7l3 3h8v3',
   };
   const icon = (name) => `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name] || paths.document}"/></svg>`;
   const esc = (value) => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -37,9 +33,9 @@
     {id:'EXP-024',title:'审批不确定性 · 等待行为研究',type:'公司问答',kind:'uncertain',source:'投资者：项目是否已经获批？公司回复：目前仍在推进相关审批工作，最终结果和具体时间尚存在不确定性，请关注后续公告。',note:'研究信息尚未确认时，三类策略的等待与目标仓位变化。',time:'10月04日 09:18',seed:47},
   ];
   const roles = [
-    {name:'激进型',key:'aggressive',icon:'bolt',color:'var(--orange)',sensitivity:.9,risk:.04,weight:30,desc:'对新增信息更敏感，较快调整目标仓位，允许更大的单次仓位变化。'},
-    {name:'保守型',key:'conservative',icon:'shield',color:'var(--blue)',sensitivity:.25,risk:.008,weight:20,desc:'重视消息不确定性，通过等待确认和较低风险预算控制仓位变化。'},
-    {name:'机构型',key:'institutional',icon:'building',color:'var(--purple)',sensitivity:.5,risk:.016,weight:35,desc:'结合组合风险和定期再平衡规则，在多个资产之间分配有限资金。'},
+    {name:'激进型',key:'aggressive',icon:'bolt',color:'var(--orange)',desc:'对新增信息更敏感，较快调整目标仓位，允许更大的单次仓位变化。'},
+    {name:'保守型',key:'conservative',icon:'shield',color:'var(--blue)',desc:'重视消息不确定性，通过等待确认和较低风险预算控制仓位变化。'},
+    {name:'机构型',key:'institutional',icon:'building',color:'var(--purple)',desc:'结合组合风险和定期再平衡规则，在多个资产之间分配有限资金。'},
   ];
   const state = {page:'experiments',experimentView:'saved',selected:0,step:8,asset:'A',decisionGroup:'with_message',wizard:1,search:'',sourceFilter:'all',draft:{title:'',source:'',type:'政策消息',published:'2026-10-05T09:00',signal:0,uncertainty:.2,duration:6,sessions:18,seed:7,cash:1000000}};
   const analysisBinding = new SourceAnalysisBinding(state.draft.source);
@@ -77,7 +73,6 @@
   const current = () => batchArchivedExperiment || experiments[state.selected];
   const labels = {analysis:'结果分析',experiments:'实验空间',compare:'实验比较',batches:'批量对照',cases:'真实原文案例',observed:'历史行情实验',sources:'消息资料',agents:'策略配置',new:'新建实验'};
   const format = n => n.toLocaleString('zh-CN');
-  const signed = n => MarketDecisionView.formatNumber(n,6,true);
   const heading = (eyebrow, title, caption, actions = '') => `<div class="page-heading"><div><div class="eyebrow">${eyebrow}</div><h1>${title}</h1><div class="heading-caption">${caption}</div></div><div class="heading-actions">${actions}</div></div>`;
   const newButton = () => `<button class="btn primary" type="button" data-action="new">${icon('plus')}新建实验</button>`;
   function toast(message) { const el=document.getElementById('toast');el.textContent=message;el.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('visible'),3500); }
@@ -112,9 +107,9 @@
   }
   function experimentRows(){
     const templates=state.experimentView==='templates',rows=experiments.filter(e=>Boolean(e.custom)!==templates&&(e.title+e.type).toLowerCase().includes(state.search.toLowerCase()));
-    return rows.length?rows.map(e=>{const inconsistent=e.run_status==='completed'&&!e.backendResult,status=e.custom?(e.corrupt?'记录损坏 · 需恢复':e.run_status==='running'?'运行中':e.run_status==='unknown'?'状态待确认':e.run_status==='failed'?'运行失败':e.run_status==='interrupted'?'运行已中断':inconsistent?'结果缺失 · 请刷新':e.backendResult?(e.backendResult.mode==='synthetic_market'?'已完成 · 撮合实验':'已完成 · 历史预览'):'已保存 · 待运行'):'示例模板 · 虚构文本';
+    return rows.length?rows.map(e=>{const inconsistent=e.run_status==='completed'&&!e.backendResult,status=e.custom?(e.corrupt?'记录损坏 · 需恢复':e.run_status==='running'?'运行中':e.run_status==='unknown'?'状态待确认':e.run_status==='failed'?'运行失败':e.run_status==='interrupted'?'运行已中断':inconsistent?'结果缺失 · 请刷新':e.backendResult?(e.backendResult.mode==='synthetic_market'?'已完成 · 撮合实验':'原始记录 · 无撮合账本'):'已保存 · 待运行'):'示例模板 · 虚构文本';
       const action=e.custom?'data-open':'data-use',index=experiments.indexOf(e);
-      const decisionLabel=e.backendResult?.mode==='platform_preview'?'旧版公式预览':'本地规则决策';
+      const decisionLabel=e.backendResult&&e.backendResult.mode!=='synthetic_market'?'无撮合账本':'本地规则决策';
       const modelLine=e.custom&&!e.corrupt?(e.text_analysis?`<small class="experiment-model-line"><i></i>事实提取：${esc(e.text_analysis.model||'模型名称未存档')} · ${decisionLabel}</small>`:`<small class="experiment-model-line manual"><i></i>未关联模型分析 · ${decisionLabel}</small>`):'';
       return `<tr class="experiment-row"><td>${e.corrupt?`<span class="experiment-name">${esc(e.title)}</span>`:`<button class="subtle-link experiment-name" type="button" ${action}="${index}">${esc(e.title)}</button>`}<small>${esc(e.id)} · ${esc(e.type)}</small>${e.custom&&!e.corrupt?`<small>信号 ${esc(e.signal)} · 不确定性 ${esc(e.uncertainty)}</small>`:''}${modelLine}</td><td><span class="badge neutral">${status}</span></td><td>${e.corrupt?'不可读取':`${e.sessions||18} 步 / 三类策略`}</td><td>${e.corrupt?'—':e.seed}</td><td>${e.custom?esc(e.time):'内置模板'}</td><td>${e.corrupt?'<span class="form-hint">需恢复</span>':`<button class="icon-button" ${action}="${index}" aria-label="${e.custom?'打开':'复用'}${esc(e.title)}">${icon('arrow')}</button>`}</td></tr>`;
     }).join(''):`<tr><td colspan="6" class="empty">${state.search?'没有找到匹配记录。':templates?'暂无示例模板。':experimentLoading?'正在读取本机实验…':'暂无已加载的本机实验，点击“新建实验”开始，或复用示例模板。'}</td></tr>`;
@@ -707,14 +702,15 @@
       if(!data.accounts.length)return `<article class="panel decision-card"><h2>${role.name}</h2><p>此步没有可读取的账户决策。</p></article>`;
       const action=data.orders===null?'订单未存档':data.buys&&data.sells?'双向下单':data.buys?'买入':data.sells?'卖出':'未下单';
       const terms=data.terms;
+      const hasBoundary=data.accounts.some(a=>a.targetBoundary),boundaryPct=n=>n==null?'未核对':MarketDecisionView.formatNumber(n*100,4)+'%';
       const constraints=data.constraints.length?data.constraints.map(c=>`<li><span>${esc(c.label)}</span><small>${c.accounts}/${data.accounts.length} 个账户</small></li>`).join(''):'<li><span>未记录额外约束触发</span></li>';
       return `<article class="panel decision-card" data-decision-role="${role.key}" style="--role:${role.color}">
         <div class="decision-card-head"><span class="agent-mark">${icon(role.icon)}</span><div><h2>${role.name}</h2><small>资产 ${view.asset} · ${data.accounts.length} 个账户</small></div><span class="decision-action">${action}</span></div>
         <div class="decision-stage"><span class="decision-stage-label">01 · 收到的信息</span><dl class="decision-pairs"><div><dt>文本信号</dt><dd>${value(view.observation?.text_signal,4)}</dd></div><div><dt>文本不确定性</dt><dd>${value(view.observation?.text_uncertainty,4)}</dd></div></dl></div>
         <div class="decision-stage"><span class="decision-stage-label">02 · 综合判断</span><div class="decision-score">${contribution(data.belief)}<small>判断分值</small></div>${terms?`<dl class="decision-terms"><div><dt>市场因素</dt><dd>${contribution(terms.market)}</dd></div><div><dt>文本贡献</dt><dd>${contribution(terms.text)}</dd></div><div><dt>不确定性扣减</dt><dd>${contribution(terms.uncertainty)}</dd></div></dl>`:'<p class="decision-note">未能从此版本账本核对分项贡献，仅显示已存档分值。</p>'}</div>
-        <div class="decision-stage"><span class="decision-stage-label">03 · 仓位与约束</span><div class="decision-weights"><div><small>决策前</small><strong>${pct(data.before)}</strong></div><span aria-hidden="true">→</span><div><small>目标</small><strong>${pct(data.target)}</strong></div></div><p class="decision-note">拟下单仓位变化 ${data.orderChange==null?'未存档':contribution(data.orderChange*100)+' 个百分点'}</p><ul class="decision-constraints">${constraints}</ul><p class="decision-note">约束记录针对整个组合，非仅当前资产。</p></div>
+        <div class="decision-stage"><span class="decision-stage-label">03 · 仓位与约束</span><div class="decision-weights"><div><small>决策前</small><strong>${pct(data.before)}</strong></div><span aria-hidden="true">→</span><div><small>目标</small><strong>${pct(data.target)}</strong></div></div><p class="decision-note">拟下单仓位变化 ${data.orderChange==null?'未存档':contribution(data.orderChange*100)+' 个百分点'}</p><ul class="decision-constraints">${constraints}</ul><p class="decision-note">约束记录针对整个组合，非仅当前资产。${hasBoundary?'目标边界由存档参数与三资产分值核对，计算值见账户依据。':''}</p></div>
         <div class="decision-stage"><span class="decision-stage-label">04 · 实际执行</span><p class="decision-note">买入请求 ${qty(data.buys)} 股 · 卖出请求 ${qty(data.sells)} 股</p><div class="decision-execution"><div><small>请求</small><strong>${qty(data.requested)}</strong></div><div><small>接受</small><strong>${qty(data.accepted)}</strong></div><div><small>成交</small><strong>${qty(data.filled)}</strong></div></div></div>
-        <details class="decision-detail"><summary>查看账户与订单依据</summary><p class="decision-note">数值按决策前账户净资产加权。分值为策略计算量，不是收益预测；成交股数来自撮合账本。</p><div class="table-wrap"><table><thead><tr><th>账户</th><th>分值</th><th>文本贡献</th><th>不确定性扣减</th><th>敏感度</th><th>基础权重</th><th>风险预算</th></tr></thead><tbody>${data.accounts.map(a=>`<tr><td>${esc(a.name)}</td><td>${value(a.belief,4)}</td><td>${a.terms?contribution(a.terms.text):'未核对'}</td><td>${a.terms?contribution(a.terms.uncertainty):'未核对'}</td><td>${value(a.parameters.text_sensitivity)}</td><td>${pct(a.parameters.base_weight)}</td><td>${pct(a.parameters.risk_budget)}</td></tr>`).join('')}</tbody></table></div><p class="decision-note">参与计算的常规规则：${data.rules.map(r=>esc(r.label)).join(' · ')||'未存档'}。此处不表示这些上限均已触发。</p>${data.orders===null?'<p>订单账本未存档。</p>':data.orders.length?data.orders.map(o=>`<div class="decision-order"><strong>${esc(o.owner)} · ${o.side==='buy'?'买入':'卖出'}</strong><p>限价 ${value(o.limit_price_minor/100)} · 请求 ${qty(o.quantity)} → 接受 ${qty(o.accepted_quantity)} → 成交 ${qty(o.filled_quantity)} 股</p><p>${(o.reasons||[]).map(code=>esc(MarketDecisionView.describeOrder(code))).join(' · ')||'未记录接受量裁减或未成交原因'}</p></div>`).join(''):'<p class="decision-note">当前资产本步未提交订单。拟下单仓位变化还需按交易单位取整。</p>'}</details>
+        <details class="decision-detail"><summary>查看账户与订单依据</summary><p class="decision-note">数值按决策前账户净资产加权。分值为策略计算量，不是收益预测；成交股数来自撮合账本。</p><div class="table-wrap"><table><thead><tr><th>账户</th><th>分值</th><th>文本贡献</th><th>不确定性扣减</th><th>敏感度</th><th>基础权重</th><th>风险预算</th>${hasBoundary?'<th>限幅前计算值</th><th>组合限幅后</th>':''}</tr></thead><tbody>${data.accounts.map(a=>`<tr><td>${esc(a.name)}</td><td>${value(a.belief,4)}</td><td>${a.terms?contribution(a.terms.text):'未核对'}</td><td>${a.terms?contribution(a.terms.uncertainty):'未核对'}</td><td>${value(a.parameters.text_sensitivity)}</td><td>${pct(a.parameters.base_weight)}</td><td>${pct(a.parameters.risk_budget)}</td>${hasBoundary?`<td>${boundaryPct(a.targetBoundary?.rawWeight)}</td><td>${boundaryPct(a.targetBoundary?.boundedWeight)}</td>`:''}</tr>`).join('')}</tbody></table></div>${hasBoundary?'<p class="decision-note">限幅前计算值 = 基础权重 + 0.4 × 三资产平均分值；组合限幅后再分配到资产，最终目标仍取自本步账本。</p>':''}<p class="decision-note">参与计算的常规规则：${data.rules.map(r=>esc(r.label)).join(' · ')||'未存档'}。此处不表示这些上限均已触发。</p>${data.orders===null?'<p>订单账本未存档。</p>':data.orders.length?data.orders.map(o=>`<div class="decision-order"><strong>${esc(o.owner)} · ${o.side==='buy'?'买入':'卖出'}</strong><p>限价 ${value(o.limit_price_minor/100)} · 请求 ${qty(o.quantity)} → 接受 ${qty(o.accepted_quantity)} → 成交 ${qty(o.filled_quantity)} 股</p><p>${(o.reasons||[]).map(code=>esc(MarketDecisionView.describeOrder(code))).join(' · ')||'未记录接受量裁减或未成交原因'}</p></div>`).join(''):'<p class="decision-note">当前资产本步未提交订单。拟下单仓位变化还需按交易单位取整。</p>'}</details>
       </article>`;
     }).join('');
   }
@@ -739,11 +735,9 @@
     if(current().backendResult?.mode==='synthetic_market')return marketAnalysis();
     const e=current(),result=e.backendResult;
     if(!result)return heading('SAVED EXPERIMENT',esc(e.title),'已保存配置')+`<section class="panel"><div class="summary-content"><p>${esc(e.source)}</p><p>信号 ${esc(e.signal)} · 不确定性 ${esc(e.uncertainty)} · 持续 ${esc(e.duration)} 步 · 种子 ${esc(e.seed)}</p></div></section>`;
-    return heading('SAVED EXPERIMENT',esc(e.title),'<span class="badge neutral">本机平台预览</span>',`<button class="btn" data-action="export">${icon('download')}导出记录</button>${newButton()}`)
-      +'<div class="callout">该记录来自本机预览计算；价格为情景公式输出，成交量为演示值。尚未接入市场撮合引擎或大模型。</div>'
-      +`<section class="panel"><div class="panel-header"><h2>消息与实验配置</h2></div><div class="summary-content"><p>${esc(e.source)}</p><p>信号 ${esc(e.signal)} · 不确定性 ${esc(e.uncertainty)} · 持续 ${esc(e.duration)} 步 · 种子 ${esc(e.seed)}</p></div></section>`
-      +(result?savedPriceChart(result.sessions):'')
-      +(result?`<section class="panel"><div class="panel-header"><h2>三类策略 · 期末预览</h2></div><div class="table-wrap"><table><thead><tr><th>策略</th><th>方向</th><th>目标仓位</th><th>请求股数</th><th>演示成交股数</th></tr></thead><tbody>${result.roles.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.action)}</td><td>${esc(r.target_weight)}%</td><td>${esc(r.requested_shares)}</td><td>${esc(r.filled_shares)}</td></tr>`).join('')}</tbody></table></div></section><section class="panel"><div class="panel-header"><h2>逐步价格记录</h2></div><div class="table-wrap"><table><thead><tr><th>决策步</th><th>情景价格</th><th>消息可见</th><th>作用期内</th></tr></thead><tbody>${result.sessions.map(r=>`<tr><td>${esc(r.step)}</td><td>${esc(r.price)}</td><td>${r.message_visible?'是':'否'}</td><td>${r.message_active?'是':'否'}</td></tr>`).join('')}</tbody></table></div></section>`:'<div class="callout">配置已保存，尚无可读取的运行结果。</div>');
+    return heading('SAVED EXPERIMENT',esc(e.title),'<span class="badge neutral">配置与原始记录</span>',`<button class="btn" data-action="export">${icon('download')}导出记录</button>${newButton()}`)
+      +'<div class="callout">该记录不含可分析的市场撮合账本。可导出原始记录，或复制配置后运行新的实验。</div>'
+      +`<section class="panel"><div class="panel-header"><h2>消息与实验配置</h2></div><div class="summary-content"><p>${esc(e.source)}</p><p>信号 ${esc(e.signal)} · 不确定性 ${esc(e.uncertainty)} · 持续 ${esc(e.duration)} 步 · 种子 ${esc(e.seed)}</p></div></section>`;
   }
   document.addEventListener('click',async e=>{
     const riskStep=e.target.closest('[data-risk-step]');if(riskStep){jumpToRiskStep(Number(riskStep.dataset.riskStep),riskStep.dataset.riskGroup);return;}

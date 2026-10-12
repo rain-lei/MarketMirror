@@ -67,6 +67,6 @@ python -B -m research.simulation.run_source_case_decisions --output-dir research
 python -B -m unittest discover -s tests -p test_source_case*.py
 ```
 
-协议：[固定六案例与全范围配置](configs/source_case_decision_study_2026_v1.json)。实现：[事实证据处理](semantic/source_case_facts.py)、[来源到决策映射](simulation/source_case_decision_link.py)、[完整案例路径](simulation/run_source_case_decisions.py)。下一步把同状态下的直接文本变化与后续反馈分开，检验映射幅度和信息记忆长度的有限敏感性，并整理统一命令行复现说明；不以逐日行情拟合为主要任务，不开发可视化工作台。
+协议：[固定六案例与全范围配置](configs/source_case_decision_study_2026_v1.json)。实现：[事实证据处理](semantic/source_case_facts.py)、[来源到决策映射](simulation/source_case_decision_link.py)、[完整案例路径](simulation/run_source_case_decisions.py)。同状态的直接信息作用、强度和时长对照见[敏感性报告](MECHANISM_SENSITIVITY_RESULTS_2026.md)，统一重放入口见[复现说明](PROTOTYPE_REPRODUCTION_2026.md)。
 
-旧资源批处理两个原进程已确认不存在，旧记录的退出码未知，未改成成功。恢复前已重新打开全部 91 个完整检查点，仅重算五个未封存条件；恢复生产真实退出 0，首个完整 96 条件独立审计仍按原范围推进。其全部 720 条件与最终核验尚未完成，不计为本报告已取得的效果。
+资源对照是独立研究，不计为本报告的文本效果；其全部 720 条件和最终核验见[资源结果](TEMPORAL_RESOURCE_UNIT_RESULTS_2022.md)。

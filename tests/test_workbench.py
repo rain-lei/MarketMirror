@@ -21,7 +21,7 @@ class WorkbenchPayloadTest(unittest.TestCase):
         )
         self.assertFalse(result["passed"])
         self.assertEqual(result["status"], "awaiting_assistant_review_or_score")
-        self.assertIn("不再要求双人", result["reason"])
+        self.assertIn("等待 AI 逐条复核和评分", result["reason"])
         result = checked_agent_signal_gate(
             {"reviewed_items": 128, "scoring": {"passed": True}},
             {"items": 128, "request_failures": 0})
@@ -57,7 +57,6 @@ class WorkbenchPayloadTest(unittest.TestCase):
                                     "car_difference_pp": 0.1,
                                     "event_window_max_absolute_difference_pp": 0.004,
                                     "estimation_basis_exception": False}],
-            "review_readiness": None,
             "assistant_review": {"scoring": {"model_f1": 0.89, "keyword_f1": 0.51,
                                                "type_macro_f1": 0.66}},
             "semantic_ablation": {"stocks": 126, "sessions_per_stock": [124],

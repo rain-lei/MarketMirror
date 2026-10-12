@@ -81,7 +81,7 @@ python -m research.data_pipeline.fetch_baostock --stocks sz.000001 sz.000002 sh.
 
 证据缓存还需取得上述人民银行页面和 BaoStock 文档；现有缓存的精确路径见 `configs/observed_2018_evidence.json`。重新下载的网页或行情不保证与固定版本字节一致，不能直接替换既有实验输入。
 
-市场、事件、回放、成交导入、事件成交和日期对照均已加入主固定清单。完整性和独立重跑报告位于 `research_outputs/integrity_catalog_2018_2020_v2/` 与 `research_outputs/reexecution_catalog_2018_2020_v2/`。配置文件名保留 `_2020` 以兼容现有命令，清单已扩展至 18 项。
+市场、事件、回放、成交导入、事件成交和日期对照均已加入主固定清单，共 18 项。完整性和独立重跑报告位于 `research_outputs/integrity_catalog_2018_2020_v2/` 与 `research_outputs/reexecution_catalog_2018_2020_v2/`。
 
 ```powershell
 python -m research.workbench.run observed_event_2018

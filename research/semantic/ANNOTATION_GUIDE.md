@@ -1,6 +1,6 @@
 # 问答语义事件复核说明
 
-当前采用 `assistant_review_v1`。2026-09-27 用户明确取消双人复核，改为由助手认真逐条复核；不再需要两位审核者或第三人裁定。协议见 [配置](../configs/assistant_review_policy.json)，实际结果见 [下半年 AI 复核](../AI_REVIEW_H2_2020.md)。
+采用 `assistant_review_v1`，由助手逐条复核原文、事件与证据。协议见[配置](../configs/assistant_review_policy.json)，实际结果见[下半年 AI 复核](../AI_REVIEW_H2_2020.md)。
 
 ## 逐条判断
 
@@ -19,8 +19,8 @@
 1. 使用一个明确的 `ai:` 审核者标识，完成全量条目，每条 `status=labeled` 并写理由。
 2. `assistant_review` 校验覆盖、来源、理由和精确证据，保存参考标签、报告、配置及输入输出哈希。
 3. `compare_holdout --ai-review-dir` 对冻结的模型输出和关键词对照评分。保留原数值门槛：错误率不超过 5%、检出 F1 至少 0.70、不低于关键词、类别宏 F1 至少 0.60。
-4. 通过后由 `agent_signal_adapter` 生成信号。接入预测文件必须与评分预测哈希相同；不再等待双人审核。
+4. 通过后由 `agent_signal_adapter` 生成信号，接入预测文件必须与评分预测哈希相同。
 
 程序能检查来源和格式，语义质量依靠实际逐条阅读。参考标签来自单一 AI，且曾见过模型候选，必须记录 `independent_reference=false`、`model_outputs_previously_seen=true`、`gold_ready=false`。这些状态不阻断当前用户指定的实验流程；分数应称为与 AI 复核的一致性，不称独立人工准确率。本批样本改作探索性开发材料。
 
-逐条原文、理由和本地运行产物保留在 Git 忽略的 `research_outputs/`。旧双人审核代码和协议仅用于追溯历史实验，不属于当前操作要求。
+逐条原文、理由和本地运行产物保留在 Git 忽略的 `research_outputs/`。

@@ -158,7 +158,7 @@
   $("run-list").innerHTML=data.runs.map(r=>`<div class="run-item"><strong>${safe(r.id.replaceAll('_',' '))}</strong><span>${r.integrity==='passed'&&r.reexecution==='equivalent'?'✓ 已重跑':'待核验'}</span></div>`).join("");
   $("run-details").innerHTML=data.runs.map(r=>{const artifacts=r.artifacts||[];return `<details class="evidence-run"><summary><span>${safe(runLabels[r.id]||r.id)}</span><small>${artifacts.length} 份产物 · ${r.hash_checks} 项哈希检查</small></summary><div class="evidence-artifacts">${artifacts.map(item=>`<div><code>${safe(item.name)}</code><span class="artifact-${item.status==='identical'?'ok':'normalized'}">${safe(item.status)}</span></div>`).join("")}</div></details>`;}).join("");
   const s=data.semantic;
-  $("semantic-status").innerHTML=`<strong>${safe(s.reviewed_items)} / ${safe(s.items)}</strong><p>${s.reviewed_items===s.items?'AI 逐条复核完成；每条保留判断理由，事件附原文证据。':'AI 逐条复核尚未完成。'}双人审核与第三人裁定要求已取消。</p>`;
+  $("semantic-status").innerHTML=`<strong>${safe(s.reviewed_items)} / ${safe(s.items)}</strong><p>${s.reviewed_items===s.items?'AI 逐条复核完成；每条保留判断理由，事件附原文证据。':'AI 逐条复核尚未完成。'}</p>`;
   const mr=data.model_run||{status:"not_run"};
   if(mr.status==="not_run"){
     $("model-run-status").innerHTML="<strong>LLM 尚未运行</strong><p>DeepSeek 原始抽取尚未执行；没有模型准确率结论。</p>";
@@ -178,9 +178,9 @@
     ? `<strong>Agent 语义信号 · ${gate.passed?'可进入对照实验':'等待复核和评分'}</strong><p>已审 ${safe(gate.reviewed_items)}/${safe(gate.required_items)} 条。</p><p>${safe(gate.reason)}</p>`
     : `<strong>Agent 语义信号门槛尚未核验</strong><p>没有生成真实语义信号流。</p>`;
   const ar=data.assistant_review, score=ar&&ar.scoring;
-  $("review-readiness-status").innerHTML=ar
+  $("assistant-review-status").innerHTML=ar
     ? `<strong>AI 复核参考 · ${safe(ar.events)} 个事件</strong><p>${safe(ar.event_items)} 条含事件；原文、逐条理由和证据已核对。</p>${score?`<p>事件检出 F1：模型 ${Number(score.model_f1).toFixed(3)}，关键词 ${Number(score.keyword_f1).toFixed(3)}；类别宏 F1 ${Number(score.type_macro_f1).toFixed(3)}。</p>`:''}<p>单一 AI 复核且曾见模型候选，不属于独立人工准确率测量。</p>`
-    : `<strong>等待 AI 逐条复核</strong><p>本流程不要求双人审核。</p>`;
+    : `<strong>等待 AI 逐条复核</strong><p>事件附原文证据，分数以 AI 参考标签为依据。</p>`;
   $("evidence-links").innerHTML=data.evidence.map(e=>`<a href="${safe(e.url)}" target="_blank" rel="noopener noreferrer"><span>${safe(e.label)}</span><span>↗</span></a>`).join("");
   $("limitations").innerHTML=data.limitations.map(x=>`<li>${safe(x)}</li>`).join("");
 

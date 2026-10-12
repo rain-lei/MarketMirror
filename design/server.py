@@ -23,11 +23,6 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DATA = ROOT / "research_outputs/platform_workspace"
 SITE = Path(__file__).resolve().parent
 MAX_BODY = 128 * 1024
-ROLES = (
-    {"key": "aggressive", "name": "激进型", "sensitivity": 0.90, "risk_budget": 0.040, "base_weight": 0.30},
-    {"key": "conservative", "name": "保守型", "sensitivity": 0.25, "risk_budget": 0.008, "base_weight": 0.20},
-    {"key": "institutional", "name": "机构型", "sensitivity": 0.50, "risk_budget": 0.016, "base_weight": 0.35},
-)
 TYPES = {"政策消息", "宏观消息", "公司问答", "其他消息"}
 
 
@@ -106,31 +101,6 @@ def experiment_path(data_dir: Path, experiment_id: str) -> Path:
     if len(experiment_id) != 32 or any(c not in "0123456789abcdef" for c in experiment_id):
         raise ValueError("实验 ID 无效")
     return data_dir / experiment_id
-
-
-def preview_run(experiment: dict) -> dict:
-    """Deterministic, inspectable platform preview; not a research protocol run."""
-    signal = experiment["signal"] * (1 - experiment["uncertainty"] * 0.35)
-    negative = signal < 0
-    sessions = experiment["sessions"]
-    rows, roles = [], []
-    for step in range(1, sessions + 1):
-        visible = step > 4
-        active = visible and step <= 4 + experiment["duration"]
-        phase = (step - 4) / max(1, experiment["duration"]) if active else 0
-        price = 100 + (signal * 4.5 * min(1, phase) if active else (signal * 4.5 if step > 4 + experiment["duration"] else 0))
-        rows.append({"step": step, "price": round(price, 6), "message_visible": visible, "message_active": active})
-        if step == sessions:
-            for role in ROLES:
-                change = role["sensitivity"] * signal if active or step > 4 + experiment["duration"] else 0
-                weight = max(0, min(1, role["base_weight"] + change * 0.2))
-                requested = int(abs(change) * experiment["cash"] / max(price, 1) / 100) * 100
-                filled = int(requested * (0.66 if role["key"] == "aggressive" else 0.82))
-                roles.append({"key": role["key"], "name": role["name"], "action": ("卖出" if negative and requested else "买入" if requested else "等待"),
-                              "target_weight": round(weight * 100, 4), "requested_shares": requested,
-                              "filled_shares": filled, "reason": "信息信号触发目标仓位调整。" if requested else "当前信息未触发新增交易。"})
-    return {"mode": "platform_preview", "status": "completed", "generated_at": utc_now(), "sessions": rows,
-            "roles": roles, "limitations": ["平台预览使用显式情景变量，不调用 LLM。", "不是冻结研究协议的统计结果。", "成交量为界面演示值。"]}
 
 
 class RunInProgress(Exception):

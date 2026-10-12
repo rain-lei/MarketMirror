@@ -7,7 +7,7 @@ from urllib.error import HTTPError
 from unittest.mock import patch
 from pathlib import Path
 
-from design.server import PlatformStore, RunInProgress, atomic_json, create_server, preview_run, validate_experiment
+from design.server import PlatformStore, RunInProgress, atomic_json, create_server, validate_experiment
 
 
 class PlatformStoreTest(unittest.TestCase):
@@ -151,12 +151,6 @@ class PlatformStoreTest(unittest.TestCase):
             legacy = {'mode': 'synthetic_market', 'legacy': True}
             atomic_json(Path(tmp) / record['id'] / 'result.json', legacy)
             self.assertEqual(store.export(record['id'])['experiment']['backendResult'], legacy)
-
-    def test_preview_is_explicitly_not_scientific(self):
-        result = preview_run(validate_experiment(self.payload()))
-        self.assertEqual(result["mode"], "platform_preview")
-        self.assertTrue(result["limitations"])
-        self.assertEqual([r["name"] for r in result["roles"]], ["激进型", "保守型", "机构型"])
 
     def test_invalid_parameters_are_not_silently_coerced(self):
         invalid = {"seed": [7.8, True, "7", None], "sessions": [18.5, False],

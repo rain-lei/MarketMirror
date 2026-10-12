@@ -5,7 +5,7 @@ from pathlib import Path
 
 from .server import PlatformStore, atomic_json
 from .strategy_config import load_model, defaults, parameters_digest
-from .batch_metrics import digest, summarize_scenarios, write_report
+from .batch_metrics import digest, write_report
 
 SCENARIOS = (("neutral", 0, 0), ("positive", .6, .2),
              ("negative", -.6, .2), ("uncertain", 0, .8))
