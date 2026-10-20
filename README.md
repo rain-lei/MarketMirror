@@ -11,7 +11,7 @@ MarketMirror 是本地运行的金融情景实验平台。输入政策、宏观�
 需要 Python 3.10+。在 PowerShell 执行：
 
 ```powershell
-git clone --branch codex/research-rebuild https://github.com/rain-lei/MarketMirror.git
+git clone https://github.com/rain-lei/MarketMirror.git
 cd MarketMirror
 python -m pip install -r requirements-research.txt
 .\scripts\start-platform.ps1
